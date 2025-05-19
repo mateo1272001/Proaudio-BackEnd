@@ -1,4 +1,4 @@
-package repositories;
+package com.ProyectoIntegradorBE.proaudioBE.repositories;
 
 import org.springframework.stereotype.Repository;
 
