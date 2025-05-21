@@ -1,4 +1,4 @@
-package com.ProyectoIntegradorBE.proaudioBE.Client;
+package com.ProyectoIntegradorBE.proaudioBE.dtos.Client;
 
 import lombok.Data;
 

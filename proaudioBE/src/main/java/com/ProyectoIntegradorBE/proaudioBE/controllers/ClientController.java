@@ -1,6 +1,6 @@
 package com.ProyectoIntegradorBE.proaudioBE.controllers;
 
-import com.ProyectoIntegradorBE.proaudioBE.Client.ClientResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Client.ClientResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
