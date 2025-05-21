@@ -1,6 +1,6 @@
 package com.ProyectoIntegradorBE.proaudioBE.services;
 
-import dtos.Client.ClientResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.Client.ClientResponseDto;
 
 public interface ClientService {
 

@@ -1,6 +1,6 @@
 package com.ProyectoIntegradorBE.proaudioBE.mappers;
 
-import dtos.Client.ClientResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.Client.ClientResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.entities.ClientEntity;
 import org.mapstruct.Mapper;
 
