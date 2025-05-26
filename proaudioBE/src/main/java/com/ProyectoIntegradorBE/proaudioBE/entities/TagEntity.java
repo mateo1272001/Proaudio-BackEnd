@@ -1,5 +1,6 @@
 package com.ProyectoIntegradorBE.proaudioBE.entities;
 
+import com.ProyectoIntegradorBE.proaudioBE.enums.BasicEnumStatus;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -11,20 +12,17 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "client")
-public class ClientEntity {
+@Table(name = "tag")
+public class TagEntity {
 
     @Id
-    private Long clientId;
+    private Long tagId;
 
     private String name;
 
-    private String phoneNumber;
+    private Long fatherId;
 
-    private String email;
+    private String description;
 
-    private String address;
-
-    private String details;
-
+    private BasicEnumStatus status;
 }
