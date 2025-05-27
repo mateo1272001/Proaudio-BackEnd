@@ -1,9 +1,7 @@
 package com.ProyectoIntegradorBE.proaudioBE.entities;
 
 import com.ProyectoIntegradorBE.proaudioBE.enums.BasicEnumStatus;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,6 +14,7 @@ import lombok.NoArgsConstructor;
 public class TagEntity {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long tagId;
 
     private String name;
@@ -24,5 +23,7 @@ public class TagEntity {
 
     private String description;
 
+    @Enumerated(EnumType.STRING) //so it doesnt save enums as their ordinal value
+    @Column(nullable = false)
     private BasicEnumStatus status;
 }
