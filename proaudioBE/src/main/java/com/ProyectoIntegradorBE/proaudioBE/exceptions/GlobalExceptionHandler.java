@@ -94,6 +94,17 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(TagNotFoundException.class)
+    public ResponseEntity<ApiErrorResponse> handleClientNotFound(TagNotFoundException ex, HttpServletRequest request) {
+        ApiErrorResponse response = new ApiErrorResponse(
+                HttpStatus.NOT_FOUND.value(),
+                HttpStatus.NOT_FOUND.getReasonPhrase(),
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    }
+
     // Agregar mas @ExceptionHandler para excepciones siguientes
 }
 

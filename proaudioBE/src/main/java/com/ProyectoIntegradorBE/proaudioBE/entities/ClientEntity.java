@@ -10,13 +10,12 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-//@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @Entity
 @Table(name = "client")
 public class ClientEntity {
 
     @Id
-    private Long id;
+    private Long clientId;
 
     private String name;
 
