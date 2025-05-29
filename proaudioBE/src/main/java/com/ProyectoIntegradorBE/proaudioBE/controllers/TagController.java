@@ -1,8 +1,9 @@
 package com.ProyectoIntegradorBE.proaudioBE.controllers;
 
-import com.ProyectoIntegradorBE.proaudioBE.dtos.Tag.AllTagsResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Tag.AllTagsModuleListDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Tag.TagRequestDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Tag.TagResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Tag.TagResponseListDto;
 import com.ProyectoIntegradorBE.proaudioBE.services.TagServiceImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -31,16 +32,23 @@ public class TagController {
     }
 
     @DeleteMapping("{id}")
-    public TagResponseDto updateTag(@PathVariable Long id) {
+    public TagResponseDto deleteTag(@PathVariable Long id) {
 
         return tagServiceImpl.deleteTag(id);
 
     }
 
-    @GetMapping("/all")
-    public AllTagsResponseDto updateTag() {
+    @GetMapping("/structured/all")
+    public AllTagsModuleListDto getAllStructured() {
 
-        return tagServiceImpl.findAll();
+        return tagServiceImpl.findAllStructured();
+
+    }
+
+    @GetMapping("/all")
+    public TagResponseListDto getAllTags() {
+
+        return tagServiceImpl.findAllSimple();
 
     }
 

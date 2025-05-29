@@ -8,7 +8,7 @@ import java.util.List;
 
 @Data
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class AllTagsResponseDto {
+public class AllTagsModuleListDto {
 
     private List<AllTagsModuleDto> parentTags;
 

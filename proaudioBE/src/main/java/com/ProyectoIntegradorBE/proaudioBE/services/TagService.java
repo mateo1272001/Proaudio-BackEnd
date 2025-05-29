@@ -1,8 +1,9 @@
 package com.ProyectoIntegradorBE.proaudioBE.services;
 
-import com.ProyectoIntegradorBE.proaudioBE.dtos.Tag.AllTagsResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Tag.AllTagsModuleListDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Tag.TagRequestDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Tag.TagResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Tag.TagResponseListDto;
 import jakarta.validation.Valid;
 
 public interface TagService {
@@ -12,5 +13,7 @@ public interface TagService {
 
     TagResponseDto deleteTag(Long id);
 
-    AllTagsResponseDto findAll();
+    AllTagsModuleListDto findAllStructured();
+
+    TagResponseListDto findAllSimple();
 }

@@ -1,19 +1,18 @@
 package com.ProyectoIntegradorBE.proaudioBE.services;
 
-import com.ProyectoIntegradorBE.proaudioBE.dtos.Tag.AllTagsModuleDto;
-import com.ProyectoIntegradorBE.proaudioBE.dtos.Tag.AllTagsResponseDto;
-import com.ProyectoIntegradorBE.proaudioBE.dtos.Tag.TagRequestDto;
-import com.ProyectoIntegradorBE.proaudioBE.dtos.Tag.TagResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Tag.*;
 import com.ProyectoIntegradorBE.proaudioBE.entities.TagEntity;
 import com.ProyectoIntegradorBE.proaudioBE.enums.BasicEnumStatus;
 import com.ProyectoIntegradorBE.proaudioBE.exceptions.ClientNotFoundException;
 import com.ProyectoIntegradorBE.proaudioBE.mappers.TagMapper;
+import com.ProyectoIntegradorBE.proaudioBE.mappers.TagModuleMapper;
 import com.ProyectoIntegradorBE.proaudioBE.repositories.TagRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.StreamSupport;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +20,7 @@ public class TagServiceImpl implements TagService {
 
     private final TagRepository tagRepository;
     private final TagMapper tagMapper;
+    private final TagModuleMapper tagModuleMapper;
 
     @Override
     public TagResponseDto createTag(TagRequestDto tagRequestDto) {
@@ -61,10 +61,10 @@ public class TagServiceImpl implements TagService {
     }
 
     @Override
-    public AllTagsResponseDto findAll() {
+    public AllTagsModuleListDto findAllStructured() {
 
         List<AllTagsModuleDto> parentTagsList = getTagsRecursive(null);
-        AllTagsResponseDto allTagsResponsedto = new AllTagsResponseDto();
+        AllTagsModuleListDto allTagsResponsedto = new AllTagsModuleListDto();
         allTagsResponsedto.setParentTags(parentTagsList);
 
         return allTagsResponsedto;
@@ -78,7 +78,7 @@ public class TagServiceImpl implements TagService {
 
         if(Objects.nonNull(tags)){
 
-            List<AllTagsModuleDto> tagDtos = tagMapper.toListDto(tags);
+            List<AllTagsModuleDto> tagDtos = tagModuleMapper.toListDto(tags);
 
             for (AllTagsModuleDto tagDto : tagDtos) {
 
@@ -91,6 +91,20 @@ public class TagServiceImpl implements TagService {
         }
 
         return null;
+    }
+
+
+    @Override
+    public TagResponseListDto findAllSimple() {
+
+        List<TagEntity> tagEntities = StreamSupport
+                .stream(tagRepository.findAll().spliterator(), false)
+                .toList();
+
+        TagResponseListDto tagResponseListDto = new TagResponseListDto();
+        tagResponseListDto.setTags(tagMapper.toListDto(tagEntities));
+
+        return tagResponseListDto;
     }
 
 }
