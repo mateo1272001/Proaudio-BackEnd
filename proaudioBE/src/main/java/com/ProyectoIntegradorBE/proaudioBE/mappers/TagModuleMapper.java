@@ -12,7 +12,7 @@ public interface TagModuleMapper {
 
     AllTagsModuleDto toDto(TagEntity client);
 
-    TagEntity toEntity(TagRequestDto dto);
+    TagEntity toEntity(AllTagsModuleDto dto);
 
     List<AllTagsModuleDto> toListDto(List<TagEntity> client);
 
