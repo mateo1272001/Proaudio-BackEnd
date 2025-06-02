@@ -1,6 +1,6 @@
 spring:
   profiles:
-    active: dev # Cambiar según el entorno
+    active: test # Cambiar según el entorno
 
 ---
 
@@ -41,9 +41,9 @@ spring:
     activate:
       on-profile: test
   datasource:
-    url: jdbc:mysql://localhost:3306/qrapp_test
-    username: test_user
-    password: test_password
+    url: proaudio-test.c6zfg2tqcsfh.us-east-1.rds.amazonaws.com
+    username: admin
+    password: AdobleveEse2025.
   jpa:
     hibernate:
       ddl-auto: none
