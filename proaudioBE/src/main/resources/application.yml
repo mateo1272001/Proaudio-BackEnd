@@ -41,7 +41,7 @@ spring:
     activate:
       on-profile: test
   datasource:
-    url: jdbc:mysql://proaudio-test.c6zfg2tqcsfh.us-east-1.rds.amazonaws.com
+    url: jdbc:mysql://proaudio-test.c6zfg2tqcsfh.us-east-1.rds.amazonaws.com/proaudio_channels?useSSL=false&serverTimezone=UTC
     username: admin
     password: AdobleveEse2025.
   jpa:
@@ -52,7 +52,7 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
   server:
-    port: 5000
+    port: 8080
 
 ---
 
