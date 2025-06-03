@@ -41,7 +41,7 @@ spring:
     activate:
       on-profile: test
   datasource:
-    url: proaudio-test.c6zfg2tqcsfh.us-east-1.rds.amazonaws.com
+    url: jdbc:mysql://proaudio-test.c6zfg2tqcsfh.us-east-1.rds.amazonaws.com
     username: admin
     password: AdobleveEse2025.
   jpa:
