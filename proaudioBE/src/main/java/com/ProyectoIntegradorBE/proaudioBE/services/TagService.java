@@ -16,4 +16,6 @@ public interface TagService {
     AllTagsModuleListDto findAllStructured();
 
     TagResponseListDto findAllSimple();
+
+    TagResponseDto getTagById(Long id);
 }

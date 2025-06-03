@@ -1,6 +1,7 @@
 package com.ProyectoIntegradorBE.proaudioBE.services;
 
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Tag.*;
+import com.ProyectoIntegradorBE.proaudioBE.entities.ClientEntity;
 import com.ProyectoIntegradorBE.proaudioBE.entities.TagEntity;
 import com.ProyectoIntegradorBE.proaudioBE.enums.BasicEnumStatus;
 import com.ProyectoIntegradorBE.proaudioBE.exceptions.ClientNotFoundException;
@@ -105,6 +106,13 @@ public class TagServiceImpl implements TagService {
         tagResponseListDto.setTags(tagMapper.toListDto(tagEntities));
 
         return tagResponseListDto;
+    }
+
+    @Override
+    public TagResponseDto getTagById(Long id) {
+        TagEntity clientEntity = tagRepository.findById(id)
+                .orElseThrow(() -> new ClientNotFoundException(id));
+        return tagMapper.toDto(clientEntity);
     }
 
 }

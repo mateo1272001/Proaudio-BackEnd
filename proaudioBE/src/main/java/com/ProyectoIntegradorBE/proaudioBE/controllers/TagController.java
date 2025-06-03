@@ -1,5 +1,6 @@
 package com.ProyectoIntegradorBE.proaudioBE.controllers;
 
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Client.ClientResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Tag.AllTagsModuleListDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Tag.TagRequestDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Tag.TagResponseDto;
@@ -50,6 +51,11 @@ public class TagController {
 
         return tagServiceImpl.findAllSimple();
 
+    }
+
+    @GetMapping("/{id}")
+    public TagResponseDto GetTagById(@PathVariable Long id) throws Exception {
+        return tagServiceImpl.getTagById(id);
     }
 
 }
