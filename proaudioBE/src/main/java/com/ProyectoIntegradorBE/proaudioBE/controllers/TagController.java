@@ -7,6 +7,7 @@ import com.ProyectoIntegradorBE.proaudioBE.dtos.Tag.TagResponseListDto;
 import com.ProyectoIntegradorBE.proaudioBE.services.TagServiceImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.BadRequestException;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -25,14 +26,14 @@ public class TagController {
     }
 
     @PutMapping("{id}")
-    public TagResponseDto updateTag(@PathVariable Long id, @Valid @RequestBody TagRequestDto tagRequestDto) {
+    public TagResponseDto updateTag(@PathVariable Long id, @Valid @RequestBody TagRequestDto tagRequestDto) throws BadRequestException {
 
         return tagServiceImpl.updateTag(id, tagRequestDto);
 
     }
 
     @DeleteMapping("{id}")
-    public TagResponseDto deleteTag(@PathVariable Long id) {
+    public TagResponseDto deleteTag(@PathVariable Long id) throws BadRequestException {
 
         return tagServiceImpl.deleteTag(id);
 
