@@ -13,4 +13,6 @@ public interface TagRepository extends CrudRepository<TagEntity, Long> {
     List<TagEntity> findByFatherIdIsNullAndStatus(BasicEnumStatus status);
 
     List<TagEntity> findByFatherIdAndStatus(Long tagId, BasicEnumStatus status);
+
+    List<TagEntity> findAllByStatus(BasicEnumStatus status);
 }
