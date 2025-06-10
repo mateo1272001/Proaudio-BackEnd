@@ -8,11 +8,11 @@ import com.ProyectoIntegradorBE.proaudioBE.mappers.TagMapper;
 import com.ProyectoIntegradorBE.proaudioBE.mappers.TagModuleMapper;
 import com.ProyectoIntegradorBE.proaudioBE.repositories.TagRepository;
 import lombok.RequiredArgsConstructor;
+import com.ProyectoIntegradorBE.proaudioBE.exceptions.BadRequestException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.StreamSupport;
 
 @Service
 @RequiredArgsConstructor
@@ -37,9 +37,15 @@ public class TagServiceImpl implements TagService {
     }
 
     @Override
-    public TagResponseDto updateTag(Long id, TagRequestDto tagRequestDto) {
+    public TagResponseDto updateTag(Long id, TagRequestDto tagRequestDto) throws BadRequestException {
 
         TagEntity tag = tagRepository.findById(id).orElseThrow(() -> new ClientNotFoundException(id));
+
+        ValidateUpdate(tagRequestDto, tag);
+        if(tag.getStatus().equals(BasicEnumStatus.ENABLED)
+                && tagRequestDto.getStatus().equals(BasicEnumStatus.DISABLED)) {
+            ValidateDelete(tag);
+        }
 
         tag.setName(tagRequestDto.getName());
         tag.setDescription(tagRequestDto.getDescription());
@@ -50,14 +56,58 @@ public class TagServiceImpl implements TagService {
         return tagMapper.toDto(tag);
     }
 
+    private void ValidateUpdate(TagRequestDto tagRequestDto, TagEntity tag) throws BadRequestException {
+        if(Objects.nonNull(tagRequestDto.getFatherId()) && tagRequestDto.getFatherId().equals(tag.getTagId())) {
+            throw new BadRequestException("¡El nuevo padre no puede ser la misma etiqueta!");
+        }
+
+        checkIfNewFatherIsChildOfId(tagRequestDto.getFatherId(), tag.getTagId());
+    }
+
+    private void checkIfNewFatherIsChildOfId(Long selectedId, Long tagId) throws BadRequestException {
+
+        List<TagEntity> tags = tagRepository.findByFatherIdAndStatus(tagId, BasicEnumStatus.ENABLED);
+
+        if(Objects.nonNull(tags) && !tags.isEmpty()) {
+
+            for (TagEntity tag : tags) {
+
+                if(tag.getTagId().equals(selectedId)) {
+
+                    throw new BadRequestException("¡El nuevo padre no puede ser hijo de la etiqueta editada!");
+
+                }
+
+                checkIfNewFatherIsChildOfId(selectedId, tag.getTagId());
+
+            }
+
+        }
+
+    }
+
     @Override
-    public TagResponseDto deleteTag(Long id) {
+    public TagResponseDto deleteTag(Long id) throws BadRequestException {
 
         TagEntity tag = tagRepository.findById(id).orElseThrow(() -> new ClientNotFoundException(id));
-        tag.setStatus(BasicEnumStatus.DISABLED);
 
+        ValidateDelete(tag);
+
+        tag.setStatus(BasicEnumStatus.DISABLED);
         tagRepository.save(tag);
         return tagMapper.toDto(tag);
+    }
+
+    private void ValidateDelete(TagEntity tag) throws BadRequestException {
+
+        List<TagEntity> tags =  tagRepository.findByFatherIdAndStatus(tag.getTagId(), BasicEnumStatus.ENABLED);
+
+        if(!tags.isEmpty()) {
+            throw new BadRequestException("¡No podés borrar etiquetas con hijos activos!");
+        }
+
+        //todo agregar validacion de productos con la etiqueta asignada
+
     }
 
     @Override
@@ -97,8 +147,7 @@ public class TagServiceImpl implements TagService {
     @Override
     public TagResponseListDto findAllSimple() {
 
-        List<TagEntity> tagEntities = StreamSupport
-                .stream(tagRepository.findAll().spliterator(), false)
+        List<TagEntity> tagEntities = tagRepository.findAllByStatus(BasicEnumStatus.ENABLED).stream()
                 .toList();
 
         TagResponseListDto tagResponseListDto = new TagResponseListDto();
