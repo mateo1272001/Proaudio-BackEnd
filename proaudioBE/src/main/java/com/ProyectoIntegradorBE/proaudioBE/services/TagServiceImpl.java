@@ -7,6 +7,7 @@ import com.ProyectoIntegradorBE.proaudioBE.exceptions.ClientNotFoundException;
 import com.ProyectoIntegradorBE.proaudioBE.mappers.TagMapper;
 import com.ProyectoIntegradorBE.proaudioBE.mappers.TagModuleMapper;
 import com.ProyectoIntegradorBE.proaudioBE.repositories.TagRepository;
+import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.TagService;
 import lombok.RequiredArgsConstructor;
 import com.ProyectoIntegradorBE.proaudioBE.exceptions.BadRequestException;
 import org.springframework.stereotype.Service;
@@ -154,6 +155,14 @@ public class TagServiceImpl implements TagService {
         tagResponseListDto.setTags(tagMapper.toListDto(tagEntities));
 
         return tagResponseListDto;
+    }
+
+    public List<TagResponseDto> findByTagIdIn(List<Long> tagIds) {
+
+        List<TagEntity> tagEntities = tagRepository.findByTagIdIn(tagIds);
+
+        return tagMapper.toListDto(tagEntities);
+
     }
 
 }

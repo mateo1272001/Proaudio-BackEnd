@@ -1,39 +1,36 @@
 package com.ProyectoIntegradorBE.proaudioBE.entities;
 
-import com.ProyectoIntegradorBE.proaudioBE.enums.ProductStatus;
+import com.ProyectoIntegradorBE.proaudioBE.enums.BasicEnumStatus;
+import com.ProyectoIntegradorBE.proaudioBE.enums.TagTypeEnum;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "product")
-public class ProductEntity {
+@Table(name = "product_tag")
+public class ProductTagEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long productId;
+    private Long productTagId;
 
     @NotNull
-    private String model;
+    private Long tagId;
 
-    private String comments;
-
-    private BigDecimal replacementValue;
+    @NotNull
+    private Long productId;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private ProductStatus status;
+    private TagTypeEnum type;
 
-    private LocalDateTime createdAt;
-
-    private LocalDateTime updatedAt;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private BasicEnumStatus status;
 
 }

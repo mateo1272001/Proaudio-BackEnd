@@ -1,39 +1,37 @@
 package com.ProyectoIntegradorBE.proaudioBE.entities;
 
-import com.ProyectoIntegradorBE.proaudioBE.enums.ProductStatus;
+import com.ProyectoIntegradorBE.proaudioBE.enums.BasicEnumStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "product")
-public class ProductEntity {
+@Table(name = "rent_price")
+public class RentPriceEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long rentPriceId;
+
+    @NotNull
     private Long productId;
 
     @NotNull
-    private String model;
+    private BigDecimal value;
 
-    private String comments;
+    @NotNull
+    private String description;
 
-    private BigDecimal replacementValue;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private ProductStatus status;
-
-    private LocalDateTime createdAt;
-
-    private LocalDateTime updatedAt;
+    private BasicEnumStatus status = BasicEnumStatus.ENABLED;
 
 }

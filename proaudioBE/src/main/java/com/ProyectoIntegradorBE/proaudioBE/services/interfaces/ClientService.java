@@ -1,4 +1,4 @@
-package com.ProyectoIntegradorBE.proaudioBE.services;
+package com.ProyectoIntegradorBE.proaudioBE.services.interfaces;
 
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Client.ClientResponseDto;
 

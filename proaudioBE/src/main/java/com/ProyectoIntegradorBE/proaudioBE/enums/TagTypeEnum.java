@@ -1,6 +1,6 @@
 package com.ProyectoIntegradorBE.proaudioBE.enums;
 
-public enum TagType {
+public enum TagTypeEnum {
 
     DESCRIPTIVE,
     RELATION,
