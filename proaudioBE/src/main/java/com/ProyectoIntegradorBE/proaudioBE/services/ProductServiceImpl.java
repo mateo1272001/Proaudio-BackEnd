@@ -2,9 +2,14 @@ package com.ProyectoIntegradorBE.proaudioBE.services;
 
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.*;
 import com.ProyectoIntegradorBE.proaudioBE.entities.ProductEntity;
+import com.ProyectoIntegradorBE.proaudioBE.entities.TagEntity;
+import com.ProyectoIntegradorBE.proaudioBE.enums.BasicEnumStatus;
+import com.ProyectoIntegradorBE.proaudioBE.enums.DirectionEnum;
 import com.ProyectoIntegradorBE.proaudioBE.enums.ProductStatus;
+import com.ProyectoIntegradorBE.proaudioBE.enums.SortByEnum;
 import com.ProyectoIntegradorBE.proaudioBE.mappers.ProductMapper;
 import com.ProyectoIntegradorBE.proaudioBE.repositories.ProductRepository;
+import com.ProyectoIntegradorBE.proaudioBE.repositories.TagRepository;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.BadRequestException;
@@ -15,6 +20,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +35,8 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
 
     private final ProductMapper productMapper;
+
+    private final TagRepository tagRepository;
 
 
     @Override
@@ -108,14 +116,50 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductListResponseDto getFilteredProducts(List<Long> tags, String sortBy, String direction,
                                                       LocalDate startDate, LocalDate endDate,
-                                                      Integer page, Integer size) {
+                                                      Integer page, Integer size) throws BadRequestException {
 
+        if(Objects.isNull(tags) || tags.isEmpty()) {
+            List<TagEntity> tagEntities= tagRepository.findByFatherIdAndStatus(null, BasicEnumStatus.ENABLED);
+            tags = tagEntities.stream().map(TagEntity::getTagId).toList();
+        }
 
+        SortByEnum sortByEnum;
+        DirectionEnum directionEnum;
 
+        try {
+            sortByEnum = Objects.nonNull(sortBy) ? SortByEnum.valueOf(sortBy.toUpperCase()) : SortByEnum.ID;
+            directionEnum = Objects.nonNull(direction) ? DirectionEnum.valueOf(direction.toUpperCase()) : DirectionEnum.ASC;
+        } catch (Exception ex) {
+            throw new BadRequestException("¡Valor de sort o direction incorrecto!");
+        }
 
+        ProductListResponseDto productListResponseDto =
+                productRepository.findAllWithFilters(tags, sortByEnum, directionEnum, startDate, endDate, page, size);
 
-        return null;
+        return productListResponseDto;
 
+    }
+
+    public ProductTagResponseDto createProductTag (ProductTagRequestDto productTagRequestDto)
+            throws BadRequestException {
+
+        if(Objects.isNull(productTagRequestDto.getProductId())) {
+            throw new BadRequestException("¡Debe tener un producto asociado!");
+        }
+
+        Optional<ProductEntity> productEntityOpt = productRepository.findById(productTagRequestDto.getProductId());
+
+        if (productEntityOpt.isEmpty()) {
+            throw new BadRequestException("¡El producto no existe!");
+        }
+
+        return productTagService.createProductTag(productTagRequestDto);
+
+    }
+
+    @Override
+    public ProductTagResponseDto deleteProductTag(Long id) {
+        return productTagService.deleteProductTag(id);
     }
 
 

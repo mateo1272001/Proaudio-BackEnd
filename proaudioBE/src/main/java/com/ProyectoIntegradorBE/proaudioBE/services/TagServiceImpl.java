@@ -8,12 +8,14 @@ import com.ProyectoIntegradorBE.proaudioBE.mappers.TagMapper;
 import com.ProyectoIntegradorBE.proaudioBE.mappers.TagModuleMapper;
 import com.ProyectoIntegradorBE.proaudioBE.repositories.TagRepository;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.TagService;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import com.ProyectoIntegradorBE.proaudioBE.exceptions.BadRequestException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -165,4 +167,9 @@ public class TagServiceImpl implements TagService {
 
     }
 
+    public Optional<TagEntity> findByTagId(@NotNull Long tagId) {
+
+        return tagRepository.findById(tagId);
+
+    }
 }

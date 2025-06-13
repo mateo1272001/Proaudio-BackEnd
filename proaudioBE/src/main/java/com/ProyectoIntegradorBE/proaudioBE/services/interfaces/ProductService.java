@@ -1,9 +1,8 @@
 package com.ProyectoIntegradorBE.proaudioBE.services.interfaces;
 
-import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.ProductListResponseDto;
-import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.ProductRequestDto;
-import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.ProductResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.*;
 import org.apache.coyote.BadRequestException;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -17,5 +16,9 @@ public interface ProductService {
     ProductResponseDto DeleteProduct(Long id) throws BadRequestException;
 
     ProductListResponseDto getFilteredProducts(List<Long> tags, String sortBy, String direction,
-                                               LocalDate startDate, LocalDate endDate, Integer page, Integer size);
+                                               LocalDate startDate, LocalDate endDate, Integer page, Integer size) throws BadRequestException;
+
+    ProductTagResponseDto createProductTag(ProductTagRequestDto productTagRequestDto)throws BadRequestException;
+
+    ProductTagResponseDto deleteProductTag(Long id);
 }

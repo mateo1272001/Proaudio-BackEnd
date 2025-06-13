@@ -3,7 +3,9 @@ package com.ProyectoIntegradorBE.proaudioBE.services;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.ProductTagRequestDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.ProductTagResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Tag.TagResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.entities.ProductEntity;
 import com.ProyectoIntegradorBE.proaudioBE.entities.ProductTagEntity;
+import com.ProyectoIntegradorBE.proaudioBE.entities.TagEntity;
 import com.ProyectoIntegradorBE.proaudioBE.enums.BasicEnumStatus;
 import com.ProyectoIntegradorBE.proaudioBE.mappers.ProductTagMapper;
 import com.ProyectoIntegradorBE.proaudioBE.repositories.ProductTagRepository;
@@ -15,6 +17,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,6 +29,50 @@ public class ProductTagServiceImpl implements ProductTagService {
     private final ProductTagMapper productTagMapper;
 
     private final TagServiceImpl tagService;
+
+    public ProductTagResponseDto createProductTag(ProductTagRequestDto productTagRequestDto) {
+
+        Optional<ProductTagEntity> productTagOpt = productTagRepository
+                .findByProductIdAndTagId(productTagRequestDto.getProductId(), productTagRequestDto.getTagId());
+
+        if(productTagOpt.isPresent()) {
+            if(productTagOpt.get().getStatus().equals(BasicEnumStatus.DISABLED)) {
+                productTagOpt.get().setStatus(BasicEnumStatus.ENABLED);
+            }
+            return productTagMapper.toDto(productTagOpt.get());
+        }
+
+        Optional<TagEntity> tagEntityOpt = tagService.findByTagId(productTagRequestDto.getTagId());
+
+        if(tagEntityOpt.isEmpty()) {
+             throw new BadRequestException("¡La etiqueta no existe!");
+        }
+
+        ProductTagEntity productTagEntity = productTagMapper.toEntity(productTagRequestDto);
+
+        productTagEntity = productTagRepository.save(productTagEntity);
+
+        return productTagMapper.toDto(productTagEntity);
+
+    }
+
+    @Override
+    public ProductTagResponseDto deleteProductTag(Long id) {
+
+        Optional<ProductTagEntity> productTagEntityOpt =
+                productTagRepository.findByProductTagIdAndStatus(id, BasicEnumStatus.ENABLED);
+
+        if (productTagEntityOpt.isEmpty()) {
+            throw new BadRequestException("¡No existe vínculo actual entre este producto y esta etiqueta!");
+        }
+
+        ProductTagEntity productTagEntity = productTagEntityOpt.get();
+        productTagEntity.setStatus(BasicEnumStatus.DISABLED);
+
+        productTagRepository.save(productTagEntity);
+
+        return productTagMapper.toDto(productTagEntity);
+    }
 
     public List<ProductTagResponseDto> CreateProductTags(List<ProductTagRequestDto> productTags, Long productId)
             throws BadRequestException {
@@ -53,7 +100,7 @@ public class ProductTagServiceImpl implements ProductTagService {
         return tagResponseDtos;
     }
 
-    public List<ProductTagEntity> convertToEntities(List<ProductTagRequestDto> dtoList, Long productId,
+    private List<ProductTagEntity> convertToEntities(List<ProductTagRequestDto> dtoList, Long productId,
                                                     BasicEnumStatus status) {
         return dtoList.stream()
                 .map(dto -> {

@@ -3,6 +3,7 @@ package com.ProyectoIntegradorBE.proaudioBE.dtos.Product;
 import com.ProyectoIntegradorBE.proaudioBE.enums.TagTypeEnum;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
@@ -16,4 +17,6 @@ public class ProductTagRequestDto {
     @NotNull
     private TagTypeEnum type;
 
+    @Nullable
+    private Long productId;
 }

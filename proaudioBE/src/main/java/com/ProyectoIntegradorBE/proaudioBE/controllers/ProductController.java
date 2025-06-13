@@ -1,8 +1,6 @@
 package com.ProyectoIntegradorBE.proaudioBE.controllers;
 
-import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.ProductListResponseDto;
-import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.ProductRequestDto;
-import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.ProductResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.*;
 import com.ProyectoIntegradorBE.proaudioBE.services.ProductServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.BadRequestException;
@@ -59,11 +57,20 @@ public class ProductController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "10") Integer size
-    ) {
+    ) throws BadRequestException {
 
         return productService.getFilteredProducts(tags, sortBy, direction, startDate, endDate, page, size);
 
     }
 
+    @PostMapping("/tag")
+    ProductTagResponseDto createProductTag(@RequestBody  ProductTagRequestDto productTagRequestDto) throws BadRequestException {
+        return productService.createProductTag(productTagRequestDto);
+    }
+
+    @DeleteMapping("/tag/{id}")
+    ProductTagResponseDto DeleteProductTag(@RequestParam Long id) throws BadRequestException {
+        return productService.deleteProductTag(id);
+    }
 
 }

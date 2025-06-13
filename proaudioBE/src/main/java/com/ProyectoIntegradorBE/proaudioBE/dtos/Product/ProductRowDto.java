@@ -8,6 +8,8 @@ import lombok.Data;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class ProductRowDto {
 
+    private String brand;
+
     private String model;
 
     private int items;
