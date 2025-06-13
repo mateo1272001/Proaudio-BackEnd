@@ -70,7 +70,27 @@ public class ProductController {
 
     @DeleteMapping("/tag/{id}")
     ProductTagResponseDto DeleteProductTag(@RequestParam Long id) throws BadRequestException {
-        return productService.deleteProductTag(id);
+        return productService.DeleteProductTag(id);
+    }
+
+    @PostMapping("/photo")
+    PhotoResponseListDto createPhoto(@RequestBody PhotoRequestListDto photoRequestListDto) throws BadRequestException {
+        return productService.CreatePhoto(photoRequestListDto);
+    }
+
+    @DeleteMapping("/photo/{id}")
+    PhotoResponseDto deletePhoto(@RequestParam Long id) {
+        return productService.DeletePhoto(id);
+    }
+
+    @PostMapping("/price")
+    PriceReponseDto createPrice(@RequestBody PriceRequestDto priceRequestDto) throws BadRequestException {
+        return productService.CreatePrice(priceRequestDto);
+    }
+
+    @DeleteMapping("/price/{id}")
+    PriceReponseDto createPrice(@RequestParam Long id) throws BadRequestException {
+        return productService.DeletePrice(id);
     }
 
 }

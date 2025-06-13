@@ -13,6 +13,7 @@ import org.apache.coyote.BadRequestException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -23,6 +24,19 @@ public class RentPriceServiceImpl implements RentPriceService {
     private final RentPriceRepository rentPriceRepository;
 
     private final RentPriceMapper rentPriceMapper;
+
+    @Override
+    public PriceReponseDto createPrice(PriceRequestDto priceRequestDto) {
+
+        RentPriceEntity rentPriceEntity = new RentPriceEntity();
+        rentPriceEntity.setProductId(priceRequestDto.getProductId());
+        rentPriceEntity.setValue(priceRequestDto.getValue());
+        rentPriceEntity.setDescription(priceRequestDto.getDescription());
+        rentPriceEntity.setStatus(BasicEnumStatus.ENABLED);
+
+        rentPriceEntity = rentPriceRepository.save(rentPriceEntity);
+        return rentPriceMapper.toDto(rentPriceEntity);
+    }
 
     @Override
     public List<PriceReponseDto> createPrices(List<PriceRequestDto> priceRequestListDto, Long productId) {
@@ -69,15 +83,17 @@ public class RentPriceServiceImpl implements RentPriceService {
     }
 
     @Override
-    public PriceReponseDto createPrice(PriceRequestDto priceRequestDto, Long productId) {
+    public PriceReponseDto DeletePrice(Long id) throws BadRequestException {
 
-        RentPriceEntity rentPriceEntity = new RentPriceEntity();
-        rentPriceEntity.setProductId(productId);
-        rentPriceEntity.setValue(priceRequestDto.getValue());
-        rentPriceEntity.setDescription(priceRequestDto.getDescription());
-        rentPriceEntity.setStatus(BasicEnumStatus.ENABLED);
+        Optional<RentPriceEntity> rentPriceEntityOpt = rentPriceRepository.findByIdAndStatus(id, BasicEnumStatus.ENABLED);
 
-        rentPriceEntity = rentPriceRepository.save(rentPriceEntity);
+        if(rentPriceEntityOpt.isEmpty()) {
+            throw new BadRequestException(String.format("Rent Price con ID %s no encontrado: ", id));
+        }
+
+        rentPriceEntityOpt.get().setStatus(BasicEnumStatus.DISABLED);
+        RentPriceEntity rentPriceEntity = rentPriceRepository.save(rentPriceEntityOpt.get());
+
         return rentPriceMapper.toDto(rentPriceEntity);
     }
 

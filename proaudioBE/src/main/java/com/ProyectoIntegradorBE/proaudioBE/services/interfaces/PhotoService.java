@@ -13,4 +13,5 @@ public interface PhotoService {
 
     List<PhotoResponseDto> updatePhotos(List<PhotoRequestDto> dtos, Long productId);
 
+    PhotoResponseDto deletePhoto(Long id);
 }

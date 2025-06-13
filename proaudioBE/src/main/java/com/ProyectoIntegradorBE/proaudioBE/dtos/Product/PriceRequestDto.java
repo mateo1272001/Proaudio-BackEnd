@@ -25,4 +25,7 @@ public class PriceRequestDto {
     @Nullable
     private BasicEnumStatus status;
 
+    @Nullable
+    private Long productId;
+
 }

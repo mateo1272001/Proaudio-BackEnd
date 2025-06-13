@@ -2,18 +2,17 @@ package com.ProyectoIntegradorBE.proaudioBE.dtos.Product;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import jakarta.annotation.Nullable;
-import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
+
+import java.util.List;
 
 @Data
+@AllArgsConstructor
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class PhotoRequestDto {
+public class PhotoResponseListDto {
 
-    @NotNull
-    private String url;
-
-    @NotNull
-    private String name;
+    private List<PhotoResponseDto> photos;
 
 }

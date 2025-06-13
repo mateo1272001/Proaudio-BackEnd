@@ -6,6 +6,7 @@ import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.PhotoResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.entities.PhotoEntity;
 import com.ProyectoIntegradorBE.proaudioBE.entities.RentPriceEntity;
 import com.ProyectoIntegradorBE.proaudioBE.enums.BasicEnumStatus;
+import com.ProyectoIntegradorBE.proaudioBE.exceptions.BadRequestException;
 import com.ProyectoIntegradorBE.proaudioBE.mappers.PhotoMapper;
 import com.ProyectoIntegradorBE.proaudioBE.repositories.PhotoRepository;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.PhotoService;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -40,6 +42,21 @@ public class PhotoServiceImpl implements PhotoService {
     @Override
     public List<PhotoResponseDto> updatePhotos(List<PhotoRequestDto> dtos, Long productId) {
         return List.of();
+    }
+
+    @Override
+    public PhotoResponseDto deletePhoto(Long id) {
+
+        Optional<PhotoEntity> photoEntityOpt = photoRepository.findByIdAndStatus(id, BasicEnumStatus.ENABLED);
+
+        if(photoEntityOpt.isEmpty()) {
+            throw new BadRequestException("¡Esta foto no existe!");
+        }
+
+        photoEntityOpt.get().setStatus(BasicEnumStatus.DISABLED);
+        PhotoEntity photoEntity = photoRepository.save(photoEntityOpt.get());
+
+        return photoMapper.toDto(photoEntity);
     }
 
     @Override

@@ -2,7 +2,6 @@ package com.ProyectoIntegradorBE.proaudioBE.services.interfaces;
 
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.*;
 import org.apache.coyote.BadRequestException;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -20,5 +19,13 @@ public interface ProductService {
 
     ProductTagResponseDto createProductTag(ProductTagRequestDto productTagRequestDto)throws BadRequestException;
 
-    ProductTagResponseDto deleteProductTag(Long id);
+    ProductTagResponseDto DeleteProductTag(Long id);
+
+    PhotoResponseListDto CreatePhoto(PhotoRequestListDto photoRequestListDto) throws BadRequestException;
+
+    PhotoResponseDto DeletePhoto(Long id);
+
+    PriceReponseDto CreatePrice(PriceRequestDto priceRequestDto) throws BadRequestException;
+
+    PriceReponseDto DeletePrice(Long id) throws BadRequestException;
 }

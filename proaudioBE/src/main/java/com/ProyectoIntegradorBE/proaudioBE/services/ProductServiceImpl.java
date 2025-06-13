@@ -20,7 +20,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -147,9 +146,7 @@ public class ProductServiceImpl implements ProductService {
             throw new BadRequestException("¡Debe tener un producto asociado!");
         }
 
-        Optional<ProductEntity> productEntityOpt = productRepository.findById(productTagRequestDto.getProductId());
-
-        if (productEntityOpt.isEmpty()) {
+        if (productRepository.findById(productTagRequestDto.getProductId()).isEmpty()) {
             throw new BadRequestException("¡El producto no existe!");
         }
 
@@ -158,8 +155,46 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductTagResponseDto deleteProductTag(Long id) {
+    public ProductTagResponseDto DeleteProductTag(Long id) {
         return productTagService.deleteProductTag(id);
+    }
+
+    @Override
+    public PhotoResponseListDto CreatePhoto(PhotoRequestListDto photoRequestListDto) throws BadRequestException {
+
+        List<PhotoRequestDto> photos = photoRequestListDto.getPhotos();
+        Long productId = photoRequestListDto.getProductId();
+
+        if(productRepository.findById(productId).isEmpty()) {
+            throw new BadRequestException("¡El producto no existe!");
+        }
+
+        List<PhotoResponseDto> photoResponseDtos = photoService.createPhotos(photos, productId);
+        return new PhotoResponseListDto(photoResponseDtos);
+    }
+
+    @Override
+    public PhotoResponseDto DeletePhoto(Long id) {
+        return photoService.deletePhoto(id);
+    }
+
+    @Override
+    public PriceReponseDto CreatePrice(PriceRequestDto priceRequestDto) throws BadRequestException {
+
+        if (Objects.isNull(priceRequestDto.getProductId())) {
+            throw new BadRequestException("¡Debe tener un producto asociado!");
+        }
+        if(productRepository.findById(priceRequestDto.getProductId()).isEmpty()) {
+            throw new BadRequestException("¡El producto no existe!");
+        }
+
+        return rentPriceService.createPrice(priceRequestDto);
+
+    }
+
+    @Override
+    public PriceReponseDto DeletePrice(Long id) throws BadRequestException {
+        return rentPriceService.DeletePrice(id);
     }
 
 

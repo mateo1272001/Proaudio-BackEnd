@@ -13,10 +13,4 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/product/tag")
 public class ProductTagController {
 
-    //todo create cruds for internal use
-
-    //TODO DELETE AND INSERT NEW ONE FROM PRODUCT
-
-    private final ProductTagServiceImpl productTagService;
-
 }
