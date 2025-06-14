@@ -5,17 +5,15 @@ import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.PriceReponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.PriceRequestDto;
 import com.ProyectoIntegradorBE.proaudioBE.entities.RentPriceEntity;
 import com.ProyectoIntegradorBE.proaudioBE.enums.BasicEnumStatus;
+import com.ProyectoIntegradorBE.proaudioBE.exceptions.BadRequestException;
 import com.ProyectoIntegradorBE.proaudioBE.mappers.RentPriceMapper;
 import com.ProyectoIntegradorBE.proaudioBE.repositories.RentPriceRepository;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.RentPriceService;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.BadRequestException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 @Service
 @RequiredArgsConstructor
@@ -85,7 +83,7 @@ public class RentPriceServiceImpl implements RentPriceService {
     @Override
     public PriceReponseDto DeletePrice(Long id) throws BadRequestException {
 
-        Optional<RentPriceEntity> rentPriceEntityOpt = rentPriceRepository.findByIdAndStatus(id, BasicEnumStatus.ENABLED);
+        Optional<RentPriceEntity> rentPriceEntityOpt = rentPriceRepository.findByRentPriceIdAndStatus(id, BasicEnumStatus.ENABLED);
 
         if(rentPriceEntityOpt.isEmpty()) {
             throw new BadRequestException(String.format("Rent Price con ID %s no encontrado: ", id));

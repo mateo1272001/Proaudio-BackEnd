@@ -32,14 +32,20 @@ public class ProductTagServiceImpl implements ProductTagService {
 
     public ProductTagResponseDto createProductTag(ProductTagRequestDto productTagRequestDto) {
 
+        if(Objects.isNull(productTagRequestDto.getTagId())) {
+            throw new BadRequestException("¡Debe tener una etiqueta asociada!");
+        }
+
         Optional<ProductTagEntity> productTagOpt = productTagRepository
                 .findByProductIdAndTagId(productTagRequestDto.getProductId(), productTagRequestDto.getTagId());
 
         if(productTagOpt.isPresent()) {
-            if(productTagOpt.get().getStatus().equals(BasicEnumStatus.DISABLED)) {
-                productTagOpt.get().setStatus(BasicEnumStatus.ENABLED);
+            ProductTagEntity existentProductTag = productTagOpt.get();
+            if(existentProductTag.getStatus().equals(BasicEnumStatus.DISABLED)) {
+                existentProductTag.setStatus(BasicEnumStatus.ENABLED);
+                existentProductTag = productTagRepository.save(productTagOpt.get());
             }
-            return productTagMapper.toDto(productTagOpt.get());
+            return productTagMapper.toDto(existentProductTag);
         }
 
         Optional<TagEntity> tagEntityOpt = tagService.findByTagId(productTagRequestDto.getTagId());
@@ -49,6 +55,7 @@ public class ProductTagServiceImpl implements ProductTagService {
         }
 
         ProductTagEntity productTagEntity = productTagMapper.toEntity(productTagRequestDto);
+        productTagEntity.setStatus(BasicEnumStatus.ENABLED);
 
         productTagEntity = productTagRepository.save(productTagEntity);
 

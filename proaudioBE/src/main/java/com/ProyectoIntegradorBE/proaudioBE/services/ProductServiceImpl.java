@@ -7,14 +7,15 @@ import com.ProyectoIntegradorBE.proaudioBE.enums.BasicEnumStatus;
 import com.ProyectoIntegradorBE.proaudioBE.enums.DirectionEnum;
 import com.ProyectoIntegradorBE.proaudioBE.enums.ProductStatus;
 import com.ProyectoIntegradorBE.proaudioBE.enums.SortByEnum;
+import com.ProyectoIntegradorBE.proaudioBE.exceptions.BadRequestException;
 import com.ProyectoIntegradorBE.proaudioBE.mappers.ProductMapper;
 import com.ProyectoIntegradorBE.proaudioBE.repositories.ProductRepository;
 import com.ProyectoIntegradorBE.proaudioBE.repositories.TagRepository;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ProductService;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.BadRequestException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -74,7 +75,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public ProductResponseDto UpdateProduct(ProductRequestDto productRequestDto, Long productId)
-            throws BadRequestException {
+            throws BadRequestException, org.apache.coyote.BadRequestException {
 
         ProductEntity productEntity = productRepository.findById(productId)
                 .orElseThrow(() -> new BadRequestException("Product ID no encontrado: " + productId));
@@ -172,6 +173,17 @@ public class ProductServiceImpl implements ProductService {
         List<PhotoResponseDto> photoResponseDtos = photoService.createPhotos(photos, productId);
         return new PhotoResponseListDto(photoResponseDtos);
     }
+
+//    public PhotoResponseListDto UploadPhoto(MultipartFile file, Long productId, String name)
+//            throws BadRequestException {
+//
+//        if(productRepository.findById(productId).isEmpty()) {
+//            throw new BadRequestException("¡El producto no existe!");
+//        }
+//
+//        List<PhotoResponseDto> photoResponseDtos = photoService.UpdatePhoto(file, productId, name);
+//        return new PhotoResponseListDto(photoResponseDtos);
+//    }
 
     @Override
     public PhotoResponseDto DeletePhoto(Long id) {

@@ -14,5 +14,5 @@ public interface RentPriceRepository extends CrudRepository<RentPriceEntity, Lon
 
     public List<RentPriceEntity> findByProductId(Long id);
 
-    Optional<RentPriceEntity> findByIdAndStatus(Long id, BasicEnumStatus basicEnumStatus);
+    Optional<RentPriceEntity> findByRentPriceIdAndStatus(Long id, BasicEnumStatus basicEnumStatus);
 }

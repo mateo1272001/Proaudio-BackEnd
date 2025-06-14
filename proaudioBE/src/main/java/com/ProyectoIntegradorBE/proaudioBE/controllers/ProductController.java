@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.coyote.BadRequestException;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -16,13 +17,6 @@ import java.util.List;
 public class ProductController {
 
     private final ProductServiceImpl productService;
-
-
-    //
-//    @GetMapping("/all")
-//    String GetProducts() {
-//        return "hola hola";
-//    }
 
     @PostMapping
     private ProductResponseDto CreateProductComplete(@RequestBody ProductRequestDto productRequestDto)
@@ -64,14 +58,24 @@ public class ProductController {
     }
 
     @PostMapping("/tag")
-    ProductTagResponseDto createProductTag(@RequestBody  ProductTagRequestDto productTagRequestDto) throws BadRequestException {
+    ProductTagResponseDto createProductTag(@RequestBody ProductTagRequestDto productTagRequestDto)
+            throws BadRequestException {
         return productService.createProductTag(productTagRequestDto);
     }
 
     @DeleteMapping("/tag/{id}")
-    ProductTagResponseDto DeleteProductTag(@RequestParam Long id) throws BadRequestException {
+    ProductTagResponseDto DeleteProductTag(@PathVariable Long id) throws BadRequestException {
         return productService.DeleteProductTag(id);
     }
+
+//    @PostMapping("/photo/updload")
+//    PhotoResponseListDto createPhoto(
+//            @RequestParam("file") MultipartFile file,
+//            @RequestParam("productId") Long productId,
+//            @RequestParam("name") String name) throws BadRequestException {
+//        return productService.UploadPhoto(file, productId, name);
+//    }
+
 
     @PostMapping("/photo")
     PhotoResponseListDto createPhoto(@RequestBody PhotoRequestListDto photoRequestListDto) throws BadRequestException {
@@ -79,7 +83,7 @@ public class ProductController {
     }
 
     @DeleteMapping("/photo/{id}")
-    PhotoResponseDto deletePhoto(@RequestParam Long id) {
+    PhotoResponseDto deletePhoto(@PathVariable Long id) {
         return productService.DeletePhoto(id);
     }
 
@@ -89,7 +93,7 @@ public class ProductController {
     }
 
     @DeleteMapping("/price/{id}")
-    PriceReponseDto createPrice(@RequestParam Long id) throws BadRequestException {
+    PriceReponseDto createPrice(@PathVariable Long id) throws BadRequestException {
         return productService.DeletePrice(id);
     }
 

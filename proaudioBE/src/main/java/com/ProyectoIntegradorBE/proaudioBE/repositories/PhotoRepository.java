@@ -14,5 +14,5 @@ public interface PhotoRepository extends CrudRepository<PhotoEntity, Long> {
 
     List<PhotoEntity> findByProductId(Long productId);
 
-    Optional<PhotoEntity> findByIdAndStatus(Long id, BasicEnumStatus basicEnumStatus);
+    Optional<PhotoEntity> findByPhotoIdAndStatus(Long id, BasicEnumStatus basicEnumStatus);
 }

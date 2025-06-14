@@ -21,6 +21,10 @@ public class PhotoEntity {
 
     private String url;
 
+    @Lob
+    @Column(columnDefinition = "LONGBLOB")
+    private byte[] data;
+
     private String name;
 
     @Enumerated(EnumType.STRING)
