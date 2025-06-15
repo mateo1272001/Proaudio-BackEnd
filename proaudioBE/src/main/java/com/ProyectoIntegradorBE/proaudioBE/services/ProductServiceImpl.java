@@ -41,8 +41,18 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
-    public ProductResponseDto createProduct(ProductRequestDto productRequestDto) throws BadRequestException {
+    public ProductResponseDto createProduct(ProductRequestDto productRequestDto, MultipartFile file) throws BadRequestException {
 
+        System.out.println("🟢 Entró a createProduct");
+        System.out.println("📦 Modelo: " + productRequestDto.getModel());
+        System.out.println("💬 Comentarios: " + productRequestDto.getComments());
+        System.out.println("💰 Valor de reposición: " + productRequestDto.getReplacementValue());
+        System.out.println("📸 Fotos: " + productRequestDto.getPhotos());
+        System.out.println("💲 Precios: " + productRequestDto.getPrices());
+        System.out.println("🏷️ Tags: " + productRequestDto.getTags());
+
+
+        System.out.println("🔧 Guardando producto...");
         ProductEntity product = new ProductEntity();
         product.setModel(productRequestDto.getModel());
         product.setComments(Objects.nonNull(productRequestDto.getComments()) ? productRequestDto.getComments() : null);
@@ -53,13 +63,17 @@ public class ProductServiceImpl implements ProductService {
         product.setUpdatedAt(LocalDateTime.now());
 
         product = productRepository.save(product);
+        System.out.println("✅ Producto guardado con ID: " + product.getProductId());
         ProductResponseDto productResponseDto = productMapper.toDto(product);
 
         List<PriceReponseDto> prices =
                 rentPriceService.createPrices(productRequestDto.getPrices(), productResponseDto.getProductId());
 
-        List<PhotoResponseDto> photos =
-                photoService.createPhotos(productRequestDto.getPhotos(), productResponseDto.getProductId());
+        System.out.println("📸 Intentando guardar fotos...");
+                List<PhotoResponseDto> photos =
+                        photoService.createPhotos(productRequestDto.getPhotos(), productResponseDto.getProductId(), file);
+        System.out.println("✅ Fotos guardadas");
+
 
         List<ProductTagResponseDto> tags =
                 productTagService.CreateProductTags(productRequestDto.getTags(), product.getProductId());
@@ -170,7 +184,7 @@ public class ProductServiceImpl implements ProductService {
             throw new BadRequestException("¡El producto no existe!");
         }
 
-        List<PhotoResponseDto> photoResponseDtos = photoService.createPhotos(photos, productId);
+        List<PhotoResponseDto> photoResponseDtos = photoService.createPhotos(photos, productId, null); //CAMBIAR LUEGO
         return new PhotoResponseListDto(photoResponseDtos);
     }
 

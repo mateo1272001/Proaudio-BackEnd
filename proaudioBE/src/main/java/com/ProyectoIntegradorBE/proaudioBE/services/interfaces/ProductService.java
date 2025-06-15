@@ -2,13 +2,16 @@ package com.ProyectoIntegradorBE.proaudioBE.services.interfaces;
 
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.*;
 import org.apache.coyote.BadRequestException;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.List;
 
 public interface ProductService {
 
-    public ProductResponseDto createProduct(ProductRequestDto productRequestDto) throws BadRequestException;
+    //public ProductResponseDto createProduct(ProductRequestDto productRequestDto) throws BadRequestException;
+
+    public ProductResponseDto createProduct(ProductRequestDto productRequestDto, MultipartFile file) throws BadRequestException;
 
     ProductResponseDto UpdateProduct(ProductRequestDto productRequestDto, Long productId) throws BadRequestException;
 
@@ -18,6 +21,7 @@ public interface ProductService {
                                                LocalDate startDate, LocalDate endDate, Integer page, Integer size) throws BadRequestException;
 
     ProductTagResponseDto createProductTag(ProductTagRequestDto productTagRequestDto)throws BadRequestException;
+
 
     ProductTagResponseDto DeleteProductTag(Long id);
 

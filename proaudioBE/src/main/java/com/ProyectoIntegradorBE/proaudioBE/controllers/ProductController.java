@@ -5,8 +5,10 @@ import com.ProyectoIntegradorBE.proaudioBE.services.ProductServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.BadRequestException;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.bind.annotation.RequestPart;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -18,16 +20,31 @@ public class ProductController {
 
     private final ProductServiceImpl productService;
 
-    @PostMapping
+    /*@PostMapping
     private ProductResponseDto CreateProductComplete(@RequestBody ProductRequestDto productRequestDto,
                                                      @RequestParam("file") MultipartFile file,
-                                                     @RequestParam("productId") Long productId,
+                                                     //@RequestParam("productId") Long productId,
                                                      @RequestParam("name") String name)
             throws BadRequestException {
 
         //TODO ADD MANDATORY BRAND TAG
         return productService.createProduct(productRequestDto);
 
+    }*/
+
+
+
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ProductResponseDto CreateProductComplete(
+            @RequestPart("productRequestDto") ProductRequestDto productRequestDto,
+            @RequestPart(value = "file", required = false) MultipartFile file,
+            @RequestParam("name") String name) throws BadRequestException {
+
+        System.out.println("🟢 Entró al endpoint");
+        System.out.println("🟢 Archivo recibido: " + (file != null ? file.getOriginalFilename() : "NULO"));
+
+        // Aquí podés usar productRequestDto y file como objetos ya parseados
+        return productService.createProduct(productRequestDto, file);
     }
 
     @PutMapping("{id}")
