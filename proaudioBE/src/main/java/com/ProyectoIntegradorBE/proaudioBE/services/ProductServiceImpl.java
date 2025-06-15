@@ -174,16 +174,15 @@ public class ProductServiceImpl implements ProductService {
         return new PhotoResponseListDto(photoResponseDtos);
     }
 
-//    public PhotoResponseListDto UploadPhoto(MultipartFile file, Long productId, String name)
-//            throws BadRequestException {
-//
-//        if(productRepository.findById(productId).isEmpty()) {
-//            throw new BadRequestException("¡El producto no existe!");
-//        }
-//
-//        List<PhotoResponseDto> photoResponseDtos = photoService.UpdatePhoto(file, productId, name);
-//        return new PhotoResponseListDto(photoResponseDtos);
-//    }
+    public PhotoResponseDto UploadPhoto(MultipartFile file, Long productId, String name)
+            throws BadRequestException {
+
+        if(productRepository.findById(productId).isEmpty()) {
+            throw new BadRequestException("¡El producto no existe!");
+        }
+
+        return photoService.UploadPhoto(file, productId, name);
+    }
 
     @Override
     public PhotoResponseDto DeletePhoto(Long id) {

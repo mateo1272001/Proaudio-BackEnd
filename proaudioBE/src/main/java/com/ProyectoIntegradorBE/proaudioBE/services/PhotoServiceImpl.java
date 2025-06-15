@@ -64,7 +64,7 @@ public class PhotoServiceImpl implements PhotoService {
         PhotoEntity photoEntity = new PhotoEntity();
         photoEntity.setProductId(productId);
         photoEntity.setName(dto.getName());
-        photoEntity.setUrl(dto.getName());
+//        photoEntity.setUrl(dto.getName());
         photoEntity.setStatus(BasicEnumStatus.ENABLED);
 
         photoEntity = photoRepository.save(photoEntity);
@@ -79,12 +79,23 @@ public class PhotoServiceImpl implements PhotoService {
         return photoMapper.toDtoList(photoEntities);
 
     }
-//
-//    public List<PhotoResponseDto> UpdatePhoto(MultipartFile file, Long productId, String name) {
-//
-//        PhotoEntity photoEntity = new PhotoEntity();
-//        photoEntity.setName(name);
-//
-//
-//    }
+
+    public PhotoResponseDto UploadPhoto(MultipartFile file, Long productId, String name) {
+
+        try{
+            PhotoEntity photoEntity = new PhotoEntity();
+            photoEntity.setProductId(productId);
+            photoEntity.setData(file.getBytes());
+            photoEntity.setName(name);
+            photoEntity.setStatus(BasicEnumStatus.ENABLED);
+
+            photoEntity = photoRepository.save(photoEntity);
+
+            return photoMapper.toDto(photoEntity);
+
+        } catch (Exception exception) {
+            throw new BadRequestException(String.format("Error al subir imagen%n%s", exception.getMessage()));
+        }
+
+    }
 }

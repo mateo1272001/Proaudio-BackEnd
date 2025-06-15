@@ -19,7 +19,10 @@ public class ProductController {
     private final ProductServiceImpl productService;
 
     @PostMapping
-    private ProductResponseDto CreateProductComplete(@RequestBody ProductRequestDto productRequestDto)
+    private ProductResponseDto CreateProductComplete(@RequestBody ProductRequestDto productRequestDto,
+                                                     @RequestParam("file") MultipartFile file,
+                                                     @RequestParam("productId") Long productId,
+                                                     @RequestParam("name") String name)
             throws BadRequestException {
 
         //TODO ADD MANDATORY BRAND TAG
@@ -68,12 +71,17 @@ public class ProductController {
         return productService.DeleteProductTag(id);
     }
 
-//    @PostMapping("/photo/updload")
-//    PhotoResponseListDto createPhoto(
-//            @RequestParam("file") MultipartFile file,
-//            @RequestParam("productId") Long productId,
-//            @RequestParam("name") String name) throws BadRequestException {
-//        return productService.UploadPhoto(file, productId, name);
+    @PostMapping("/photo/upload")
+    PhotoResponseDto createPhoto(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("productId") Long productId,
+            @RequestParam("name") String name) throws BadRequestException {
+        return productService.UploadPhoto(file, productId, name);
+    }
+
+//    @GetMapping("/{id}/photos")
+//    PhotoResponseListDto getPhotosByProduct(@RequestParam Long id) {
+//        return productService.getPhotosByProductId(id);
 //    }
 
 

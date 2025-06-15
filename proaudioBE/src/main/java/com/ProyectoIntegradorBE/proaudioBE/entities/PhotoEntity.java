@@ -19,8 +19,6 @@ public class PhotoEntity {
 
     private Long productId;
 
-    private String url;
-
     @Lob
     @Column(columnDefinition = "LONGBLOB")
     private byte[] data;
