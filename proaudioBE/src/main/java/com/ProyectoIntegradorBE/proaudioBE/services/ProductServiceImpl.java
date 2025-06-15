@@ -184,6 +184,15 @@ public class ProductServiceImpl implements ProductService {
         return photoService.UploadPhoto(file, productId, name);
     }
 
+    public List<PhotoResponseDto> UploadMultiplePhotos(MultipartFile[] files, Long productId) {
+
+        if(productRepository.findById(productId).isEmpty()) {
+            throw new BadRequestException("¡El producto no existe!");
+        }
+
+        return photoService.UploadMultiplePhotos(files, productId);
+    }
+
     @Override
     public PhotoResponseDto DeletePhoto(Long id) {
         return photoService.deletePhoto(id);
@@ -207,6 +216,5 @@ public class ProductServiceImpl implements ProductService {
     public PriceReponseDto DeletePrice(Long id) throws BadRequestException {
         return rentPriceService.DeletePrice(id);
     }
-
 
 }

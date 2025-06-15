@@ -79,6 +79,15 @@ public class ProductController {
         return productService.UploadPhoto(file, productId, name);
     }
 
+    @PostMapping("/photo/upload-multiple")
+    public List<PhotoResponseDto> uploadMultiplePhotos(
+            @RequestParam("files") MultipartFile[] files,
+            @RequestParam("productId") Long productId) throws BadRequestException {
+
+
+        return productService.UploadMultiplePhotos(files, productId);
+    }
+
 //    @GetMapping("/{id}/photos")
 //    PhotoResponseListDto getPhotosByProduct(@RequestParam Long id) {
 //        return productService.getPhotosByProductId(id);

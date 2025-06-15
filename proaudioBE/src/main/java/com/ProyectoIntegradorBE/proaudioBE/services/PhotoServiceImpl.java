@@ -13,7 +13,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -97,5 +99,17 @@ public class PhotoServiceImpl implements PhotoService {
             throw new BadRequestException(String.format("Error al subir imagen%n%s", exception.getMessage()));
         }
 
+    }
+
+    public List<PhotoResponseDto> UploadMultiplePhotos(MultipartFile[] files, Long productId) {
+
+        List<PhotoResponseDto> responses = new ArrayList<>();
+        for (MultipartFile file : files) {
+            String fileName = Objects.requireNonNull(file.getOriginalFilename()).substring(0,9);
+            PhotoResponseDto response = UploadPhoto(file, productId, fileName);
+            responses.add(response);
+        }
+
+        return responses;
     }
 }
