@@ -19,10 +19,7 @@ public class ProductController {
     private final ProductServiceImpl productService;
 
     @PostMapping
-    private ProductResponseDto CreateProductComplete(@RequestBody ProductRequestDto productRequestDto,
-                                                     @RequestParam("file") MultipartFile file,
-                                                     @RequestParam("productId") Long productId,
-                                                     @RequestParam("name") String name)
+    private ProductResponseDto CreateProductComplete(@RequestBody ProductRequestDto productRequestDto)
             throws BadRequestException {
 
         //TODO ADD MANDATORY BRAND TAG
@@ -60,6 +57,15 @@ public class ProductController {
 
     }
 
+    @GetMapping("/{id}")
+    private ProductDetailResponseDto GetProductDetails(@PathVariable Long id) {
+
+        return productService.GetProductDetails(id);
+
+    }
+
+    //TAG
+
     @PostMapping("/tag")
     ProductTagResponseDto createProductTag(@RequestBody ProductTagRequestDto productTagRequestDto)
             throws BadRequestException {
@@ -70,6 +76,8 @@ public class ProductController {
     ProductTagResponseDto DeleteProductTag(@PathVariable Long id) throws BadRequestException {
         return productService.DeleteProductTag(id);
     }
+
+    //PHOTO
 
     @PostMapping("/photo/upload")
     PhotoResponseDto createPhoto(
@@ -88,12 +96,6 @@ public class ProductController {
         return productService.UploadMultiplePhotos(files, productId);
     }
 
-//    @GetMapping("/{id}/photos")
-//    PhotoResponseListDto getPhotosByProduct(@RequestParam Long id) {
-//        return productService.getPhotosByProductId(id);
-//    }
-
-
     @PostMapping("/photo")
     PhotoResponseListDto createPhoto(@RequestBody PhotoRequestListDto photoRequestListDto) throws BadRequestException {
         return productService.CreatePhoto(photoRequestListDto);
@@ -103,6 +105,13 @@ public class ProductController {
     PhotoResponseDto deletePhoto(@PathVariable Long id) {
         return productService.DeletePhoto(id);
     }
+
+    @GetMapping("/{id}/photos")
+    PhotoResponseListDto GetProductPhotos(@RequestParam Long id) {
+        return productService.GetProductPhotos(id);
+    }
+
+    //PRICE
 
     @PostMapping("/price")
     PriceReponseDto createPrice(@RequestBody PriceRequestDto priceRequestDto) throws BadRequestException {

@@ -1,6 +1,7 @@
 package com.ProyectoIntegradorBE.proaudioBE.services;
 
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.*;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Tag.TagResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.entities.ProductEntity;
 import com.ProyectoIntegradorBE.proaudioBE.entities.TagEntity;
 import com.ProyectoIntegradorBE.proaudioBE.enums.BasicEnumStatus;
@@ -19,8 +20,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -32,12 +35,15 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductTagServiceImpl productTagService;
 
+    private final TagServiceImpl tagService;
+
     private final ProductRepository productRepository;
 
     private final ProductMapper productMapper;
 
     private final TagRepository tagRepository;
 
+    private static final Long BRAND_TAG_FATHER = 1L;
 
     @Override
     @Transactional
@@ -58,14 +64,10 @@ public class ProductServiceImpl implements ProductService {
         List<PriceReponseDto> prices =
                 rentPriceService.createPrices(productRequestDto.getPrices(), productResponseDto.getProductId());
 
-        List<PhotoResponseDto> photos =
-                photoService.createPhotos(productRequestDto.getPhotos(), productResponseDto.getProductId());
-
         List<ProductTagResponseDto> tags =
                 productTagService.CreateProductTags(productRequestDto.getTags(), product.getProductId());
 
         productResponseDto.setPrices(prices);
-        productResponseDto.setPhotos(photos);
         productResponseDto.setTags(tags);
 
         return productResponseDto;
@@ -93,7 +95,6 @@ public class ProductServiceImpl implements ProductService {
 
         ProductResponseDto productResponseDto = productMapper.toDto(product);
         productResponseDto.setPrices(rentPriceService.findRentPriceByProductId(productId));
-        productResponseDto.setPhotos(photoService.findPhotosByProductId(productId));
         productResponseDto.setTags(productTagService.findTagsByProductId(productId));
 
         return productResponseDto;
@@ -140,6 +141,61 @@ public class ProductServiceImpl implements ProductService {
 
     }
 
+    @Override
+    public ProductDetailResponseDto GetProductDetails(Long id) {
+
+        ProductDetailResponseDto response = new ProductDetailResponseDto();
+
+        ProductResponseDto product = GetProduct(id);
+
+        response.setBrand(tagService.findByProductIdAndFatherId(id, BRAND_TAG_FATHER).getName());
+        response.setModel(product.getModel());
+        response.setComments(product.getComments());
+        response.setReplacementValue(product.getReplacementValue());
+        response.setPhotos(photoService.findPhotosByProductId(id));
+        response.setPrices(rentPriceService.findRentPriceByProductId(id));
+//        response.setActivities();  //todo add activities when developing this functionalities
+//        response.setProductBalance(); //todo add balance when projects are added
+        List<ProductTagResponseDto> productTagResponseDtos = productTagService.findTagsByProductId(id);
+
+        List<TagResponseDto> tags =  tagService.findByTagIdIn(productTagResponseDtos
+                .stream()
+                .map(ProductTagResponseDto::getTagId)
+                .toList());
+
+        response.setDescriptionTags(new ArrayList<>());
+        response.setDependencyTags(new ArrayList<>());
+        response.setRelationTags(new ArrayList<>());
+
+        for(TagResponseDto tag : tags) {
+
+            ProductTagResponseDto productTagResponseDto =
+                    productTagResponseDtos.stream().filter(pt -> pt.getTagId()
+                            .equals(tag.getTagId()))
+                            .findFirst().orElseThrow(() -> new BadRequestException(""));
+
+            switch (productTagResponseDto.getType()) {
+                case DESCRIPTIVE -> response.getDescriptionTags().add(tag);
+                case RELATION -> response.getRelationTags().add(tag);
+                case DEPENDENCY -> response.getDependencyTags().add(tag);
+            }
+
+        }
+
+        return response;
+    }
+
+    private ProductResponseDto GetProduct(Long productId) {
+        Optional<ProductEntity> productEntityOptional = productRepository.findById(productId);
+
+        ProductEntity productEntity =
+                productEntityOptional.orElseThrow(() -> new BadRequestException("¡El producto no existe!"));
+
+        return productMapper.toDto(productEntity);
+    }
+
+    //TAGS
+
     public ProductTagResponseDto createProductTag (ProductTagRequestDto productTagRequestDto)
             throws BadRequestException {
 
@@ -147,9 +203,7 @@ public class ProductServiceImpl implements ProductService {
             throw new BadRequestException("¡Debe tener un producto asociado!");
         }
 
-        if (productRepository.findById(productTagRequestDto.getProductId()).isEmpty()) {
-            throw new BadRequestException("¡El producto no existe!");
-        }
+        GetProduct(productTagRequestDto.getProductId());
 
         return productTagService.createProductTag(productTagRequestDto);
 
@@ -166,30 +220,23 @@ public class ProductServiceImpl implements ProductService {
         List<PhotoRequestDto> photos = photoRequestListDto.getPhotos();
         Long productId = photoRequestListDto.getProductId();
 
-        if(productRepository.findById(productId).isEmpty()) {
-            throw new BadRequestException("¡El producto no existe!");
-        }
+        GetProduct(productId);
 
         List<PhotoResponseDto> photoResponseDtos = photoService.createPhotos(photos, productId);
         return new PhotoResponseListDto(photoResponseDtos);
     }
 
+
+    //PHOTOS
+
     public PhotoResponseDto UploadPhoto(MultipartFile file, Long productId, String name)
             throws BadRequestException {
-
-        if(productRepository.findById(productId).isEmpty()) {
-            throw new BadRequestException("¡El producto no existe!");
-        }
-
+        GetProduct(productId);
         return photoService.UploadPhoto(file, productId, name);
     }
 
     public List<PhotoResponseDto> UploadMultiplePhotos(MultipartFile[] files, Long productId) {
-
-        if(productRepository.findById(productId).isEmpty()) {
-            throw new BadRequestException("¡El producto no existe!");
-        }
-
+        GetProduct(productId);
         return photoService.UploadMultiplePhotos(files, productId);
     }
 
@@ -198,15 +245,15 @@ public class ProductServiceImpl implements ProductService {
         return photoService.deletePhoto(id);
     }
 
+    //PRICES
+
     @Override
     public PriceReponseDto CreatePrice(PriceRequestDto priceRequestDto) throws BadRequestException {
 
         if (Objects.isNull(priceRequestDto.getProductId())) {
             throw new BadRequestException("¡Debe tener un producto asociado!");
         }
-        if(productRepository.findById(priceRequestDto.getProductId()).isEmpty()) {
-            throw new BadRequestException("¡El producto no existe!");
-        }
+        GetProduct(priceRequestDto.getProductId());
 
         return rentPriceService.createPrice(priceRequestDto);
 
@@ -215,6 +262,11 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public PriceReponseDto DeletePrice(Long id) throws BadRequestException {
         return rentPriceService.DeletePrice(id);
+    }
+
+    public PhotoResponseListDto GetProductPhotos(Long id) {
+        GetProduct(id);
+        return new PhotoResponseListDto(photoService.findPhotosByProductId(id));
     }
 
 }

@@ -172,4 +172,14 @@ public class TagServiceImpl implements TagService {
         return tagRepository.findById(tagId);
 
     }
+
+    public TagResponseDto findByProductIdAndFatherId(Long productId, Long fatherId) {
+
+        TagEntity tagEntity = tagRepository.findByProductIdAndFatherId(productId, fatherId)
+                .stream()
+                .findFirst()
+                .orElseThrow(() -> new BadRequestException("¡No hay etiquetas con esos valores!"));
+
+        return tagMapper.toDto(tagEntity);
+    }
 }

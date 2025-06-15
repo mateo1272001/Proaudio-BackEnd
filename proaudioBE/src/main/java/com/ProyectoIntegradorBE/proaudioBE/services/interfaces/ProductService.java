@@ -28,4 +28,6 @@ public interface ProductService {
     PriceReponseDto CreatePrice(PriceRequestDto priceRequestDto) throws BadRequestException;
 
     PriceReponseDto DeletePrice(Long id) throws BadRequestException;
+
+    ProductDetailResponseDto GetProductDetails(Long id);
 }

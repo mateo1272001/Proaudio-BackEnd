@@ -3,13 +3,13 @@ package com.ProyectoIntegradorBE.proaudioBE.services;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.ProductTagRequestDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.ProductTagResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Tag.TagResponseDto;
-import com.ProyectoIntegradorBE.proaudioBE.entities.ProductEntity;
 import com.ProyectoIntegradorBE.proaudioBE.entities.ProductTagEntity;
 import com.ProyectoIntegradorBE.proaudioBE.entities.TagEntity;
 import com.ProyectoIntegradorBE.proaudioBE.enums.BasicEnumStatus;
 import com.ProyectoIntegradorBE.proaudioBE.mappers.ProductTagMapper;
 import com.ProyectoIntegradorBE.proaudioBE.repositories.ProductTagRepository;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ProductTagService;
+import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.TagService;
 import lombok.RequiredArgsConstructor;
 import com.ProyectoIntegradorBE.proaudioBE.exceptions.BadRequestException;
 import org.springframework.stereotype.Service;
@@ -135,7 +135,7 @@ public class ProductTagServiceImpl implements ProductTagService {
                             .stream()
                             .filter(t -> t.getTagId().equals(productTagEntity.getTagId()))
                             .findFirst()
-                            .orElse(null);
+                            .orElseThrow(() -> new BadRequestException("¡Tag no encontrado!"));
 
             if(Objects.nonNull(tagResponseDto)){
                 ProductTagResponseDto productTagResponseDto = new ProductTagResponseDto();

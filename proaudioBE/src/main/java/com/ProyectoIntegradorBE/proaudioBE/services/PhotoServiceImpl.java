@@ -6,6 +6,7 @@ import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.PhotoResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.entities.PhotoEntity;
 import com.ProyectoIntegradorBE.proaudioBE.enums.BasicEnumStatus;
 import com.ProyectoIntegradorBE.proaudioBE.exceptions.BadRequestException;
+import com.ProyectoIntegradorBE.proaudioBE.exceptions.ImagesNotFoundException;
 import com.ProyectoIntegradorBE.proaudioBE.mappers.PhotoMapper;
 import com.ProyectoIntegradorBE.proaudioBE.repositories.PhotoRepository;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.PhotoService;
@@ -13,10 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -76,10 +74,30 @@ public class PhotoServiceImpl implements PhotoService {
 
     public List<PhotoResponseDto> findPhotosByProductId(Long productId) {
 
-        List<PhotoEntity> photoEntities = photoRepository.findByProductId(productId);
+        List<PhotoEntity> photoEntities = photoRepository.findByProductIdAndStatus(productId, BasicEnumStatus.ENABLED);
 
-        return photoMapper.toDtoList(photoEntities);
+        if(photoEntities.isEmpty()) {
+            throw new ImagesNotFoundException(productId);
+        }
 
+        List<PhotoResponseDto> response = new ArrayList<>();
+
+        photoEntities.forEach(photo -> response.add(CreateResponseImage(photo)));
+
+        return response;
+
+    }
+
+    public PhotoResponseDto CreateResponseImage(PhotoEntity photo) {
+
+        PhotoResponseDto dto = new PhotoResponseDto();
+        dto.setPhotoId(photo.getPhotoId());
+        dto.setProductId(photo.getProductId());
+        dto.setName(photo.getName());
+        dto.setStatus(photo.getStatus());
+        dto.setImage(Base64.getEncoder().encodeToString(photo.getData()));
+
+        return dto;
     }
 
     public PhotoResponseDto UploadPhoto(MultipartFile file, Long productId, String name) {

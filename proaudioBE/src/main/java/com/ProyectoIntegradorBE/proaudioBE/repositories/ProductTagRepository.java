@@ -1,7 +1,9 @@
 package com.ProyectoIntegradorBE.proaudioBE.repositories;
 
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Tag.TagResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.entities.ProductTagEntity;
 import com.ProyectoIntegradorBE.proaudioBE.enums.BasicEnumStatus;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 

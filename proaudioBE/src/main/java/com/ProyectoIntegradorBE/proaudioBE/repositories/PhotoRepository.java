@@ -12,7 +12,7 @@ import java.util.Optional;
 public interface PhotoRepository extends CrudRepository<PhotoEntity, Long> {
 
 
-    List<PhotoEntity> findByProductId(Long productId);
+    List<PhotoEntity> findByProductIdAndStatus(Long productId, BasicEnumStatus status);
 
     Optional<PhotoEntity> findByPhotoIdAndStatus(Long id, BasicEnumStatus basicEnumStatus);
 }
