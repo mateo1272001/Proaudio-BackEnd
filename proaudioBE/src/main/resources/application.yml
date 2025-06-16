@@ -1,6 +1,6 @@
 spring:
   profiles:
-    active: dev # Cambiar según el entorno
+    active: test # Cambiar según el entorno
 
 ---
 
