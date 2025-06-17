@@ -21,12 +21,12 @@ public class ProductController {
     @PostMapping
     private ProductResponseDto CreateProductComplete(
             @RequestPart("productRequestDto") ProductRequestDto productRequestDto,
-            @RequestPart(value = "file", required = false) MultipartFile file,
+            @RequestPart(value = "file", required = false) MultipartFile[] files,
             @RequestParam("name") String name)
             throws BadRequestException {
 
         //TODO ADD MANDATORY BRAND TAG
-        return productService.createProduct(productRequestDto, file);
+        return productService.createProduct(productRequestDto, files);
 
     }
 

@@ -23,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -46,7 +47,8 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
-    public ProductResponseDto createProduct(ProductRequestDto productRequestDto, MultipartFile file) throws BadRequestException {
+    public ProductResponseDto createProduct(ProductRequestDto productRequestDto, MultipartFile[] files)
+            throws BadRequestException {
 
         ProductEntity product = new ProductEntity();
         product.setModel(productRequestDto.getModel());
@@ -66,11 +68,14 @@ public class ProductServiceImpl implements ProductService {
         List<ProductTagResponseDto> tags =
                 productTagService.CreateProductTags(productRequestDto.getTags(), product.getProductId());
 
+        List<MultipartFile> photoList = Stream.of(files).toList();
+
         List<PhotoResponseDto> photos =
-                photoService.createPhotos(productRequestDto.getPhotos(), productResponseDto.getProductId(), file);
+                photoService.createPhotos(productRequestDto, productResponseDto.getProductId(), photoList);
 
         productResponseDto.setPrices(prices);
         productResponseDto.setTags(tags);
+        productResponseDto.setPhotos(photos);
 
         return productResponseDto;
 
@@ -79,7 +84,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public ProductResponseDto UpdateProduct(ProductRequestDto productRequestDto, Long productId)
-            throws BadRequestException, org.apache.coyote.BadRequestException {
+            throws BadRequestException, BadRequestException {
 
         ProductEntity productEntity = productRepository.findById(productId)
                 .orElseThrow(() -> new BadRequestException("Product ID no encontrado: " + productId));
@@ -240,13 +245,15 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public PhotoResponseListDto CreatePhoto(PhotoRequestListDto photoRequestListDto) throws BadRequestException {
 
-        List<PhotoRequestDto> photos = photoRequestListDto.getPhotos();
-        Long productId = photoRequestListDto.getProductId();
-
-        GetProduct(productId);
-
-        List<PhotoResponseDto> photoResponseDtos = photoService.createPhotos(photos, productId, null);
-        return new PhotoResponseListDto(photoResponseDtos);
+        return new PhotoResponseListDto();
+//
+//        List<PhotoRequestDto> photos = photoRequestListDto.getPhotos();
+//        Long productId = photoRequestListDto.getProductId();
+//
+//        GetProduct(productId);
+//
+//        List<PhotoResponseDto> photoResponseDtos = photoService.createPhotos(photos, productId, null);
+//        return new PhotoResponseListDto(photoResponseDtos);
     }
 
 

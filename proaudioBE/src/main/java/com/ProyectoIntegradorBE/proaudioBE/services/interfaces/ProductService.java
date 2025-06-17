@@ -1,7 +1,7 @@
 package com.ProyectoIntegradorBE.proaudioBE.services.interfaces;
 
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.*;
-import org.apache.coyote.BadRequestException;
+import com.ProyectoIntegradorBE.proaudioBE.exceptions.BadRequestException;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
@@ -9,7 +9,8 @@ import java.util.List;
 
 public interface ProductService {
 
-    public ProductResponseDto createProduct(ProductRequestDto productRequestDto, MultipartFile file) throws BadRequestException;
+    public ProductResponseDto createProduct(ProductRequestDto productRequestDto, MultipartFile[] files)
+            throws BadRequestException;
 
     ProductResponseDto UpdateProduct(ProductRequestDto productRequestDto, Long productId) throws BadRequestException;
 

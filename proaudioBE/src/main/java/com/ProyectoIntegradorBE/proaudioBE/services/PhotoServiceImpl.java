@@ -3,6 +3,7 @@ package com.ProyectoIntegradorBE.proaudioBE.services;
 import com.ProyectoIntegradorBE.proaudioBE.Utils.CollectionUtils;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.PhotoRequestDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.PhotoResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.ProductRequestDto;
 import com.ProyectoIntegradorBE.proaudioBE.entities.PhotoEntity;
 import com.ProyectoIntegradorBE.proaudioBE.enums.BasicEnumStatus;
 import com.ProyectoIntegradorBE.proaudioBE.exceptions.BadRequestException;
@@ -26,19 +27,27 @@ public class PhotoServiceImpl implements PhotoService {
     private final PhotoMapper photoMapper;
 
     @Override
-    public List<PhotoResponseDto> createPhotos(List<PhotoRequestDto> dtos, Long productId, MultipartFile file) {
+    public List<PhotoResponseDto> createPhotos(ProductRequestDto productRequestDto, Long productId,
+                                               List<MultipartFile> photos) {
 
-        List <PhotoEntity> photoEntities = photoMapper.toEntityList(dtos);
+        List<PhotoEntity> photoEntities = new ArrayList<>();
 
-        photoEntities.forEach(photo -> {
-            photo.setProductId(productId);
-            photo.setStatus(BasicEnumStatus.ENABLED);
+        for(MultipartFile photo : photos) {
+
+            PhotoEntity photoEntity = new PhotoEntity();
+            photoEntity.setProductId(productId);
+            photoEntity.setName(Objects.requireNonNull(photo.getOriginalFilename()).substring(0,20));
+            photoEntity.setStatus(BasicEnumStatus.ENABLED);
+
             try {
-                photo.setData(file.getBytes());
+                photoEntity.setData(photo.getBytes());
             } catch (IOException e) {
                 throw new RuntimeException("Error al leer el archivo de imagen", e);
             }
-        });
+
+            photoEntities.add(photoEntity);
+        }
+
         photoEntities = CollectionUtils.toList(photoRepository.saveAll(photoEntities));
 
         return photoMapper.toDtoList(photoEntities);
