@@ -14,6 +14,8 @@ public interface ProductService {
 
     ProductResponseDto DeleteProduct(Long id) throws BadRequestException;
 
+    ProductResponseDto GetProduct(Long productId);
+
     ProductListResponseDto getFilteredProducts(List<Long> tags, String sortBy, String direction,
                                                LocalDate startDate, LocalDate endDate, Integer page, Integer size) throws BadRequestException;
 
@@ -30,4 +32,6 @@ public interface ProductService {
     PriceReponseDto DeletePrice(Long id) throws BadRequestException;
 
     ProductDetailResponseDto GetProductDetails(Long id);
+
+    ProductStatusListDto GetProductStatuses();
 }

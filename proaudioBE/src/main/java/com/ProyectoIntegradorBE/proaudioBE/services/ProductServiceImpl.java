@@ -22,10 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -117,6 +114,17 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public ProductResponseDto GetProduct(Long productId) {
+        Optional<ProductEntity> productEntityOptional = productRepository.findById(productId);
+
+        ProductEntity productEntity =
+                productEntityOptional.orElseThrow(() -> new BadRequestException("¡El producto no existe!"));
+
+        return productMapper.toDto(productEntity);
+    }
+
+
+    @Override
     public ProductListResponseDto getFilteredProducts(List<Long> tags, String sortBy, String direction,
                                                       LocalDate startDate, LocalDate endDate,
                                                       Integer page, Integer size) throws BadRequestException {
@@ -155,6 +163,7 @@ public class ProductServiceImpl implements ProductService {
         response.setModel(product.getModel());
         response.setComments(product.getComments());
         response.setReplacementValue(product.getReplacementValue());
+        response.setStatus(product.getStatus());
         try {
             response.setBrand(tagService.findByProductIdAndFatherId(id, BRAND_TAG_FATHER).getName());
         } catch (TagNotFoundException ex) {
@@ -197,13 +206,12 @@ public class ProductServiceImpl implements ProductService {
         return response;
     }
 
-    private ProductResponseDto GetProduct(Long productId) {
-        Optional<ProductEntity> productEntityOptional = productRepository.findById(productId);
+    @Override
+    public ProductStatusListDto GetProductStatuses() {
 
-        ProductEntity productEntity =
-                productEntityOptional.orElseThrow(() -> new BadRequestException("¡El producto no existe!"));
+        List<ProductStatus> statusList = Arrays.stream(ProductStatus.values()).toList();
 
-        return productMapper.toDto(productEntity);
+        return new ProductStatusListDto(statusList);
     }
 
     //TAGS

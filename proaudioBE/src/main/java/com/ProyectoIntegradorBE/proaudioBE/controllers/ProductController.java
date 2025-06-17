@@ -42,6 +42,11 @@ public class ProductController {
 
     }
 
+    @GetMapping("{id}")
+    private ProductResponseDto GetProductById(@PathVariable Long id) {
+        return productService.GetProduct(id);
+    }
+
     @GetMapping("/all")
     private ProductListResponseDto ListProducts(
             @RequestParam(required = false) List<Long> tags,
@@ -57,12 +62,20 @@ public class ProductController {
 
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id}/detail")
     private ProductDetailResponseDto GetProductDetails(@PathVariable Long id) {
 
         return productService.GetProductDetails(id);
 
     }
+
+    @GetMapping("/status")
+    private ProductStatusListDto GetProductStatuses() {
+
+        return productService.GetProductStatuses();
+
+    }
+
 
     //TAG
 
