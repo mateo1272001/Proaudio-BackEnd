@@ -121,10 +121,10 @@ public class ProductServiceImpl implements ProductService {
                                                       LocalDate startDate, LocalDate endDate,
                                                       Integer page, Integer size) throws BadRequestException {
 
-        if(Objects.isNull(tags) || tags.isEmpty()) {
-            List<TagEntity> tagEntities= tagRepository.findByFatherIdAndStatus(null, BasicEnumStatus.ENABLED);
-            tags = tagEntities.stream().map(TagEntity::getTagId).toList();
-        }
+//        if(Objects.isNull(tags) || tags.isEmpty()) {
+//            List<TagEntity> tagEntities= tagRepository.findByFatherIdAndStatus(null, BasicEnumStatus.ENABLED);
+//            tags = tagEntities.stream().map(TagEntity::getTagId).toList();
+//        }
 
         SortByEnum sortByEnum;
         DirectionEnum directionEnum;
@@ -133,7 +133,7 @@ public class ProductServiceImpl implements ProductService {
             sortByEnum = Objects.nonNull(sortBy) ? SortByEnum.valueOf(sortBy.toUpperCase()) : SortByEnum.ID;
             directionEnum = Objects.nonNull(direction)
                     ? DirectionEnum.valueOf(direction.toUpperCase())
-                    : DirectionEnum.DESC;
+                    : sortByEnum.equals(SortByEnum.ID) ? DirectionEnum.DESC : DirectionEnum.ASC;
         } catch (Exception ex) {
             throw new BadRequestException("¡Valor de sort o direction incorrecto!");
         }

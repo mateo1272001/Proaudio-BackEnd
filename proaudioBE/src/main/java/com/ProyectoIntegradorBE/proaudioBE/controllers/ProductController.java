@@ -46,7 +46,7 @@ public class ProductController {
     private ProductListResponseDto ListProducts(
             @RequestParam(required = false) List<Long> tags,
             @RequestParam(required = false, defaultValue = "id") String sortBy,
-            @RequestParam(required = false, defaultValue = "desc") String direction,
+            @RequestParam(required = false) String direction,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
             @RequestParam(defaultValue = "1") Integer page,

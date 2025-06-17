@@ -30,12 +30,10 @@ public class ProductRepositoryCustomImpl implements ProductRepositoryCustom {
             Integer size
     ) {
         boolean hasTags = tagIds != null && !tagIds.isEmpty();
-        tagIds = hasTags ? tagIds : List.of(-1L);
 
         int pageNumber = (page != null ? page : 1) - 1;
         int pageSize = size != null ? size : 10;
         int offset = pageNumber * pageSize;
-        int tagCount = tagIds.size();
 
         String sortColumn = switch (sortBy) {
             case BRAND -> "brand";
@@ -46,76 +44,19 @@ public class ProductRepositoryCustomImpl implements ProductRepositoryCustom {
 
         String sortDir = direction == DirectionEnum.ASC ? "ASC" : "DESC";
 
-        String tagIdCsv = tagIds.stream().map(String::valueOf).collect(Collectors.joining(","));
+        int tagCount;
+        String tagIdCsv;
+        if(hasTags) {
+            tagCount = tagIds.size();
+            tagIdCsv = tagIds.stream().map(String::valueOf).collect(Collectors.joining(","));
+        } else {
+            tagCount = 0;
+            tagIdCsv = "";
+        }
 
-        String sql = String.format("""
-                WITH RECURSIVE tag_hierarchy AS (
-                    SELECT tag_id FROM tag WHERE tag_id IN (%s)
-                    UNION ALL
-                    SELECT t.tag_id FROM tag t
-                    INNER JOIN tag_hierarchy th ON t.father_id = th.tag_id
-                )
-                SELECT
-                    p.product_id AS id,
-                    marca_tag.name AS brand,
-                    p.model AS model,
-                    p.comments AS comments,
-                    p.status AS status
-                FROM product p
-                INNER JOIN product_tag marca_pt
-                    ON p.product_id = marca_pt.product_id
-                    AND marca_pt.type = 'DESCRIPTIVE'
-                INNER JOIN tag marca_tag
-                    ON marca_tag.tag_id = marca_pt.tag_id
-                    AND marca_tag.father_id = 1
-                WHERE p.status = 'ACTIVE'
-                  AND p.product_id IN (
-                      SELECT pt.product_id
-                      FROM product_tag pt
-                      WHERE pt.type = 'DESCRIPTIVE'
-                        AND pt.tag_id IN (SELECT tag_id FROM tag_hierarchy)
-                      GROUP BY pt.product_id
-                      HAVING COUNT(DISTINCT pt.tag_id) >= ?
-                  )
-                ORDER BY %s %s
-                LIMIT ? OFFSET ?;
-                """, tagIdCsv, sortColumn, sortDir);
+        List<ProductRowDto> products = getProductRowDtos(hasTags, tagIdCsv, sortColumn, sortDir, tagCount, pageSize, offset);
 
-        List<ProductRowDto> products = jdbcTemplate.query(
-                sql,
-                ps -> {
-                    ps.setInt(1, tagCount);
-                    ps.setInt(2, pageSize);
-                    ps.setInt(3, offset);
-                },
-                new BeanPropertyRowMapper<>(ProductRowDto.class)
-        );
-
-        // Total count
-        String countSql = String.format("""
-            WITH RECURSIVE tag_hierarchy AS (
-                SELECT tag_id FROM tag WHERE tag_id IN (%s)
-                UNION ALL
-                SELECT t.tag_id FROM tag t
-                INNER JOIN tag_hierarchy th ON t.father_id = th.tag_id
-            )
-            SELECT COUNT(*) FROM (
-                SELECT pt.product_id
-                FROM product_tag pt
-                INNER JOIN product p ON pt.product_id = p.product_id
-                WHERE pt.type = 'DESCRIPTIVE'
-                  AND p.status = 'ACTIVE'
-                  AND pt.tag_id IN (SELECT tag_id FROM tag_hierarchy)
-                GROUP BY pt.product_id
-                HAVING COUNT(DISTINCT pt.tag_id) >= ?
-            ) AS filtered
-            """, tagIdCsv);
-
-        int totalElements = jdbcTemplate.query(
-                countSql,
-                ps -> ps.setInt(1, tagCount),
-                rs -> rs.next() ? rs.getInt(1) : 0
-        );
+        int totalElements = getTotalElements(hasTags, tagIdCsv, tagCount);
 
         int totalPages = (int) Math.ceil((double) totalElements / pageSize);
         boolean hasNext = pageNumber + 1 < totalPages;
@@ -135,4 +76,132 @@ public class ProductRepositoryCustomImpl implements ProductRepositoryCustom {
         response.setPageable(pageable);
         return response;
     }
+
+    private List<ProductRowDto> getProductRowDtos(boolean hasTags, String tagIdCsv, String sortColumn, String sortDir,
+                                                  int tagCount, int pageSize, int offset) {
+        String sql;
+
+        if(hasTags) {
+            sql = String.format("""
+                WITH RECURSIVE tag_hierarchy AS (
+                	SELECT tag_id,tag_id as root FROM tag WHERE tag_id IN (%s)
+                	UNION ALL
+                	SELECT t.tag_id,th.root FROM tag t
+                	INNER JOIN tag_hierarchy th ON t.father_id = th.tag_id
+                )
+                SELECT filtered.*, brands.name as brand
+                FROM (
+                	SELECT
+                		p.product_id AS id,
+                		p.model AS model,
+                		p.comments AS comments,
+                		p.status AS status
+                	FROM product p
+                	INNER JOIN product_tag pt ON (p.product_id = pt.product_id)
+                	INNER JOIN tag_hierarchy th ON (pt.tag_id = th.tag_id)
+                	WHERE pt.type = "DESCRIPTIVE"
+                	GROUP BY th.root, pt.product_id
+                ) AS filtered
+                LEFT JOIN
+                	(SELECT t_brand.name,pt_brand.product_id
+                	FROM product_tag pt_brand
+                	INNER JOIN tag t_brand ON (pt_brand.tag_id = t_brand.tag_id AND t_brand.father_id = 1)
+                	WHERE pt_brand.status = 'ENABLED')
+                AS brands ON brands.product_id = filtered.id
+                GROUP BY filtered.id,brands.name
+                HAVING COUNT(id) = ?
+                ORDER BY %s %s
+                LIMIT ?
+                OFFSET ?
+                
+                """, tagIdCsv, sortColumn, sortDir);
+
+            return jdbcTemplate.query(
+                    sql,
+                    ps -> {
+                        ps.setInt(1, tagCount);
+                        ps.setInt(2, pageSize);
+                        ps.setInt(3, offset);
+                    },
+                    new BeanPropertyRowMapper<>(ProductRowDto.class)
+            );
+
+        } else {
+            sql = String.format("""
+                    SELECT p.product_id AS id, p.model AS model, p.comments AS comments, p.status AS status, brands.name
+                    FROM product p
+                    LEFT JOIN
+                    	(SELECT t_brand.name,pt_brand.product_id
+                    	FROM product_tag pt_brand
+                    	INNER JOIN tag t_brand ON (pt_brand.tag_id = t_brand.tag_id AND t_brand.father_id = 1)
+                    	WHERE pt_brand.status = 'ENABLED') AS brands
+                    ON brands.product_id = p.product_id
+                    ORDER BY %s %s
+                    LIMIT ?
+                    OFFSET ?
+                    
+                    """, sortColumn, sortDir);
+
+            return jdbcTemplate.query(
+                    sql,
+                    ps -> {
+                        ps.setInt(1, pageSize);
+                        ps.setInt(2, offset);
+                    },
+                    new BeanPropertyRowMapper<>(ProductRowDto.class)
+            );
+        }
+
+    }
+
+    private int getTotalElements(boolean hasTags, String tagIdCsv, int tagCount) {
+
+        String countSql;
+
+        if(hasTags) {
+
+            countSql = String.format("""
+            WITH RECURSIVE tag_hierarchy AS (
+                SELECT tag_id,tag_id as root FROM tag WHERE tag_id IN (%S)
+                UNION ALL
+                SELECT t.tag_id,th.root FROM tag t
+                INNER JOIN tag_hierarchy th ON t.father_id = th.tag_id
+            )
+            select COUNT(*)
+            FROM (
+                SELECT filtered.id
+                FROM (
+                    SELECT
+                        p.product_id AS id,
+                        p.model AS model,
+                        p.comments AS comments,
+                        p.status AS status
+                    FROM product p
+                    INNER JOIN product_tag pt ON (p.product_id = pt.product_id)
+                    INNER JOIN tag_hierarchy th ON (pt.tag_id = th.tag_id)
+                    WHERE pt.type = "DESCRIPTIVE"
+                    GROUP BY th.root, pt.product_id
+                ) AS filtered
+                GROUP BY filtered.id
+                HAVING COUNT(id) = ?
+            ) as a
+            """, tagIdCsv);
+
+
+            return jdbcTemplate.query(
+                    countSql,
+                    ps -> ps.setInt(1, tagCount),
+                    rs -> rs.next() ? rs.getInt(1) : 0
+            );
+
+        } else {
+
+            countSql = "SELECT COUNT(*) FROM product p";
+
+            return jdbcTemplate.queryForObject(countSql, Integer.class);
+
+        }
+
+    }
+
 }
