@@ -4,6 +4,7 @@ import com.ProyectoIntegradorBE.proaudioBE.dtos.Tag.*;
 import com.ProyectoIntegradorBE.proaudioBE.entities.TagEntity;
 import com.ProyectoIntegradorBE.proaudioBE.enums.BasicEnumStatus;
 import com.ProyectoIntegradorBE.proaudioBE.exceptions.ClientNotFoundException;
+import com.ProyectoIntegradorBE.proaudioBE.exceptions.TagNotFoundException;
 import com.ProyectoIntegradorBE.proaudioBE.mappers.TagMapper;
 import com.ProyectoIntegradorBE.proaudioBE.mappers.TagModuleMapper;
 import com.ProyectoIntegradorBE.proaudioBE.repositories.TagRepository;
@@ -178,7 +179,7 @@ public class TagServiceImpl implements TagService {
         TagEntity tagEntity = tagRepository.findByProductIdAndFatherId(productId, fatherId)
                 .stream()
                 .findFirst()
-                .orElseThrow(() -> new BadRequestException("¡No hay etiquetas con esos valores!"));
+                .orElseThrow(() -> new TagNotFoundException(productId));
 
         return tagMapper.toDto(tagEntity);
     }

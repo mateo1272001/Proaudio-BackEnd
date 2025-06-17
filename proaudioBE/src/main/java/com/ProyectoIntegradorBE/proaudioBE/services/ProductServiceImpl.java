@@ -9,6 +9,8 @@ import com.ProyectoIntegradorBE.proaudioBE.enums.DirectionEnum;
 import com.ProyectoIntegradorBE.proaudioBE.enums.ProductStatus;
 import com.ProyectoIntegradorBE.proaudioBE.enums.SortByEnum;
 import com.ProyectoIntegradorBE.proaudioBE.exceptions.BadRequestException;
+import com.ProyectoIntegradorBE.proaudioBE.exceptions.ImagesNotFoundException;
+import com.ProyectoIntegradorBE.proaudioBE.exceptions.TagNotFoundException;
 import com.ProyectoIntegradorBE.proaudioBE.mappers.ProductMapper;
 import com.ProyectoIntegradorBE.proaudioBE.repositories.ProductRepository;
 import com.ProyectoIntegradorBE.proaudioBE.repositories.TagRepository;
@@ -129,7 +131,9 @@ public class ProductServiceImpl implements ProductService {
 
         try {
             sortByEnum = Objects.nonNull(sortBy) ? SortByEnum.valueOf(sortBy.toUpperCase()) : SortByEnum.ID;
-            directionEnum = Objects.nonNull(direction) ? DirectionEnum.valueOf(direction.toUpperCase()) : DirectionEnum.ASC;
+            directionEnum = Objects.nonNull(direction)
+                    ? DirectionEnum.valueOf(direction.toUpperCase())
+                    : DirectionEnum.DESC;
         } catch (Exception ex) {
             throw new BadRequestException("¡Valor de sort o direction incorrecto!");
         }
@@ -148,11 +152,19 @@ public class ProductServiceImpl implements ProductService {
 
         ProductResponseDto product = GetProduct(id);
 
-        response.setBrand(tagService.findByProductIdAndFatherId(id, BRAND_TAG_FATHER).getName());
         response.setModel(product.getModel());
         response.setComments(product.getComments());
         response.setReplacementValue(product.getReplacementValue());
-        response.setPhotos(photoService.findPhotosByProductId(id));
+        try {
+            response.setBrand(tagService.findByProductIdAndFatherId(id, BRAND_TAG_FATHER).getName());
+        } catch (TagNotFoundException ex) {
+            response.setBrand("");
+        }
+        try{
+            response.setPhotos(photoService.findPhotosByProductId(id));
+        } catch (ImagesNotFoundException ex) {
+            response.setPhotos(new ArrayList<>());
+        }
         response.setPrices(rentPriceService.findRentPriceByProductId(id));
 //        response.setActivities();  //todo add activities when developing this functionalities
 //        response.setProductBalance(); //todo add balance when projects are added
