@@ -1,5 +1,6 @@
 package com.ProyectoIntegradorBE.proaudioBE.services;
 
+import ch.qos.logback.core.util.StringUtil;
 import com.ProyectoIntegradorBE.proaudioBE.Utils.CollectionUtils;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.PhotoRequestDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.PhotoResponseDto;
@@ -13,6 +14,7 @@ import com.ProyectoIntegradorBE.proaudioBE.repositories.PhotoRepository;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.PhotoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -36,8 +38,12 @@ public class PhotoServiceImpl implements PhotoService {
 
             PhotoEntity photoEntity = new PhotoEntity();
             photoEntity.setProductId(productId);
-            photoEntity.setName(Objects.requireNonNull(photo.getOriginalFilename()).substring(0,20));
             photoEntity.setStatus(BasicEnumStatus.ENABLED);
+
+            String name = Objects.nonNull(photo.getOriginalFilename())
+                    ? Objects.requireNonNull(StringUtils.truncate(photo.getOriginalFilename(), 50))
+                    : productRequestDto.getModel();
+            photoEntity.setName(name);
 
             try {
                 photoEntity.setData(photo.getBytes());
