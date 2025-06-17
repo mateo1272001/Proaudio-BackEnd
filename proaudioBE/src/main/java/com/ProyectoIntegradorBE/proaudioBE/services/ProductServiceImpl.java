@@ -46,7 +46,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
-    public ProductResponseDto createProduct(ProductRequestDto productRequestDto) throws BadRequestException {
+    public ProductResponseDto createProduct(ProductRequestDto productRequestDto, MultipartFile file) throws BadRequestException {
 
         ProductEntity product = new ProductEntity();
         product.setModel(productRequestDto.getModel());
@@ -65,6 +65,9 @@ public class ProductServiceImpl implements ProductService {
 
         List<ProductTagResponseDto> tags =
                 productTagService.CreateProductTags(productRequestDto.getTags(), product.getProductId());
+
+        List<PhotoResponseDto> photos =
+                photoService.createPhotos(productRequestDto.getPhotos(), productResponseDto.getProductId(), file);
 
         productResponseDto.setPrices(prices);
         productResponseDto.setTags(tags);
@@ -242,7 +245,7 @@ public class ProductServiceImpl implements ProductService {
 
         GetProduct(productId);
 
-        List<PhotoResponseDto> photoResponseDtos = photoService.createPhotos(photos, productId);
+        List<PhotoResponseDto> photoResponseDtos = photoService.createPhotos(photos, productId, null);
         return new PhotoResponseListDto(photoResponseDtos);
     }
 

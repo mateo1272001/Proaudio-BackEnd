@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.*;
 
 @Service
@@ -25,19 +26,23 @@ public class PhotoServiceImpl implements PhotoService {
     private final PhotoMapper photoMapper;
 
     @Override
-    public List<PhotoResponseDto> createPhotos(List<PhotoRequestDto> dtos, Long productId) {
+    public List<PhotoResponseDto> createPhotos(List<PhotoRequestDto> dtos, Long productId, MultipartFile file) {
 
         List <PhotoEntity> photoEntities = photoMapper.toEntityList(dtos);
 
         photoEntities.forEach(photo -> {
             photo.setProductId(productId);
             photo.setStatus(BasicEnumStatus.ENABLED);
+            try {
+                photo.setData(file.getBytes());
+            } catch (IOException e) {
+                throw new RuntimeException("Error al leer el archivo de imagen", e);
+            }
         });
         photoEntities = CollectionUtils.toList(photoRepository.saveAll(photoEntities));
 
         return photoMapper.toDtoList(photoEntities);
     }
-
     @Override
     public List<PhotoResponseDto> updatePhotos(List<PhotoRequestDto> dtos, Long productId) {
         return List.of();
