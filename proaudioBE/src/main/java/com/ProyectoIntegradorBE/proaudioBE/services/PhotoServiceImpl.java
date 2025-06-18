@@ -38,7 +38,7 @@ public class PhotoServiceImpl implements PhotoService {
 
             String name = Objects.nonNull(photo.getOriginalFilename())
                     ? photo.getOriginalFilename().length() > 20
-                        ? photo.getOriginalFilename().substring(20)
+                        ? photo.getOriginalFilename().substring(0, 20)
                         : photo.getOriginalFilename()
                     : "Foto de producto";
             photoEntity.setName(name);
