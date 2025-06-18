@@ -94,27 +94,27 @@ public class ProductController {
 
     //PHOTO
 
-    @PostMapping("/photo/upload")
-    PhotoResponseDto createPhoto(
-            @RequestParam("file") MultipartFile file,
-            @RequestParam("productId") Long productId,
-            @RequestParam("name") String name) throws BadRequestException {
-        return productService.UploadPhoto(file, productId, name);
-    }
+//    @PostMapping("/photo/upload")
+//    PhotoResponseDto createPhoto(
+//            @RequestParam("file") MultipartFile file,
+//            @RequestParam("productId") Long productId,
+//            @RequestParam("name") String name) throws BadRequestException {
+//        return productService.UploadPhoto(file, productId, name);
+//    }
 
-    @PostMapping("/photo/upload-multiple")
-    public List<PhotoResponseDto> uploadMultiplePhotos(
+    @PostMapping("/photos/create")
+    public List<PhotoResponseDto> CreatePhotos(
             @RequestParam("files") MultipartFile[] files,
             @RequestParam("productId") Long productId) throws BadRequestException {
 
 
-        return productService.UploadMultiplePhotos(files, productId);
+        return productService.CreatePhotos(files, productId);
     }
-
-    @PostMapping("/photo")
-    PhotoResponseListDto createPhoto(@RequestBody PhotoRequestListDto photoRequestListDto) throws BadRequestException {
-        return productService.CreatePhoto(photoRequestListDto);
-    }
+//
+//    @PostMapping("/photo")
+//    PhotoResponseListDto createPhoto(@RequestBody PhotoRequestListDto photoRequestListDto) throws BadRequestException {
+//        return productService.CreatePhoto(photoRequestListDto);
+//    }
 
     @DeleteMapping("/photo/{id}")
     PhotoResponseDto deletePhoto(@PathVariable Long id) {

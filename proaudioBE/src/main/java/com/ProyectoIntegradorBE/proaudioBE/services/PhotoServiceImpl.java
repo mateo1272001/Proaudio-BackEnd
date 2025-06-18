@@ -1,10 +1,8 @@
 package com.ProyectoIntegradorBE.proaudioBE.services;
 
-import ch.qos.logback.core.util.StringUtil;
 import com.ProyectoIntegradorBE.proaudioBE.Utils.CollectionUtils;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.PhotoRequestDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.PhotoResponseDto;
-import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.ProductRequestDto;
 import com.ProyectoIntegradorBE.proaudioBE.entities.PhotoEntity;
 import com.ProyectoIntegradorBE.proaudioBE.enums.BasicEnumStatus;
 import com.ProyectoIntegradorBE.proaudioBE.exceptions.BadRequestException;
@@ -14,7 +12,6 @@ import com.ProyectoIntegradorBE.proaudioBE.repositories.PhotoRepository;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.PhotoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -29,8 +26,7 @@ public class PhotoServiceImpl implements PhotoService {
     private final PhotoMapper photoMapper;
 
     @Override
-    public List<PhotoResponseDto> createPhotos(ProductRequestDto productRequestDto, Long productId,
-                                               List<MultipartFile> photos) {
+    public List<PhotoResponseDto> createPhotos(Long productId, List<MultipartFile> photos) {
 
         List<PhotoEntity> photoEntities = new ArrayList<>();
 
@@ -41,8 +37,10 @@ public class PhotoServiceImpl implements PhotoService {
             photoEntity.setStatus(BasicEnumStatus.ENABLED);
 
             String name = Objects.nonNull(photo.getOriginalFilename())
-                    ? Objects.requireNonNull(StringUtils.truncate(photo.getOriginalFilename(), 20))
-                    : productRequestDto.getModel();
+                    ? photo.getOriginalFilename().length() > 20
+                        ? photo.getOriginalFilename().substring(20)
+                        : photo.getOriginalFilename()
+                    : "Foto de producto";
             photoEntity.setName(name);
 
             try {
@@ -78,19 +76,19 @@ public class PhotoServiceImpl implements PhotoService {
         return photoMapper.toDto(photoEntity);
     }
 
-    @Override
-    public PhotoResponseDto createPhoto(PhotoRequestDto dto, Long productId) {
-
-        PhotoEntity photoEntity = new PhotoEntity();
-        photoEntity.setProductId(productId);
-        photoEntity.setName(dto.getName());
+//    @Override
+//    public PhotoResponseDto createPhoto(PhotoRequestDto dto, Long productId) {
+//
+//        PhotoEntity photoEntity = new PhotoEntity();
+//        photoEntity.setProductId(productId);
+//        photoEntity.setName(dto.getName());
 //        photoEntity.setUrl(dto.getName());
-        photoEntity.setStatus(BasicEnumStatus.ENABLED);
-
-        photoEntity = photoRepository.save(photoEntity);
-
-        return photoMapper.toDto(photoEntity);
-    }
+//        photoEntity.setStatus(BasicEnumStatus.ENABLED);
+//
+//        photoEntity = photoRepository.save(photoEntity);
+//
+//        return photoMapper.toDto(photoEntity);
+//    }
 
     public List<PhotoResponseDto> findPhotosByProductId(Long productId) {
 
@@ -139,15 +137,4 @@ public class PhotoServiceImpl implements PhotoService {
 
     }
 
-    public List<PhotoResponseDto> UploadMultiplePhotos(MultipartFile[] files, Long productId) {
-
-        List<PhotoResponseDto> responses = new ArrayList<>();
-        for (MultipartFile file : files) {
-            String fileName = Objects.requireNonNull(file.getOriginalFilename()).substring(0,9);
-            PhotoResponseDto response = UploadPhoto(file, productId, fileName);
-            responses.add(response);
-        }
-
-        return responses;
-    }
 }

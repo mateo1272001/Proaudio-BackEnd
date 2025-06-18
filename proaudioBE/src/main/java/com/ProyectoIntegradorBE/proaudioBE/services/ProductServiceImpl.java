@@ -3,8 +3,6 @@ package com.ProyectoIntegradorBE.proaudioBE.services;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.*;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Tag.TagResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.entities.ProductEntity;
-import com.ProyectoIntegradorBE.proaudioBE.entities.TagEntity;
-import com.ProyectoIntegradorBE.proaudioBE.enums.BasicEnumStatus;
 import com.ProyectoIntegradorBE.proaudioBE.enums.DirectionEnum;
 import com.ProyectoIntegradorBE.proaudioBE.enums.ProductStatus;
 import com.ProyectoIntegradorBE.proaudioBE.enums.SortByEnum;
@@ -71,7 +69,7 @@ public class ProductServiceImpl implements ProductService {
         List<MultipartFile> photoList = Stream.of(files).toList();
 
         List<PhotoResponseDto> photos =
-                photoService.createPhotos(productRequestDto, productResponseDto.getProductId(), photoList);
+                photoService.createPhotos(productResponseDto.getProductId(), photoList);
 
         productResponseDto.setPrices(prices);
         productResponseDto.setTags(tags);
@@ -136,11 +134,6 @@ public class ProductServiceImpl implements ProductService {
     public ProductListResponseDto getFilteredProducts(List<Long> tags, String sortBy, String direction,
                                                       LocalDate startDate, LocalDate endDate,
                                                       Integer page, Integer size) throws BadRequestException {
-
-//        if(Objects.isNull(tags) || tags.isEmpty()) {
-//            List<TagEntity> tagEntities= tagRepository.findByFatherIdAndStatus(null, BasicEnumStatus.ENABLED);
-//            tags = tagEntities.stream().map(TagEntity::getTagId).toList();
-//        }
 
         SortByEnum sortByEnum;
         DirectionEnum directionEnum;
@@ -246,28 +239,18 @@ public class ProductServiceImpl implements ProductService {
     public PhotoResponseListDto CreatePhoto(PhotoRequestListDto photoRequestListDto) throws BadRequestException {
 
         return new PhotoResponseListDto();
-//
-//        List<PhotoRequestDto> photos = photoRequestListDto.getPhotos();
-//        Long productId = photoRequestListDto.getProductId();
-//
-//        GetProduct(productId);
-//
-//        List<PhotoResponseDto> photoResponseDtos = photoService.createPhotos(photos, productId, null);
-//        return new PhotoResponseListDto(photoResponseDtos);
+
     }
 
 
     //PHOTOS
 
-    public PhotoResponseDto UploadPhoto(MultipartFile file, Long productId, String name)
-            throws BadRequestException {
+    public List<PhotoResponseDto> CreatePhotos(MultipartFile[] files, Long productId) {
         GetProduct(productId);
-        return photoService.UploadPhoto(file, productId, name);
-    }
 
-    public List<PhotoResponseDto> UploadMultiplePhotos(MultipartFile[] files, Long productId) {
-        GetProduct(productId);
-        return photoService.UploadMultiplePhotos(files, productId);
+        List<MultipartFile> photoList = Stream.of(files).toList();
+
+        return photoService.createPhotos(productId, photoList);
     }
 
     @Override

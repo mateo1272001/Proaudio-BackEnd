@@ -9,10 +9,7 @@ import java.util.List;
 
 public interface PhotoService {
 
-    PhotoResponseDto createPhoto(PhotoRequestDto dto, Long productId);
-
-    public List<PhotoResponseDto> createPhotos(ProductRequestDto productRequestDto, Long productId,
-                                               List<MultipartFile> photos);
+    public List<PhotoResponseDto> createPhotos(Long productId, List<MultipartFile> photos);
 
     List<PhotoResponseDto> updatePhotos(List<PhotoRequestDto> dtos, Long productId);
 
