@@ -41,7 +41,7 @@ public class PhotoServiceImpl implements PhotoService {
             photoEntity.setStatus(BasicEnumStatus.ENABLED);
 
             String name = Objects.nonNull(photo.getOriginalFilename())
-                    ? Objects.requireNonNull(StringUtils.truncate(photo.getOriginalFilename(), 50))
+                    ? Objects.requireNonNull(StringUtils.truncate(photo.getOriginalFilename(), 20))
                     : productRequestDto.getModel();
             photoEntity.setName(name);
 
