@@ -128,7 +128,8 @@ public class ProductRepositoryCustomImpl implements ProductRepositoryCustom {
 
         } else {
             sql = String.format("""
-                    SELECT p.product_id AS id, p.model AS model, p.comments AS comments, p.status AS status, brands.name
+                    SELECT p.product_id AS id, p.model AS model, p.comments AS comments, p.status AS status,
+                        brands.name as brand
                     FROM product p
                     LEFT JOIN
                     	(SELECT t_brand.name,pt_brand.product_id
