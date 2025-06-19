@@ -4,6 +4,7 @@ import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.ProductTagResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Tag.*;
 import com.ProyectoIntegradorBE.proaudioBE.entities.TagEntity;
 import com.ProyectoIntegradorBE.proaudioBE.enums.BasicEnumStatus;
+import com.ProyectoIntegradorBE.proaudioBE.enums.TagTypeEnum;
 import com.ProyectoIntegradorBE.proaudioBE.exceptions.BadRequestException;
 import com.ProyectoIntegradorBE.proaudioBE.exceptions.ClientNotFoundException;
 import com.ProyectoIntegradorBE.proaudioBE.exceptions.TagNotFoundException;
@@ -15,6 +16,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -184,5 +186,11 @@ public class TagServiceImpl implements TagService {
                 .orElseThrow(() -> new TagNotFoundException(productId));
 
         return tagMapper.toDto(tagEntity);
+    }
+
+    public TagTypesResponseDto findTagTypes() {
+
+        return new TagTypesResponseDto(Arrays.stream(TagTypeEnum.values()).toList());
+
     }
 }

@@ -1,9 +1,6 @@
 package com.ProyectoIntegradorBE.proaudioBE.controllers;
 
-import com.ProyectoIntegradorBE.proaudioBE.dtos.Tag.AllTagsModuleListDto;
-import com.ProyectoIntegradorBE.proaudioBE.dtos.Tag.TagRequestDto;
-import com.ProyectoIntegradorBE.proaudioBE.dtos.Tag.TagResponseDto;
-import com.ProyectoIntegradorBE.proaudioBE.dtos.Tag.TagResponseListDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Tag.*;
 import com.ProyectoIntegradorBE.proaudioBE.services.TagServiceImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -51,6 +48,13 @@ public class TagController {
     public TagResponseListDto getAllTags() {
 
         return tagServiceImpl.findAllSimple();
+
+    }
+
+    @GetMapping("/types")
+    public TagTypesResponseDto getTagTypes() {
+
+        return tagServiceImpl.findTagTypes();
 
     }
 

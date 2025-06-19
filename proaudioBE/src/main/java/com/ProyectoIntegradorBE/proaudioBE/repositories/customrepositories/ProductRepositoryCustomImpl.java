@@ -99,7 +99,7 @@ public class ProductRepositoryCustomImpl implements ProductRepositoryCustom {
                 	FROM product p
                 	INNER JOIN product_tag pt ON (p.product_id = pt.product_id)
                 	INNER JOIN tag_hierarchy th ON (pt.tag_id = th.tag_id)
-                	WHERE pt.type = "DESCRIPTIVE"
+                                    	WHERE p.status = "ACTIVE" AND pt.type = "DESCRIPTIVE" AND pt.status = "ENABLED"
                 	GROUP BY th.root, pt.product_id
                 ) AS filtered
                 LEFT JOIN
@@ -137,6 +137,7 @@ public class ProductRepositoryCustomImpl implements ProductRepositoryCustom {
                     	INNER JOIN tag t_brand ON (pt_brand.tag_id = t_brand.tag_id AND t_brand.father_id = 1)
                     	WHERE pt_brand.status = 'ENABLED') AS brands
                     ON brands.product_id = p.product_id
+                    WHERE p.status = "ACTIVE"
                     ORDER BY %s %s
                     LIMIT ?
                     OFFSET ?
@@ -180,7 +181,7 @@ public class ProductRepositoryCustomImpl implements ProductRepositoryCustom {
                     FROM product p
                     INNER JOIN product_tag pt ON (p.product_id = pt.product_id)
                     INNER JOIN tag_hierarchy th ON (pt.tag_id = th.tag_id)
-                    WHERE pt.type = "DESCRIPTIVE"
+                                                    WHERE p.status = "ACTIVE" AND pt.type = "DESCRIPTIVE" AND pt.status = "ENABLED"
                     GROUP BY th.root, pt.product_id
                 ) AS filtered
                 GROUP BY filtered.id
@@ -197,7 +198,7 @@ public class ProductRepositoryCustomImpl implements ProductRepositoryCustom {
 
         } else {
 
-            countSql = "SELECT COUNT(*) FROM product p";
+            countSql = "SELECT COUNT(*) FROM product p WHERE p.status = \"ACTIVE\"";
 
             return jdbcTemplate.queryForObject(countSql, Integer.class);
 
