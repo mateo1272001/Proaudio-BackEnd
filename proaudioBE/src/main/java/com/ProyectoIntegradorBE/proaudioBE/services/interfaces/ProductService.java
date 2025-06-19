@@ -21,18 +21,6 @@ public interface ProductService {
     ProductListResponseDto getFilteredProducts(List<Long> tags, String sortBy, String direction,
                                                LocalDate startDate, LocalDate endDate, Integer page, Integer size) throws BadRequestException;
 
-    ProductTagResponseDto createProductTag(ProductTagRequestDto productTagRequestDto)throws BadRequestException;
-
-    ProductTagResponseDto DeleteProductTag(Long id);
-
-    PhotoResponseListDto CreatePhoto(PhotoRequestListDto photoRequestListDto) throws BadRequestException;
-
-    PhotoResponseDto DeletePhoto(Long id);
-
-    PriceReponseDto CreatePrice(PriceRequestDto priceRequestDto) throws BadRequestException;
-
-    PriceReponseDto DeletePrice(Long id) throws BadRequestException;
-
     ProductDetailResponseDto GetProductDetails(Long id);
 
     ProductStatusListDto GetProductStatuses();

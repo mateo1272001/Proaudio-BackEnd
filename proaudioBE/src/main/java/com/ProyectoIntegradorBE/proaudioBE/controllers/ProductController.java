@@ -87,9 +87,9 @@ public class ProductController {
         return productService.createProductTag(productTagRequestDto);
     }
 
-    @DeleteMapping("/tag/{id}")
-    ProductTagResponseDto DeleteProductTag(@PathVariable Long id) throws BadRequestException {
-        return productService.DeleteProductTag(id);
+    @DeleteMapping("{productId}/tag/{tagId}")
+    ProductTagResponseDto DeleteProductTag(@PathVariable Long tagId, @PathVariable Long productId) throws BadRequestException {
+        return productService.DeleteProductTag(tagId, productId);
     }
 
     //PHOTO

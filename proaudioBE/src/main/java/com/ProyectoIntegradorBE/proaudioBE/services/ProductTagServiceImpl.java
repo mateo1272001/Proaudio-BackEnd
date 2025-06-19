@@ -64,10 +64,10 @@ public class ProductTagServiceImpl implements ProductTagService {
     }
 
     @Override
-    public ProductTagResponseDto deleteProductTag(Long id) {
+    public ProductTagResponseDto deleteProductTag(Long tagId, Long productId) {
 
         Optional<ProductTagEntity> productTagEntityOpt =
-                productTagRepository.findByProductTagIdAndStatus(id, BasicEnumStatus.ENABLED);
+                productTagRepository.findByTagIdAndProductIdAndStatus(tagId, productId, BasicEnumStatus.ENABLED);
 
         if (productTagEntityOpt.isEmpty()) {
             throw new BadRequestException("¡No existe vínculo actual entre este producto y esta etiqueta!");

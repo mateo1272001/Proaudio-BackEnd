@@ -230,18 +230,9 @@ public class ProductServiceImpl implements ProductService {
 
     }
 
-    @Override
-    public ProductTagResponseDto DeleteProductTag(Long id) {
-        return productTagService.deleteProductTag(id);
+    public ProductTagResponseDto DeleteProductTag(Long tagId, Long productId) {
+        return productTagService.deleteProductTag(tagId, productId);
     }
-
-    @Override
-    public PhotoResponseListDto CreatePhoto(PhotoRequestListDto photoRequestListDto) throws BadRequestException {
-
-        return new PhotoResponseListDto();
-
-    }
-
 
     //PHOTOS
 
@@ -253,14 +244,12 @@ public class ProductServiceImpl implements ProductService {
         return photoService.createPhotos(productId, photoList);
     }
 
-    @Override
     public PhotoResponseDto DeletePhoto(Long id) {
         return photoService.deletePhoto(id);
     }
 
     //PRICES
 
-    @Override
     public PriceReponseDto CreatePrice(PriceRequestDto priceRequestDto) throws BadRequestException {
 
         if (Objects.isNull(priceRequestDto.getProductId())) {
@@ -272,7 +261,6 @@ public class ProductServiceImpl implements ProductService {
 
     }
 
-    @Override
     public PriceReponseDto DeletePrice(Long id) throws BadRequestException {
         return rentPriceService.DeletePrice(id);
     }

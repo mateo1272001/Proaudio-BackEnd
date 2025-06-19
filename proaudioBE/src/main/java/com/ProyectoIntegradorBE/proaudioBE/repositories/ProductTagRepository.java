@@ -18,4 +18,7 @@ public interface ProductTagRepository extends CrudRepository<ProductTagEntity, L
     Optional<ProductTagEntity> findByProductIdAndTagId(Long productId, Long tagId);
 
     Optional<ProductTagEntity> findByProductTagIdAndStatus(Long id, BasicEnumStatus basicEnumStatus);
+
+    Optional<ProductTagEntity> findByTagIdAndProductIdAndStatus(Long tagId, Long productId,
+                                                                BasicEnumStatus basicEnumStatus);
 }

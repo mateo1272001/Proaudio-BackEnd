@@ -12,5 +12,5 @@ public interface ProductTagService {
 
     ProductTagResponseDto createProductTag(ProductTagRequestDto productTagRequestDto);
 
-    ProductTagResponseDto deleteProductTag(Long id);
+    ProductTagResponseDto deleteProductTag(Long tagId, Long productId);
 }
