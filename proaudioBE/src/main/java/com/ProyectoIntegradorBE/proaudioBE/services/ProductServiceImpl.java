@@ -64,14 +64,16 @@ public class ProductServiceImpl implements ProductService {
 
         List<ProductTagResponseDto> tags = CreateProductTags(productRequestDto, product);
 
-        List<MultipartFile> photoList = Stream.of(files).toList();
+        if (files != null && files.length > 0) {
+            List<MultipartFile> photoList = Stream.of(files).toList();
 
-        List<PhotoResponseDto> photos =
-                photoService.createPhotos(productResponseDto.getProductId(), photoList);
+            List<PhotoResponseDto> photos =
+                    photoService.createPhotos(productResponseDto.getProductId(), photoList);
+            productResponseDto.setPhotos(photos);
+        }
 
         productResponseDto.setPrices(prices);
         productResponseDto.setTags(tags);
-        productResponseDto.setPhotos(photos);
 
         return productResponseDto;
 
