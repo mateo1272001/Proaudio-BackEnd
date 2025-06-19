@@ -96,7 +96,8 @@ public class RentPriceServiceImpl implements RentPriceService {
     }
 
     public List<PriceReponseDto> findRentPriceByProductId(Long id) throws BadRequestException {
-        List<RentPriceEntity> rentPriceEntities = rentPriceRepository.findByProductId(id).stream().toList();
+        List<RentPriceEntity> rentPriceEntities = rentPriceRepository
+                .findByProductIdAndStatus(id, BasicEnumStatus.ENABLED).stream().toList();
         //todo ver si necesita tirar excepcion
         return rentPriceMapper.toDtoList(rentPriceEntities);
     }
