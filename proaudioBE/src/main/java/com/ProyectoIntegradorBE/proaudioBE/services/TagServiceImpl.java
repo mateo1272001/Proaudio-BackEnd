@@ -1,8 +1,10 @@
 package com.ProyectoIntegradorBE.proaudioBE.services;
 
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.ProductTagResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Tag.*;
 import com.ProyectoIntegradorBE.proaudioBE.entities.TagEntity;
 import com.ProyectoIntegradorBE.proaudioBE.enums.BasicEnumStatus;
+import com.ProyectoIntegradorBE.proaudioBE.exceptions.BadRequestException;
 import com.ProyectoIntegradorBE.proaudioBE.exceptions.ClientNotFoundException;
 import com.ProyectoIntegradorBE.proaudioBE.exceptions.TagNotFoundException;
 import com.ProyectoIntegradorBE.proaudioBE.mappers.TagMapper;
@@ -11,7 +13,6 @@ import com.ProyectoIntegradorBE.proaudioBE.repositories.TagRepository;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.TagService;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
-import com.ProyectoIntegradorBE.proaudioBE.exceptions.BadRequestException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,6 +26,7 @@ public class TagServiceImpl implements TagService {
     private final TagRepository tagRepository;
     private final TagMapper tagMapper;
     private final TagModuleMapper tagModuleMapper;
+    private final ProductTagServiceImpl productTagService;
 
     @Override
     public TagResponseDto createTag(TagRequestDto tagRequestDto) {
@@ -110,8 +112,10 @@ public class TagServiceImpl implements TagService {
             throw new BadRequestException("¡No podés borrar etiquetas con hijos activos!");
         }
 
-        //todo agregar validacion de productos con la etiqueta asignada
-
+        List<ProductTagResponseDto> productTagResponseDtos = productTagService.findProductTagsByTagId(tag.getTagId());
+        if (!productTagResponseDtos.isEmpty()) {
+            throw new BadRequestException("¡No podés borrar etiquetas con productos asociados!");
+        }
     }
 
     @Override
@@ -176,9 +180,7 @@ public class TagServiceImpl implements TagService {
 
     public TagResponseDto findByProductIdAndFatherId(Long productId, Long fatherId) {
 
-        TagEntity tagEntity = tagRepository.findByProductIdAndFatherId(productId, fatherId)
-                .stream()
-                .findFirst()
+        TagEntity tagEntity = tagRepository.findByProductIdAndFatherId(productId, fatherId).stream().findFirst()
                 .orElseThrow(() -> new TagNotFoundException(productId));
 
         return tagMapper.toDto(tagEntity);

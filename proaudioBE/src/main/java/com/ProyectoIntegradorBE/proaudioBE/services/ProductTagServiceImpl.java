@@ -4,14 +4,12 @@ import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.ProductTagRequestDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.ProductTagResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Tag.TagResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.entities.ProductTagEntity;
-import com.ProyectoIntegradorBE.proaudioBE.entities.TagEntity;
 import com.ProyectoIntegradorBE.proaudioBE.enums.BasicEnumStatus;
+import com.ProyectoIntegradorBE.proaudioBE.exceptions.BadRequestException;
 import com.ProyectoIntegradorBE.proaudioBE.mappers.ProductTagMapper;
 import com.ProyectoIntegradorBE.proaudioBE.repositories.ProductTagRepository;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ProductTagService;
-import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.TagService;
 import lombok.RequiredArgsConstructor;
-import com.ProyectoIntegradorBE.proaudioBE.exceptions.BadRequestException;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -28,7 +26,7 @@ public class ProductTagServiceImpl implements ProductTagService {
 
     private final ProductTagMapper productTagMapper;
 
-    private final TagServiceImpl tagService;
+    //    private final TagServiceImpl tagService;
 
     public ProductTagResponseDto createProductTag(ProductTagRequestDto productTagRequestDto) {
 
@@ -46,12 +44,6 @@ public class ProductTagServiceImpl implements ProductTagService {
                 existentProductTag = productTagRepository.save(productTagOpt.get());
             }
             return productTagMapper.toDto(existentProductTag);
-        }
-
-        Optional<TagEntity> tagEntityOpt = tagService.findByTagId(productTagRequestDto.getTagId());
-
-        if(tagEntityOpt.isEmpty()) {
-             throw new BadRequestException("¡La etiqueta no existe!");
         }
 
         ProductTagEntity productTagEntity = productTagMapper.toEntity(productTagRequestDto);
@@ -81,12 +73,9 @@ public class ProductTagServiceImpl implements ProductTagService {
         return productTagMapper.toDto(productTagEntity);
     }
 
-    public List<ProductTagResponseDto> CreateProductTags(List<ProductTagRequestDto> productTags, Long productId)
+    public List<ProductTagResponseDto> CreateProductTags(List<TagResponseDto> tags,
+                                                         List<ProductTagRequestDto> productTags, Long productId)
             throws BadRequestException {
-
-        List<Long> tagIds =  productTags.stream().map(ProductTagRequestDto::getTagId).toList();
-
-        List<TagResponseDto> tags = tagService.findByTagIdIn(tagIds);
 
         List<ProductTagResponseDto> tagResponseDtos = productTags.stream().map(tagRequest -> {
             TagResponseDto tag = tags.stream()
@@ -108,7 +97,7 @@ public class ProductTagServiceImpl implements ProductTagService {
     }
 
     private List<ProductTagEntity> convertToEntities(List<ProductTagRequestDto> dtoList, Long productId,
-                                                    BasicEnumStatus status) {
+                                                     BasicEnumStatus status) {
         return dtoList.stream()
                 .map(dto -> {
                     ProductTagEntity entity = new ProductTagEntity();
@@ -121,13 +110,17 @@ public class ProductTagServiceImpl implements ProductTagService {
                 .collect(Collectors.toList());
     }
 
+    public List<ProductTagEntity> findTagsByProductId(Long productId) {
+        return productTagRepository.findByProductIdAndStatus(productId, BasicEnumStatus.ENABLED);
+    }
 
-    public List<ProductTagResponseDto> findTagsByProductId(Long productId) {
 
-        List<ProductTagEntity> productTagEntities = productTagRepository.findByProductId(productId);
-        List<TagResponseDto> tagResponseDtos =
-                tagService.findByTagIdIn(productTagEntities.stream().map(ProductTagEntity::getTagId).toList());
-
+    public List<ProductTagResponseDto> validateTagsInProductTags(List<ProductTagEntity> productTagEntities,
+                                                                 List<TagResponseDto> tagResponseDtos) {
+        //        List<ProductTagEntity> productTagEntities =
+        //                productTagRepository.findByProductIdAndStatus(productId, BasicEnumStatus.ENABLED);
+        //        List<TagResponseDto> tagResponseDtos =
+        //                tagService.findByTagIdIn(productTagEntities.stream().map(ProductTagEntity::getTagId).toList());
         List<ProductTagResponseDto> response = new ArrayList<>();
 
         for(ProductTagEntity productTagEntity : productTagEntities) {
@@ -148,5 +141,13 @@ public class ProductTagServiceImpl implements ProductTagService {
         }
 
         return response;
+    }
+
+    public List<ProductTagResponseDto> findProductTagsByTagId(Long tagId) {
+
+        List<ProductTagEntity> productTagEntities =
+                productTagRepository.findByTagIdAndStatus(tagId, BasicEnumStatus.ENABLED);
+
+        return productTagMapper.toDtoList(productTagEntities);
     }
 }

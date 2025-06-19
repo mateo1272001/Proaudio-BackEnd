@@ -1,9 +1,7 @@
 package com.ProyectoIntegradorBE.proaudioBE.repositories;
 
-import com.ProyectoIntegradorBE.proaudioBE.dtos.Tag.TagResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.entities.ProductTagEntity;
 import com.ProyectoIntegradorBE.proaudioBE.enums.BasicEnumStatus;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
@@ -17,8 +15,10 @@ public interface ProductTagRepository extends CrudRepository<ProductTagEntity, L
 
     Optional<ProductTagEntity> findByProductIdAndTagId(Long productId, Long tagId);
 
-    Optional<ProductTagEntity> findByProductTagIdAndStatus(Long id, BasicEnumStatus basicEnumStatus);
-
     Optional<ProductTagEntity> findByTagIdAndProductIdAndStatus(Long tagId, Long productId,
                                                                 BasicEnumStatus basicEnumStatus);
+
+    List<ProductTagEntity> findByProductIdAndStatus(Long productId, BasicEnumStatus basicEnumStatus);
+
+    List<ProductTagEntity> findByTagIdAndStatus(Long tagId, BasicEnumStatus status);
 }

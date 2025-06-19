@@ -26,7 +26,8 @@ public class TagController {
     }
 
     @PutMapping("{id}")
-    public TagResponseDto updateTag(@PathVariable Long id, @Valid @RequestBody TagRequestDto tagRequestDto) throws BadRequestException {
+    public TagResponseDto updateTag(@PathVariable Long id, @Valid @RequestBody TagRequestDto tagRequestDto)
+            throws BadRequestException {
 
         return tagServiceImpl.updateTag(id, tagRequestDto);
 

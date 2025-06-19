@@ -3,6 +3,8 @@ package com.ProyectoIntegradorBE.proaudioBE.services;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.*;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Tag.TagResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.entities.ProductEntity;
+import com.ProyectoIntegradorBE.proaudioBE.entities.ProductTagEntity;
+import com.ProyectoIntegradorBE.proaudioBE.entities.TagEntity;
 import com.ProyectoIntegradorBE.proaudioBE.enums.DirectionEnum;
 import com.ProyectoIntegradorBE.proaudioBE.enums.ProductStatus;
 import com.ProyectoIntegradorBE.proaudioBE.enums.SortByEnum;
@@ -11,7 +13,6 @@ import com.ProyectoIntegradorBE.proaudioBE.exceptions.ImagesNotFoundException;
 import com.ProyectoIntegradorBE.proaudioBE.exceptions.TagNotFoundException;
 import com.ProyectoIntegradorBE.proaudioBE.mappers.ProductMapper;
 import com.ProyectoIntegradorBE.proaudioBE.repositories.ProductRepository;
-import com.ProyectoIntegradorBE.proaudioBE.repositories.TagRepository;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -39,8 +40,6 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductMapper productMapper;
 
-    private final TagRepository tagRepository;
-
     private static final Long BRAND_TAG_FATHER = 1L;
 
     @Override
@@ -63,8 +62,7 @@ public class ProductServiceImpl implements ProductService {
         List<PriceReponseDto> prices =
                 rentPriceService.createPrices(productRequestDto.getPrices(), productResponseDto.getProductId());
 
-        List<ProductTagResponseDto> tags =
-                productTagService.CreateProductTags(productRequestDto.getTags(), product.getProductId());
+        List<ProductTagResponseDto> tags = CreateProductTags(productRequestDto, product);
 
         List<MultipartFile> photoList = Stream.of(files).toList();
 
@@ -77,6 +75,16 @@ public class ProductServiceImpl implements ProductService {
 
         return productResponseDto;
 
+    }
+
+    private List<ProductTagResponseDto> CreateProductTags(ProductRequestDto productRequestDto, ProductEntity product) {
+
+        List<Long> tagIds = productRequestDto.getTags().stream().map(ProductTagRequestDto::getTagId).toList();
+
+        List<TagResponseDto> tagsFromRequest = tagService.findByTagIdIn(tagIds);
+
+        return productTagService.CreateProductTags(tagsFromRequest, productRequestDto.getTags(),
+                product.getProductId());
     }
 
     @Override
@@ -100,9 +108,18 @@ public class ProductServiceImpl implements ProductService {
 
         ProductResponseDto productResponseDto = productMapper.toDto(product);
         productResponseDto.setPrices(rentPriceService.findRentPriceByProductId(productId));
-        productResponseDto.setTags(productTagService.findTagsByProductId(productId));
+        productResponseDto.setTags(findTagsByProductId(productId));
 
         return productResponseDto;
+    }
+
+    private List<ProductTagResponseDto> findTagsByProductId(Long productId) {
+
+        List<ProductTagEntity> productTagEntities = productTagService.findTagsByProductId(productId);
+        List<TagResponseDto> tagResponseDtos =
+                tagService.findByTagIdIn(productTagEntities.stream().map(ProductTagEntity::getTagId).toList());
+
+        return productTagService.validateTagsInProductTags(productTagEntities, tagResponseDtos);
     }
 
     @Override
@@ -178,7 +195,7 @@ public class ProductServiceImpl implements ProductService {
         response.setPrices(rentPriceService.findRentPriceByProductId(id));
 //        response.setActivities();  //todo add activities when developing this functionalities
 //        response.setProductBalance(); //todo add balance when projects are added
-        List<ProductTagResponseDto> productTagResponseDtos = productTagService.findTagsByProductId(id);
+        List<ProductTagResponseDto> productTagResponseDtos = findTagsByProductId(id);
 
         List<TagResponseDto> tags =  tagService.findByTagIdIn(productTagResponseDtos
                 .stream()
@@ -225,6 +242,12 @@ public class ProductServiceImpl implements ProductService {
         }
 
         GetProduct(productTagRequestDto.getProductId());
+
+        Optional<TagEntity> tagEntityOpt = tagService.findByTagId(productTagRequestDto.getTagId());
+
+        if (tagEntityOpt.isEmpty()) {
+            throw new BadRequestException("¡La etiqueta no existe!");
+        }
 
         return productTagService.createProductTag(productTagRequestDto);
 
