@@ -4,7 +4,7 @@ public enum LocationEnum {
 
     IN_DEPOSIT,
 
-    IN_USE,
+    USING,
 
     NOT_RETURNED
 

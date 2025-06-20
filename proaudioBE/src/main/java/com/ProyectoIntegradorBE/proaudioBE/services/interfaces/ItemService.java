@@ -4,7 +4,7 @@ import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.*;
 
 public interface ItemService {
 
-    ItemResponseListDto CreateItem(ItemRequestListDto items);
+    ItemResponseListDto CreateItem(ItemRequestListDto items) throws Exception;
 
     ItemResponseDto UpdateItem(ItemRequestDto item);
 

@@ -1,12 +1,13 @@
 package com.ProyectoIntegradorBE.proaudioBE.dtos.Item;
 
+import com.ProyectoIntegradorBE.proaudioBE.enums.ItemStatusEnum;
 import com.ProyectoIntegradorBE.proaudioBE.enums.LocationEnum;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.Data;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Data
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
@@ -14,18 +15,18 @@ public class ItemResponseDto {
 
     private Long itemId;
 
-    private String qrId;
-
     private Long productId;
 
     private LocationEnum location;
 
-    private String status;
+    private ItemStatusEnum status;
 
     private String description;
 
     private BigDecimal priceBought;
 
-    private LocalDateTime boughtAt;
+    private LocalDate boughtAt;
+
+    private String QrImage;
 
 }

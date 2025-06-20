@@ -1,5 +1,7 @@
 package com.ProyectoIntegradorBE.proaudioBE.services.interfaces;
 
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.ItemRequestListDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.ItemResponseListDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.*;
 import com.ProyectoIntegradorBE.proaudioBE.exceptions.BadRequestException;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,4 +26,6 @@ public interface ProductService {
     ProductDetailResponseDto GetProductDetails(Long id);
 
     ProductStatusListDto GetProductStatuses();
+
+    ItemResponseListDto ValidateProductsAndCreateItem(ItemRequestListDto items) throws Exception;
 }

@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Data
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
@@ -19,7 +19,7 @@ public class ItemRequestDto {
 
     private BigDecimal priceBought;
 
-    private LocalDateTime boughtAt;
+    private LocalDate boughtAt;
 
     private Integer amountBought;
 

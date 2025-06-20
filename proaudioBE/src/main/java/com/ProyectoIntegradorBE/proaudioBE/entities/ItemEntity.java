@@ -1,5 +1,6 @@
 package com.ProyectoIntegradorBE.proaudioBE.entities;
 
+import com.ProyectoIntegradorBE.proaudioBE.enums.ItemStatusEnum;
 import com.ProyectoIntegradorBE.proaudioBE.enums.LocationEnum;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -7,7 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Data
 @NoArgsConstructor
@@ -20,16 +21,20 @@ public class ItemEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long itemId;
 
-    private Long qrId;
-
     private Long productId;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private LocationEnum location;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ItemStatusEnum status;
 
     private String description;
 
     private BigDecimal priceBought;
 
-    private LocalDateTime boughtAt;
+    private LocalDate boughtAt;
 
 }
