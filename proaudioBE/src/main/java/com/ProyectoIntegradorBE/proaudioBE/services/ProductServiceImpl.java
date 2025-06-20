@@ -1,5 +1,8 @@
 package com.ProyectoIntegradorBE.proaudioBE.services;
 
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.ItemRequestDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.ItemRequestListDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.ItemResponseListDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.*;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Tag.TagResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.entities.ProductEntity;
@@ -13,6 +16,7 @@ import com.ProyectoIntegradorBE.proaudioBE.exceptions.ImagesNotFoundException;
 import com.ProyectoIntegradorBE.proaudioBE.exceptions.TagNotFoundException;
 import com.ProyectoIntegradorBE.proaudioBE.mappers.ProductMapper;
 import com.ProyectoIntegradorBE.proaudioBE.repositories.ProductRepository;
+import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ItemService;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -35,6 +39,8 @@ public class ProductServiceImpl implements ProductService {
     private final ProductTagServiceImpl productTagService;
 
     private final TagServiceImpl tagService;
+
+    private final ItemService itemService;
 
     private final ProductRepository productRepository;
 
@@ -232,6 +238,27 @@ public class ProductServiceImpl implements ProductService {
         List<ProductStatus> statusList = Arrays.stream(ProductStatus.values()).toList();
 
         return new ProductStatusListDto(statusList);
+    }
+
+    @Override
+    public ItemResponseListDto ValidateProductsAndCreateItem(ItemRequestListDto items) throws Exception {
+
+        List<Long> productRequestIds = items.getItems().stream().map(ItemRequestDto::getProductId).toList();
+
+        List<ProductEntity> productEntities =
+                productRepository.findByProductIdInAndStatus(productRequestIds, ProductStatus.ACTIVE);
+
+        List<Long> productIds = productEntities.stream().map(ProductEntity::getProductId).toList();
+
+        items.getItems().forEach(i -> {
+
+            if (productIds.stream().noneMatch(pId -> pId.equals(i.getProductId()))) {
+                throw new BadRequestException("¡No hay productos con ese ID!");
+            }
+
+        });
+
+        return itemService.CreateItem(items);
     }
 
     //TAGS
