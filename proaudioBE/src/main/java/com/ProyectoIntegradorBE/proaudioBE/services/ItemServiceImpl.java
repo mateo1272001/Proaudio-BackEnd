@@ -5,14 +5,18 @@ import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.*;
 import com.ProyectoIntegradorBE.proaudioBE.entities.ItemEntity;
 import com.ProyectoIntegradorBE.proaudioBE.enums.ItemStatusEnum;
 import com.ProyectoIntegradorBE.proaudioBE.enums.LocationEnum;
+import com.ProyectoIntegradorBE.proaudioBE.exceptions.BadRequestException;
 import com.ProyectoIntegradorBE.proaudioBE.mappers.ItemMapper;
 import com.ProyectoIntegradorBE.proaudioBE.repositories.ItemRepository;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ItemService;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.QrService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -27,6 +31,7 @@ public class ItemServiceImpl implements ItemService {
     private final ItemMapper itemMapper;
 
     @Override
+    @Transactional
     public ItemResponseListDto CreateItem(ItemRequestListDto items) throws Exception {
 
         List<ItemEntity> entityList = new ArrayList<>();
@@ -72,6 +77,7 @@ public class ItemServiceImpl implements ItemService {
             itemEntity.setBoughtAt(Objects.nonNull(item.getBoughtAt()) ? item.getBoughtAt() : null);
             itemEntity.setLocation(LocationEnum.IN_DEPOSIT);
             itemEntity.setStatus(ItemStatusEnum.CREATED);
+            itemEntity.setUpdatedAt(LocalDateTime.now());
 
             itemEntities.add(itemEntity);
         }
@@ -81,18 +87,45 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public ItemResponseDto UpdateItem(ItemRequestDto item) {
-        return null;
+    public ItemResponseDto UpdateItem(UpdateItemRequestDto item, Long id) {
+
+        ItemEntity itemEntity =
+                itemRepository.findById(id).orElseThrow(() -> new BadRequestException("¡El producto no existe!"));
+
+        itemEntity.setStatus(Objects.nonNull(item.getStatus()) ? item.getStatus() : itemEntity.getStatus());
+        itemEntity.setDescription(
+                Objects.nonNull(item.getDescription()) ? item.getDescription() : itemEntity.getDescription());
+        itemEntity.setUpdatedAt(LocalDateTime.now());
+
+        itemEntity = itemRepository.save(itemEntity);
+
+        return itemMapper.toDto(itemEntity);
+
     }
 
     @Override
     public ItemResponseDto DeleteItem(Long itemId) {
-        return null;
+
+        ItemEntity itemEntity =
+                itemRepository.findById(itemId).orElseThrow(() -> new BadRequestException("¡El producto no existe!"));
+
+        //todo (PROJECTS) add project participation validation
+
+        itemEntity.setStatus(ItemStatusEnum.DELETED);
+        itemEntity.setUpdatedAt(LocalDateTime.now());
+
+        itemEntity = itemRepository.save(itemEntity);
+
+        return itemMapper.toDto(itemEntity);
     }
 
     @Override
     public ItemResponseDto GetItem(Long itemId) {
-        return null;
+
+        ItemEntity itemEntity =
+                itemRepository.findById(itemId).orElseThrow(() -> new BadRequestException("¡El producto no existe!"));
+
+        return itemMapper.toDto(itemEntity);
     }
 
     @Override
@@ -109,5 +142,10 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public ItemActionsDto GetItemActions(String qrId) {
         return null;
+    }
+
+    @Override
+    public ItemStatusResponseDto GetItemStatuses() {
+        return new ItemStatusResponseDto(Arrays.stream(ItemStatusEnum.values()).toList());
     }
 }

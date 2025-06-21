@@ -28,4 +28,5 @@ public interface ProductService {
     ProductStatusListDto GetProductStatuses();
 
     ItemResponseListDto ValidateProductsAndCreateItem(ItemRequestListDto items) throws Exception;
+
 }
