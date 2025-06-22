@@ -6,7 +6,7 @@ public interface ItemService {
 
     ItemResponseListDto CreateItem(ItemRequestListDto items) throws Exception;
 
-    ItemResponseDto UpdateItem(ItemRequestDto item);
+    ItemResponseDto UpdateItem(UpdateItemRequestDto item, Long id);
 
     ItemResponseDto DeleteItem(Long itemId);
 
@@ -18,4 +18,5 @@ public interface ItemService {
 
     ItemActionsDto GetItemActions(String qrId);
 
+    ItemStatusResponseDto GetItemStatuses();
 }
