@@ -9,8 +9,8 @@ import com.ProyectoIntegradorBE.proaudioBE.entities.ProductEntity;
 import com.ProyectoIntegradorBE.proaudioBE.entities.ProductTagEntity;
 import com.ProyectoIntegradorBE.proaudioBE.entities.TagEntity;
 import com.ProyectoIntegradorBE.proaudioBE.enums.DirectionEnum;
+import com.ProyectoIntegradorBE.proaudioBE.enums.ProductSortByEnum;
 import com.ProyectoIntegradorBE.proaudioBE.enums.ProductStatus;
-import com.ProyectoIntegradorBE.proaudioBE.enums.SortByEnum;
 import com.ProyectoIntegradorBE.proaudioBE.exceptions.BadRequestException;
 import com.ProyectoIntegradorBE.proaudioBE.exceptions.ImagesNotFoundException;
 import com.ProyectoIntegradorBE.proaudioBE.exceptions.TagNotFoundException;
@@ -144,6 +144,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductResponseDto GetProduct(Long productId) {
+
         Optional<ProductEntity> productEntityOptional = productRepository.findById(productId);
 
         ProductEntity productEntity =
@@ -158,20 +159,22 @@ public class ProductServiceImpl implements ProductService {
                                                       LocalDate startDate, LocalDate endDate,
                                                       Integer page, Integer size) throws BadRequestException {
 
-        SortByEnum sortByEnum;
+        ProductSortByEnum productSortByEnum;
         DirectionEnum directionEnum;
 
         try {
-            sortByEnum = Objects.nonNull(sortBy) ? SortByEnum.valueOf(sortBy.toUpperCase()) : SortByEnum.ID;
+            productSortByEnum =
+                    Objects.nonNull(sortBy) ? ProductSortByEnum.valueOf(sortBy.toUpperCase()) : ProductSortByEnum.ID;
             directionEnum = Objects.nonNull(direction)
-                    ? DirectionEnum.valueOf(direction.toUpperCase())
-                    : sortByEnum.equals(SortByEnum.ID) ? DirectionEnum.DESC : DirectionEnum.ASC;
+                    ? DirectionEnum.valueOf(direction.toUpperCase()) :
+                    productSortByEnum.equals(ProductSortByEnum.ID) ? DirectionEnum.DESC : DirectionEnum.ASC;
         } catch (Exception ex) {
             throw new BadRequestException("¡Valor de sort o direction incorrecto!");
         }
 
         ProductListResponseDto productListResponseDto =
-                productRepository.findAllWithFilters(tags, sortByEnum, directionEnum, startDate, endDate, page, size);
+                productRepository.findAllWithFilters(tags, productSortByEnum, directionEnum, startDate, endDate, page,
+                        size);
 
         return productListResponseDto;
 

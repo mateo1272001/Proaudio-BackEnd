@@ -12,7 +12,7 @@ import java.time.LocalDate;
 public class ItemRowDto {
 
     @NotNull
-    private Long id;
+    private Long itemId;
 
     @NotNull
     private String location;

@@ -14,7 +14,5 @@ public interface ProductTagMapper {
 
     ProductTagResponseDto toDto(ProductTagEntity productTagEntity);
 
-    ProductTagResponseDto toResponseDto(ProductTagRequestDto dto);
-
     ProductTagEntity toEntity(ProductTagRequestDto productTagRequestDto);
 }
