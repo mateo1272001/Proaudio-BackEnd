@@ -55,7 +55,7 @@ public class ItemController {
     private ItemSectionResponseDto GetItemList(@PathVariable Long id,
                                                @RequestParam(required = false, defaultValue = "id") String sortBy,
                                                @RequestParam(required = false) String direction,
-                                               @RequestParam(defaultValue = "1") Integer page,
+                                               @RequestParam(defaultValue = "0") Integer page,
                                                @RequestParam(defaultValue = "10") Integer size,
                                                @RequestParam(required = false) String status) {
 
