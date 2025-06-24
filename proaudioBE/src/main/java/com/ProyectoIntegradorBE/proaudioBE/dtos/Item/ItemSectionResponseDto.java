@@ -11,7 +11,7 @@ import java.util.List;
 @Data
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @AllArgsConstructor
-public class ItemSectionResonseDto {
+public class ItemSectionResponseDto {
 
     private List<ItemRowDto> items;
 

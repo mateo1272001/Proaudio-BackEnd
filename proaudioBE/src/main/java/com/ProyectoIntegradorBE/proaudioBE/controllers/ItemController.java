@@ -1,6 +1,7 @@
 package com.ProyectoIntegradorBE.proaudioBE.controllers;
 
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.*;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.ProductDetailResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ItemService;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ProductService;
 import lombok.RequiredArgsConstructor;
@@ -51,16 +52,30 @@ public class ItemController {
     }
 
     @GetMapping("/product/{id}")
-    private ItemSectionResonseDto GetItemList(@PathVariable Long id,
-                                              @RequestParam(required = false, defaultValue = "id") String sortBy,
-                                              @RequestParam(required = false) String direction,
-                                              @RequestParam(defaultValue = "1") Integer page,
-                                              @RequestParam(defaultValue = "10") Integer size,
-                                              @RequestParam(required = false) String status) {
+    private ItemSectionResponseDto GetItemList(@PathVariable Long id,
+                                               @RequestParam(required = false, defaultValue = "id") String sortBy,
+                                               @RequestParam(required = false) String direction,
+                                               @RequestParam(defaultValue = "1") Integer page,
+                                               @RequestParam(defaultValue = "10") Integer size,
+                                               @RequestParam(required = false) String status) {
 
         productService.GetProduct(id);
 
         return itemService.GetItemList(id, status, sortBy, direction, page, size);
+
+    }
+
+    @GetMapping("{id}/detail")
+    private ItemDetailsResponseDto GetItemDetails(@PathVariable Long id) {
+
+        ItemResponseDto item = itemService.GetItem(id);
+
+        //        ProductResponseDto product = productService.GetProduct(item.getProductId());
+        ProductDetailResponseDto productDetailResponseDto = productService.GetProductDetails(item.getProductId());
+
+        productService.GetProductPhotos(item.getProductId());
+
+        return itemService.GetItemDetails(item, productDetailResponseDto);
 
     }
 

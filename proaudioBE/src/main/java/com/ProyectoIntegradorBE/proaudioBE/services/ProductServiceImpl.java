@@ -189,6 +189,7 @@ public class ProductServiceImpl implements ProductService {
 
         ProductResponseDto product = GetProduct(id);
 
+        response.setProductId(product.getProductId());
         response.setModel(product.getModel());
         response.setComments(product.getComments());
         response.setReplacementValue(product.getReplacementValue());
@@ -320,6 +321,7 @@ public class ProductServiceImpl implements ProductService {
         return rentPriceService.DeletePrice(id);
     }
 
+    @Override
     public PhotoResponseListDto GetProductPhotos(Long id) {
         GetProduct(id);
         return new PhotoResponseListDto(photoService.findPhotosByProductId(id));

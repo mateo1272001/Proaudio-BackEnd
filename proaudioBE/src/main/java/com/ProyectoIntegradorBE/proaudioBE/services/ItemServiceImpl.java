@@ -3,6 +3,7 @@ package com.ProyectoIntegradorBE.proaudioBE.services;
 import com.ProyectoIntegradorBE.proaudioBE.Utils.CollectionUtils;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.*;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.PageableDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.ProductDetailResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.entities.ItemEntity;
 import com.ProyectoIntegradorBE.proaudioBE.enums.DirectionEnum;
 import com.ProyectoIntegradorBE.proaudioBE.enums.ItemSortByEnum;
@@ -138,35 +139,33 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public ItemSectionResonseDto GetItemList(Long productId, String status, String sortBy, String direction,
-                                             Integer page, Integer size) {
+    public ItemSectionResponseDto GetItemList(Long productId, String status, String sortBy, String direction,
+                                              Integer page, Integer size) {
 
-        page = page - 1;
-
+        page = (page != null ? page : 1);
         DirectionEnum dir = Objects.isNull(direction) ? DirectionEnum.DESC : DirectionEnum.valueOf(direction);
         ItemSortByEnum sortByEnum =
                 Objects.isNull(sortBy) ? ItemSortByEnum.ID : ItemSortByEnum.valueOf(sortBy.toUpperCase());
 
         String sortColumn = switch (sortByEnum) {
             case LOCATION -> "location";
-            case BOUGHT_AT -> "model";
+            case BOUGHT_AT -> "boughtAt";
             case ID -> "itemId";
         };
 
         Sort sort = Sort.by(Sort.Direction.fromString(dir.name()), sortColumn);
         Pageable pageable = PageRequest.of(page, size, sort);
-        ItemStatusEnum itemStatusEnum = ItemStatusEnum.valueOf(status);
-        Specification<ItemEntity> spec = ItemSpecification.filterBy(productId, itemStatusEnum);
+
+        Specification<ItemEntity> spec = Objects.isNull(status) ? ItemSpecification.filterBy(productId) :
+                ItemSpecification.filterBy(productId, ItemStatusEnum.valueOf(status));
 
         Page<ItemEntity> pages = itemRepository.findAll(spec, pageable);
-
 
         List<ItemRowDto> dtoList = pages.getContent().stream().map(itemMapper::toRowDto).toList();
 
         PageableDto pagination = buildPageableDto(pages);
 
-        return new ItemSectionResonseDto(dtoList, pagination);
-
+        return new ItemSectionResponseDto(dtoList, pagination);
 
     }
 
@@ -176,9 +175,29 @@ public class ItemServiceImpl implements ItemService {
                 .hasPrevious(page.hasPrevious()).build();
     }
 
+    private static ItemDetailsResponseDto FillItemDetails(ItemResponseDto item,
+                                                          ItemProductResponseDto itemProductResponseDto) {
+        ItemDetailsResponseDto itemDetailsResponseDto = new ItemDetailsResponseDto();
+        itemDetailsResponseDto.setProduct(itemProductResponseDto);
+        itemDetailsResponseDto.setDescription(Objects.nonNull(item.getDescription()) ? item.getDescription() : null);
+        itemDetailsResponseDto.setStatus(item.getStatus());
+        itemDetailsResponseDto.setLocation(item.getLocation());
+        itemDetailsResponseDto.setPriceBought(Objects.nonNull(item.getPriceBought()) ? item.getPriceBought() : null);
+        itemDetailsResponseDto.setBoughtAt(item.getBoughtAt());
+        //        itemDetailsResponseDto.setActivities()
+        return itemDetailsResponseDto;
+    }
+
     @Override
-    public ItemDetailsResponseDto GetItemDetails(Long itemId) {
-        return null;
+    public ItemDetailsResponseDto GetItemDetails(ItemResponseDto item, ProductDetailResponseDto productDetail) {
+
+        ItemProductResponseDto itemProductResponseDto = new ItemProductResponseDto();
+        itemProductResponseDto.setProductId(productDetail.getProductId());
+        itemProductResponseDto.setBrand(productDetail.getBrand());
+        itemProductResponseDto.setModel(productDetail.getModel());
+        itemProductResponseDto.setPhotos(productDetail.getPhotos());
+
+        return FillItemDetails(item, itemProductResponseDto);
     }
 
     @Override
