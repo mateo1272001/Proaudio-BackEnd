@@ -1,6 +1,5 @@
 package com.ProyectoIntegradorBE.proaudioBE.dtos.Item;
 
-import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.ProductResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.enums.ItemStatusEnum;
 import com.ProyectoIntegradorBE.proaudioBE.enums.LocationEnum;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
@@ -14,8 +13,6 @@ import java.time.LocalDate;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class ItemDetailsResponseDto {
 
-    private String qrId;
-
     private String description;
 
     private ItemStatusEnum status;
@@ -26,7 +23,7 @@ public class ItemDetailsResponseDto {
 
     private LocalDate boughtAt;
 
-    private ProductResponseDto product;
+    private ItemProductResponseDto product;
 
     //    private Object activities;
 

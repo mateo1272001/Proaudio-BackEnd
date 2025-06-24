@@ -13,6 +13,8 @@ import java.util.List;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class ProductDetailResponseDto {
 
+    private Long productId;
+
     private String brand;
 
     private String model;

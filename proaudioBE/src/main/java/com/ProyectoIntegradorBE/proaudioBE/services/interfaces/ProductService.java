@@ -29,4 +29,6 @@ public interface ProductService {
 
     ItemResponseListDto ValidateProductsAndCreateItem(ItemRequestListDto items) throws Exception;
 
+    PhotoResponseListDto GetProductPhotos(Long id);
+
 }

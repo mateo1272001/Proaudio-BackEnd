@@ -1,6 +1,7 @@
 package com.ProyectoIntegradorBE.proaudioBE.controllers;
 
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.*;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.ProductDetailResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ItemService;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ProductService;
 import lombok.RequiredArgsConstructor;
@@ -61,6 +62,20 @@ public class ItemController {
         productService.GetProduct(id);
 
         return itemService.GetItemList(id, status, sortBy, direction, page, size);
+
+    }
+
+    @GetMapping("{id}/detail")
+    private ItemDetailsResponseDto GetItemDetails(@PathVariable Long id) {
+
+        ItemResponseDto item = itemService.GetItem(id);
+
+        //        ProductResponseDto product = productService.GetProduct(item.getProductId());
+        ProductDetailResponseDto productDetailResponseDto = productService.GetProductDetails(item.getProductId());
+
+        productService.GetProductPhotos(item.getProductId());
+
+        return itemService.GetItemDetails(item, productDetailResponseDto);
 
     }
 

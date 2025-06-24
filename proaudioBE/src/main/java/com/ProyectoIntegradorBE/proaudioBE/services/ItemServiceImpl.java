@@ -3,6 +3,7 @@ package com.ProyectoIntegradorBE.proaudioBE.services;
 import com.ProyectoIntegradorBE.proaudioBE.Utils.CollectionUtils;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.*;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.PageableDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.ProductDetailResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.entities.ItemEntity;
 import com.ProyectoIntegradorBE.proaudioBE.enums.DirectionEnum;
 import com.ProyectoIntegradorBE.proaudioBE.enums.ItemSortByEnum;
@@ -173,9 +174,29 @@ public class ItemServiceImpl implements ItemService {
                 .hasPrevious(page.hasPrevious()).build();
     }
 
+    private static ItemDetailsResponseDto FillItemDetails(ItemResponseDto item,
+                                                          ItemProductResponseDto itemProductResponseDto) {
+        ItemDetailsResponseDto itemDetailsResponseDto = new ItemDetailsResponseDto();
+        itemDetailsResponseDto.setProduct(itemProductResponseDto);
+        itemDetailsResponseDto.setDescription(Objects.nonNull(item.getDescription()) ? item.getDescription() : null);
+        itemDetailsResponseDto.setStatus(item.getStatus());
+        itemDetailsResponseDto.setLocation(item.getLocation());
+        itemDetailsResponseDto.setPriceBought(Objects.nonNull(item.getPriceBought()) ? item.getPriceBought() : null);
+        itemDetailsResponseDto.setBoughtAt(item.getBoughtAt());
+        //        itemDetailsResponseDto.setActivities()
+        return itemDetailsResponseDto;
+    }
+
     @Override
-    public ItemDetailsResponseDto GetItemDetails(Long itemId) {
-        return null;
+    public ItemDetailsResponseDto GetItemDetails(ItemResponseDto item, ProductDetailResponseDto productDetail) {
+
+        ItemProductResponseDto itemProductResponseDto = new ItemProductResponseDto();
+        itemProductResponseDto.setProductId(productDetail.getProductId());
+        itemProductResponseDto.setBrand(productDetail.getBrand());
+        itemProductResponseDto.setModel(productDetail.getModel());
+        itemProductResponseDto.setPhotos(productDetail.getPhotos());
+
+        return FillItemDetails(item, itemProductResponseDto);
     }
 
     @Override

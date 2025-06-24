@@ -1,6 +1,7 @@
 package com.ProyectoIntegradorBE.proaudioBE.services.interfaces;
 
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.*;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.ProductDetailResponseDto;
 
 public interface ItemService {
 
@@ -15,7 +16,7 @@ public interface ItemService {
     ItemSectionResonseDto GetItemList(Long productId, String status, String sortBy, String direction, Integer page,
                                       Integer size);
 
-    ItemDetailsResponseDto GetItemDetails(Long itemId);
+    ItemDetailsResponseDto GetItemDetails(ItemResponseDto item, ProductDetailResponseDto product);
 
     ItemActionsDto GetItemActions(String qrId);
 
