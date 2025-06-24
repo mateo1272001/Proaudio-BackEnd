@@ -70,7 +70,6 @@ public class ItemController {
 
         ItemResponseDto item = itemService.GetItem(id);
 
-        //        ProductResponseDto product = productService.GetProduct(item.getProductId());
         ProductDetailResponseDto productDetailResponseDto = productService.GetProductDetails(item.getProductId());
 
         productService.GetProductPhotos(item.getProductId());
