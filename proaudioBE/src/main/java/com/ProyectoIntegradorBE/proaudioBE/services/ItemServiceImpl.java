@@ -142,7 +142,7 @@ public class ItemServiceImpl implements ItemService {
     public ItemSectionResponseDto GetItemList(Long productId, String status, String sortBy, String direction,
                                               Integer page, Integer size) {
 
-        page = (page != null ? page : 1);
+        page = (page != null ? page : 0);
         DirectionEnum dir = Objects.isNull(direction) ? DirectionEnum.DESC : DirectionEnum.valueOf(direction);
         ItemSortByEnum sortByEnum =
                 Objects.isNull(sortBy) ? ItemSortByEnum.ID : ItemSortByEnum.valueOf(sortBy.toUpperCase());

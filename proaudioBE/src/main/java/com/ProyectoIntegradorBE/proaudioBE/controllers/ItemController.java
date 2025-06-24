@@ -55,7 +55,7 @@ public class ItemController {
     private ItemSectionResponseDto GetItemList(@PathVariable Long id,
                                                @RequestParam(required = false, defaultValue = "id") String sortBy,
                                                @RequestParam(required = false) String direction,
-                                               @RequestParam(defaultValue = "1") Integer page,
+                                               @RequestParam(defaultValue = "0") Integer page,
                                                @RequestParam(defaultValue = "10") Integer size,
                                                @RequestParam(required = false) String status) {
 
@@ -70,7 +70,6 @@ public class ItemController {
 
         ItemResponseDto item = itemService.GetItem(id);
 
-        //        ProductResponseDto product = productService.GetProduct(item.getProductId());
         ProductDetailResponseDto productDetailResponseDto = productService.GetProductDetails(item.getProductId());
 
         productService.GetProductPhotos(item.getProductId());
