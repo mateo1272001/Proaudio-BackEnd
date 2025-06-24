@@ -24,7 +24,7 @@ public class ProductController {
             @RequestPart(value = "file", required = false) MultipartFile[] files)
             throws BadRequestException {
 
-        //TODO ADD MANDATORY BRAND TAG
+        //TODO (TAG) add mandatory brand tag validation
         return productService.createProduct(productRequestDto, files);
 
     }

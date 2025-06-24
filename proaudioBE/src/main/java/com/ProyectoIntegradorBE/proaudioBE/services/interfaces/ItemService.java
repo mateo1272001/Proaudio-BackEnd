@@ -12,7 +12,8 @@ public interface ItemService {
 
     ItemResponseDto GetItem(Long itemId);
 
-    ItemSectionResonseDto GetItemList(String status, String sortBy, String direction, Integer page, Integer size);
+    ItemSectionResonseDto GetItemList(Long productId, String status, String sortBy, String direction, Integer page,
+                                      Integer size);
 
     ItemDetailsResponseDto GetItemDetails(Long itemId);
 

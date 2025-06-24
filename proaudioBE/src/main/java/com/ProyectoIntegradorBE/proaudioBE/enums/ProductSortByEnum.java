@@ -1,6 +1,6 @@
 package com.ProyectoIntegradorBE.proaudioBE.enums;
 
-public enum SortByEnum {
+public enum ProductSortByEnum {
 
     ID,
     BRAND,

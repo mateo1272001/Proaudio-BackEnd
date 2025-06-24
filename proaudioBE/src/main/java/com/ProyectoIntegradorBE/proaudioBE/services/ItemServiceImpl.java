@@ -2,15 +2,24 @@ package com.ProyectoIntegradorBE.proaudioBE.services;
 
 import com.ProyectoIntegradorBE.proaudioBE.Utils.CollectionUtils;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.*;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.PageableDto;
 import com.ProyectoIntegradorBE.proaudioBE.entities.ItemEntity;
+import com.ProyectoIntegradorBE.proaudioBE.enums.DirectionEnum;
+import com.ProyectoIntegradorBE.proaudioBE.enums.ItemSortByEnum;
 import com.ProyectoIntegradorBE.proaudioBE.enums.ItemStatusEnum;
 import com.ProyectoIntegradorBE.proaudioBE.enums.LocationEnum;
 import com.ProyectoIntegradorBE.proaudioBE.exceptions.BadRequestException;
 import com.ProyectoIntegradorBE.proaudioBE.mappers.ItemMapper;
 import com.ProyectoIntegradorBE.proaudioBE.repositories.ItemRepository;
+import com.ProyectoIntegradorBE.proaudioBE.repositories.specifications.ItemSpecification;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ItemService;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.QrService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -129,9 +138,42 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public ItemSectionResonseDto GetItemList(String status, String sortBy, String direction, Integer page,
-                                             Integer size) {
-        return null;
+    public ItemSectionResonseDto GetItemList(Long productId, String status, String sortBy, String direction,
+                                             Integer page, Integer size) {
+
+        page = page - 1;
+
+        DirectionEnum dir = Objects.isNull(direction) ? DirectionEnum.DESC : DirectionEnum.valueOf(direction);
+        ItemSortByEnum sortByEnum =
+                Objects.isNull(sortBy) ? ItemSortByEnum.ID : ItemSortByEnum.valueOf(sortBy.toUpperCase());
+
+        String sortColumn = switch (sortByEnum) {
+            case LOCATION -> "location";
+            case BOUGHT_AT -> "model";
+            case ID -> "itemId";
+        };
+
+        Sort sort = Sort.by(Sort.Direction.fromString(dir.name()), sortColumn);
+        Pageable pageable = PageRequest.of(page, size, sort);
+        ItemStatusEnum itemStatusEnum = ItemStatusEnum.valueOf(status);
+        Specification<ItemEntity> spec = ItemSpecification.filterBy(productId, itemStatusEnum);
+
+        Page<ItemEntity> pages = itemRepository.findAll(spec, pageable);
+
+
+        List<ItemRowDto> dtoList = pages.getContent().stream().map(itemMapper::toRowDto).toList();
+
+        PageableDto pagination = buildPageableDto(pages);
+
+        return new ItemSectionResonseDto(dtoList, pagination);
+
+
+    }
+
+    private PageableDto buildPageableDto(Page<?> page) {
+        return PageableDto.builder().pageNumber(page.getNumber()).pageSize(page.getSize())
+                .totalPages(page.getTotalPages()).totalElements(page.getTotalElements()).hasNext(page.hasNext())
+                .hasPrevious(page.hasPrevious()).build();
     }
 
     @Override

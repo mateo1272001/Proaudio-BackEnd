@@ -4,7 +4,7 @@ import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.PageableDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.ProductListResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.ProductRowDto;
 import com.ProyectoIntegradorBE.proaudioBE.enums.DirectionEnum;
-import com.ProyectoIntegradorBE.proaudioBE.enums.SortByEnum;
+import com.ProyectoIntegradorBE.proaudioBE.enums.ProductSortByEnum;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -21,8 +21,7 @@ public class ProductRepositoryCustomImpl implements ProductRepositoryCustom {
     private final JdbcTemplate jdbcTemplate;
 
     public ProductListResponseDto findAllWithFilters(
-            List<Long> tagIds,
-            SortByEnum sortBy,
+            List<Long> tagIds, ProductSortByEnum sortBy,
             DirectionEnum direction,
             LocalDate startDate,
             LocalDate endDate,

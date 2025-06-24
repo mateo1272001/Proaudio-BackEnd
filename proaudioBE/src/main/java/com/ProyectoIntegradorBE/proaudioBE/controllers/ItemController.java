@@ -50,5 +50,18 @@ public class ItemController {
 
     }
 
+    @GetMapping("/product/{id}")
+    private ItemSectionResonseDto GetItemList(@PathVariable Long id,
+                                              @RequestParam(required = false, defaultValue = "id") String sortBy,
+                                              @RequestParam(required = false) String direction,
+                                              @RequestParam(defaultValue = "1") Integer page,
+                                              @RequestParam(defaultValue = "10") Integer size,
+                                              @RequestParam(required = false) String status) {
+
+        productService.GetProduct(id);
+
+        return itemService.GetItemList(id, status, sortBy, direction, page, size);
+
+    }
 
 }
