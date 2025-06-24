@@ -13,8 +13,8 @@ public interface ItemService {
 
     ItemResponseDto GetItem(Long itemId);
 
-    ItemSectionResonseDto GetItemList(Long productId, String status, String sortBy, String direction, Integer page,
-                                      Integer size);
+    ItemSectionResponseDto GetItemList(Long productId, String status, String sortBy, String direction, Integer page,
+                                       Integer size);
 
     ItemDetailsResponseDto GetItemDetails(ItemResponseDto item, ProductDetailResponseDto product);
 

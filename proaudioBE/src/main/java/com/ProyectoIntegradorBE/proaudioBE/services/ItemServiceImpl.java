@@ -139,8 +139,8 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public ItemSectionResonseDto GetItemList(Long productId, String status, String sortBy, String direction,
-                                             Integer page, Integer size) {
+    public ItemSectionResponseDto GetItemList(Long productId, String status, String sortBy, String direction,
+                                              Integer page, Integer size) {
 
         page = (page != null ? page : 1);
         DirectionEnum dir = Objects.isNull(direction) ? DirectionEnum.DESC : DirectionEnum.valueOf(direction);
@@ -165,7 +165,7 @@ public class ItemServiceImpl implements ItemService {
 
         PageableDto pagination = buildPageableDto(pages);
 
-        return new ItemSectionResonseDto(dtoList, pagination);
+        return new ItemSectionResponseDto(dtoList, pagination);
 
     }
 
