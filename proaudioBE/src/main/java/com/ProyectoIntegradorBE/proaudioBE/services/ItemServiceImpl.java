@@ -141,12 +141,10 @@ public class ItemServiceImpl implements ItemService {
     public ItemSectionResonseDto GetItemList(Long productId, String status, String sortBy, String direction,
                                              Integer page, Integer size) {
 
-        page = page - 1;
-
+        page = (page != null ? page : 1) - 1;
         DirectionEnum dir = Objects.isNull(direction) ? DirectionEnum.DESC : DirectionEnum.valueOf(direction);
         ItemSortByEnum sortByEnum =
                 Objects.isNull(sortBy) ? ItemSortByEnum.ID : ItemSortByEnum.valueOf(sortBy.toUpperCase());
-
         String sortColumn = switch (sortByEnum) {
             case LOCATION -> "location";
             case BOUGHT_AT -> "model";
@@ -155,18 +153,17 @@ public class ItemServiceImpl implements ItemService {
 
         Sort sort = Sort.by(Sort.Direction.fromString(dir.name()), sortColumn);
         Pageable pageable = PageRequest.of(page, size, sort);
-        ItemStatusEnum itemStatusEnum = ItemStatusEnum.valueOf(status);
-        Specification<ItemEntity> spec = ItemSpecification.filterBy(productId, itemStatusEnum);
+
+        Specification<ItemEntity> spec = Objects.isNull(status) ? ItemSpecification.filterBy(productId) :
+                ItemSpecification.filterBy(productId, ItemStatusEnum.valueOf(status));
 
         Page<ItemEntity> pages = itemRepository.findAll(spec, pageable);
-
 
         List<ItemRowDto> dtoList = pages.getContent().stream().map(itemMapper::toRowDto).toList();
 
         PageableDto pagination = buildPageableDto(pages);
 
         return new ItemSectionResonseDto(dtoList, pagination);
-
 
     }
 

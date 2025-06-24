@@ -1,5 +1,6 @@
 package com.ProyectoIntegradorBE.proaudioBE.dtos.Item;
 
+import com.ProyectoIntegradorBE.proaudioBE.enums.ItemStatusEnum;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import jakarta.validation.constraints.NotNull;
@@ -16,6 +17,8 @@ public class ItemRowDto {
 
     @NotNull
     private String location;
+
+    private ItemStatusEnum status;
 
     private LocalDate boughtAt;
 

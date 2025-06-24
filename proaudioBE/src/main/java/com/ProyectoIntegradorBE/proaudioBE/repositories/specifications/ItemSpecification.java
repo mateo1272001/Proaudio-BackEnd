@@ -10,6 +10,10 @@ public class ItemSpecification {
         return Specification.where(productIdEquals(productId)).and(statusEquals(status));
     }
 
+    public static Specification<ItemEntity> filterBy(Long productId) {
+        return Specification.where(productIdEquals(productId));
+    }
+
     private static Specification<ItemEntity> productIdEquals(Long productId) {
         return (root, query, cb) -> productId == null ? null : cb.equal(root.get("productId"), productId);
     }
