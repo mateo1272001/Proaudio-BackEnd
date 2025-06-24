@@ -142,13 +142,14 @@ public class ItemServiceImpl implements ItemService {
     public ItemSectionResonseDto GetItemList(Long productId, String status, String sortBy, String direction,
                                              Integer page, Integer size) {
 
-        page = (page != null ? page : 1) - 1;
+        page = (page != null ? page : 1);
         DirectionEnum dir = Objects.isNull(direction) ? DirectionEnum.DESC : DirectionEnum.valueOf(direction);
         ItemSortByEnum sortByEnum =
                 Objects.isNull(sortBy) ? ItemSortByEnum.ID : ItemSortByEnum.valueOf(sortBy.toUpperCase());
+
         String sortColumn = switch (sortByEnum) {
             case LOCATION -> "location";
-            case BOUGHT_AT -> "model";
+            case BOUGHT_AT -> "boughtAt";
             case ID -> "itemId";
         };
 
