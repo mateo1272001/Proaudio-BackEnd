@@ -16,5 +16,6 @@ public class EventRequestDto {
 
     private String description;
 
+    private String status;
 
 }

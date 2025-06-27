@@ -52,9 +52,15 @@ public class EventServiceImpl implements EventService {
         if (Objects.nonNull(eventRequestDto.getDistance())) {
             eventEntity.setDistance(eventRequestDto.getDistance());
         }
-        eventEntity.setAddress(Objects.nonNull(eventRequestDto.getAddress()) ? eventRequestDto.getAddress() : null);
-        eventEntity.setDescription(
-                Objects.nonNull(eventRequestDto.getDescription()) ? eventRequestDto.getDescription() : null);
+        if (Objects.nonNull(eventRequestDto.getAddress())) {
+            eventEntity.setAddress(eventRequestDto.getAddress());
+        }
+        if (Objects.nonNull(eventRequestDto.getDescription())) {
+            eventEntity.setDescription(eventRequestDto.getDescription());
+        }
+        if (Objects.nonNull(eventRequestDto.getStatus())) {
+            eventEntity.setStatus(BasicEnumStatus.valueOf(eventRequestDto.getStatus()));
+        }
 
         eventEntity = eventRepository.save(eventEntity);
 
