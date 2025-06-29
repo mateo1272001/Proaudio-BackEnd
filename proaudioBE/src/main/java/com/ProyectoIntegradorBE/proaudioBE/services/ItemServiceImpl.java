@@ -40,6 +40,8 @@ public class ItemServiceImpl implements ItemService {
 
     private final ItemMapper itemMapper;
 
+    private final UtilService utilService;
+
     @Override
     @Transactional
     public ItemResponseListDto CreateItem(ItemRequestListDto items) throws Exception {
@@ -163,17 +165,17 @@ public class ItemServiceImpl implements ItemService {
 
         List<ItemRowDto> dtoList = pages.getContent().stream().map(itemMapper::toRowDto).toList();
 
-        PageableDto pagination = buildPageableDto(pages);
+        PageableDto pagination = utilService.buildPageableDto(pages);
 
         return new ItemSectionResponseDto(dtoList, pagination);
 
     }
 
-    private PageableDto buildPageableDto(Page<?> page) {
-        return PageableDto.builder().pageNumber(page.getNumber()).pageSize(page.getSize())
-                .totalPages(page.getTotalPages()).totalElements(page.getTotalElements()).hasNext(page.hasNext())
-                .hasPrevious(page.hasPrevious()).build();
-    }
+    //    private PageableDto buildPageableDto(Page<?> page) {
+    //        return PageableDto.builder().pageNumber(page.getNumber()).pageSize(page.getSize())
+    //                .totalPages(page.getTotalPages()).totalElements(page.getTotalElements()).hasNext(page.hasNext())
+    //                .hasPrevious(page.hasPrevious()).build();
+    //    }
 
     private static ItemDetailsResponseDto FillItemDetails(ItemResponseDto item,
                                                           ItemProductResponseDto itemProductResponseDto) {
