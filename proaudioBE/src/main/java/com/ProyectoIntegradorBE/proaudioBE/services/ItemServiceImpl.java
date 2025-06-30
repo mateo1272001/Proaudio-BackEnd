@@ -46,6 +46,7 @@ public class ItemServiceImpl implements ItemService {
 
         List<ItemEntity> entityList = new ArrayList<>();
 
+
         for (ItemRequestDto item : items.getItems()) {
 
             List<ItemEntity> itemEntities = createItemBlock(item);
