@@ -1,4 +1,4 @@
-package com.ProyectoIntegradorBE.proaudioBE.services;
+package com.ProyectoIntegradorBE.proaudioBE.services.interfaces;
 
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Tag.AllTagsModuleListDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Tag.TagRequestDto;
@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import org.apache.coyote.BadRequestException;
 
 public interface TagService {
+
     TagResponseDto createTag(TagRequestDto tagRequestDto);
 
     TagResponseDto updateTag(Long id, @Valid TagRequestDto tagRequestDto) throws BadRequestException;

@@ -3,6 +3,7 @@ package com.ProyectoIntegradorBE.proaudioBE.services;
 import com.ProyectoIntegradorBE.proaudioBE.exceptions.ClientNotFoundException;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Client.ClientResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.entities.ClientEntity;
+import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ClientService;
 import lombok.RequiredArgsConstructor;
 import com.ProyectoIntegradorBE.proaudioBE.mappers.ClientMapper;
 import com.ProyectoIntegradorBE.proaudioBE.repositories.ClientRepository;
