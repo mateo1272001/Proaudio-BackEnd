@@ -45,9 +45,9 @@ spring:
     activate:
       on-profile: test
   datasource:
-    url: jdbc:mysql://proaudio-test.c6zfg2tqcsfh.us-east-1.rds.amazonaws.com/proaudio_channels?useSSL=false&serverTimezone=UTC
-    username: admin
-    password: AdobleveEse2025.
+    url: jdbc:mysql://localhost:3306/proaudio_channels?useSSL=false&serverTimezone=UTC
+    username: root
+    password: Usr.Tst1
   jpa:
     hibernate:
       ddl-auto: none
