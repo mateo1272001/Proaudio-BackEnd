@@ -3,6 +3,7 @@ package com.ProyectoIntegradorBE.proaudioBE.controllers;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Expense.ExpenseRequestDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Expense.ExpenseResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Expense.ExpenseResponseListDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Expense.ExpenseTypeListResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ExpenseService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -48,6 +49,13 @@ public class ExpenseController {
     private ExpenseResponseListDto GetExpensesByProject(@PathVariable Long id) {
 
         return expenseService.GetExpensesByProject(id);
+
+    }
+
+    @GetMapping("/types")
+    private ExpenseTypeListResponseDto GetExpensesByProject() {
+
+        return expenseService.GetExpenseTypes();
 
     }
 

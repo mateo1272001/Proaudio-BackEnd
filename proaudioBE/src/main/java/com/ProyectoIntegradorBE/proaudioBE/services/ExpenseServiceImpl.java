@@ -3,6 +3,7 @@ package com.ProyectoIntegradorBE.proaudioBE.services;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Expense.ExpenseRequestDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Expense.ExpenseResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Expense.ExpenseResponseListDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Expense.ExpenseTypeListResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.entities.ExpenseEntity;
 import com.ProyectoIntegradorBE.proaudioBE.enums.BasicEnumStatus;
 import com.ProyectoIntegradorBE.proaudioBE.enums.ExpenseTypeEnum;
@@ -13,6 +14,7 @@ import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ExpenseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -87,6 +89,12 @@ public class ExpenseServiceImpl implements ExpenseService {
         List<ExpenseEntity> expenseEntities = expenseRepository.findByProjectIdAndStatus(id, BasicEnumStatus.ENABLED);
 
         return new ExpenseResponseListDto(expenseMapper.toDtoList(expenseEntities));
+    }
+
+    @Override
+    public ExpenseTypeListResponseDto GetExpenseTypes() {
+
+        return new ExpenseTypeListResponseDto(Arrays.stream(ExpenseTypeEnum.values()).toList());
     }
 
 
