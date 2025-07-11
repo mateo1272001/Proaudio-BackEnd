@@ -8,6 +8,8 @@ import lombok.Data;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class EventRequestDto {
 
+    private Long eventId;
+
     private String name;
 
     private String address;

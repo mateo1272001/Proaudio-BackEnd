@@ -3,6 +3,8 @@ package com.ProyectoIntegradorBE.proaudioBE.services.interfaces;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.*;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.ProductDetailResponseDto;
 
+import java.util.List;
+
 public interface ItemService {
 
     ItemResponseListDto CreateItem(ItemRequestListDto items) throws Exception;
@@ -21,4 +23,6 @@ public interface ItemService {
     ItemActionsDto GetItemActions(String qrId);
 
     ItemStatusResponseDto GetItemStatuses();
+
+    List<ItemResponseDto> GetByProductIds(List<Long> productIds);
 }

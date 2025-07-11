@@ -16,8 +16,7 @@ public class ExpenseRequestDto {
 
     @Nullable
     private Long expenseId;
-
-    @NotNull
+    
     private Long projectId;
 
     @NotNull
