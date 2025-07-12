@@ -134,7 +134,7 @@ public class ProductServiceImpl implements ProductService {
         ProductEntity productEntity = productRepository.findById(id)
                 .orElseThrow(() -> new BadRequestException("Product ID no encontrado: " + id));
 
-        //TODO ADD ARTICLES VALIDATION
+        //todo [ITEM] add item validation
 
         productEntity.setStatus(ProductStatus.ELIMINATED);
         productRepository.save(productEntity);
@@ -203,8 +203,8 @@ public class ProductServiceImpl implements ProductService {
             response.setPhotos(new ArrayList<>());
         }
         response.setPrices(rentPriceService.findRentPriceByProductId(id));
-//        response.setActivities();  //todo add activities when developing this functionalities
-//        response.setProductBalance(); //todo add balance when projects are added
+        //        response.setActivities();  //todo [ACTIVITIES] add activities when developing this functionalities
+        //        response.setProductBalance(); //todo [PROJECT] add balance when projects are added
         List<ProductTagResponseDto> productTagResponseDtos = findTagsByProductId(id);
 
         List<TagResponseDto> tags =  tagService.findByTagIdIn(productTagResponseDtos
@@ -216,17 +216,30 @@ public class ProductServiceImpl implements ProductService {
         response.setDependencyTags(new ArrayList<>());
         response.setRelationTags(new ArrayList<>());
 
-        for(TagResponseDto tag : tags) {
+        //        for(TagResponseDto tag : tags) {
+        //
+        //            ProductTagResponseDto productTagResponseDto =
+        //                    productTagResponseDtos.stream().filter(pt -> pt.getTagId()
+        //                            .equals(tag.getTagId()))
+        //                            .findFirst().orElseThrow(() -> new BadRequestException(""));
+        //
+        //            switch (productTagResponseDto.getType()) {
+        //                case DESCRIPTIVE -> response.getDescriptionTags().add(tag);
+        //                case RELATION -> response.getRelationTags().add(tag);
+        //                case DEPENDENCY -> response.getDependencyTags().add(tag);
+        //            }
+        //
+        //        }
+        for (ProductTagResponseDto productTagResponseDto : productTagResponseDtos) {
 
-            ProductTagResponseDto productTagResponseDto =
-                    productTagResponseDtos.stream().filter(pt -> pt.getTagId()
-                            .equals(tag.getTagId()))
-                            .findFirst().orElseThrow(() -> new BadRequestException(""));
+            TagResponseDto tagResponseDto =
+                    tags.stream().filter(t -> t.getTagId().equals(productTagResponseDto.getTagId())).findFirst()
+                            .orElseThrow(() -> new BadRequestException("Tag no encontrado entre los product tags"));
 
             switch (productTagResponseDto.getType()) {
-                case DESCRIPTIVE -> response.getDescriptionTags().add(tag);
-                case RELATION -> response.getRelationTags().add(tag);
-                case DEPENDENCY -> response.getDependencyTags().add(tag);
+                case DESCRIPTIVE -> response.getDescriptionTags().add(tagResponseDto);
+                case RELATION -> response.getRelationTags().add(tagResponseDto);
+                case DEPENDENCY -> response.getDependencyTags().add(tagResponseDto);
             }
 
         }
@@ -280,12 +293,12 @@ public class ProductServiceImpl implements ProductService {
             throw new BadRequestException("¡La etiqueta no existe!");
         }
 
-        return productTagService.createProductTag(productTagRequestDto);
+        return productTagService.createProductTag(productTagRequestDto, tagEntityOpt.get());
 
     }
 
-    public ProductTagResponseDto DeleteProductTag(Long tagId, Long productId) {
-        return productTagService.deleteProductTag(tagId, productId);
+    public ProductTagResponseDto DeleteProductTag(Long tagId, Long productId, String type) {
+        return productTagService.deleteProductTag(tagId, productId, type);
     }
 
     //PHOTOS

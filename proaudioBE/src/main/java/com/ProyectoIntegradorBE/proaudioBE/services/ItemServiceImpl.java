@@ -196,7 +196,7 @@ public class ItemServiceImpl implements ItemService {
         itemProductResponseDto.setProductId(productDetail.getProductId());
         itemProductResponseDto.setBrand(productDetail.getBrand());
         itemProductResponseDto.setModel(productDetail.getModel());
-        itemProductResponseDto.setPhotos(productDetail.getPhotos());
+        itemProductResponseDto.setPhotos(Objects.nonNull(productDetail.getPhotos()) ? productDetail.getPhotos() : null);
 
         return FillItemDetails(item, itemProductResponseDto);
     }
