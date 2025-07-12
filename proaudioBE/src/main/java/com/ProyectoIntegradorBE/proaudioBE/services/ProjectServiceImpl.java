@@ -7,10 +7,7 @@ import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.ItemResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.ProductResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.ProductProject.ProductProjectRequestDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.ProductProject.ProductProjectResponseDto;
-import com.ProyectoIntegradorBE.proaudioBE.dtos.Project.ProductsProjectResponseDto;
-import com.ProyectoIntegradorBE.proaudioBE.dtos.Project.ProjectProductRequestDto;
-import com.ProyectoIntegradorBE.proaudioBE.dtos.Project.ProjectRequestDto;
-import com.ProyectoIntegradorBE.proaudioBE.dtos.Project.ProjectResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Project.*;
 import com.ProyectoIntegradorBE.proaudioBE.entities.ProjectEntity;
 import com.ProyectoIntegradorBE.proaudioBE.enums.*;
 import com.ProyectoIntegradorBE.proaudioBE.exceptions.BadRequestException;
@@ -23,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -68,7 +66,7 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     @Transactional
-    public ProjectResponseDto CreateProject(ProjectRequestDto request) {
+    public ProjectResponseDto createProject(ProjectRequestDto request) {
 
         EventResponseDto eventResponseDto = Objects.nonNull(request.getEvent().getEventId()) ?
                 eventService.GetEvent(request.getEvent().getEventId()) : eventService.CreateEvent(request.getEvent());
@@ -88,6 +86,23 @@ public class ProjectServiceImpl implements ProjectService {
         }
 
         return makeProjectResponseDto(request, projectEntity, eventResponseDto, products, expenses);
+    }
+
+    @Override
+    public ProjectTypesResponseDto getProjectTypes() {
+
+        return new ProjectTypesResponseDto(Arrays.stream(ProjectTypeEnum.values()).toList());
+    }
+
+    @Override
+    public ProjectStatusesDto getPossibleStatusByProjectId(Long id) {
+        //todo [PROJECT get] calculate next status for project
+        return new ProjectStatusesDto(Arrays.stream(ProjectStatusEnum.values()).toList());
+    }
+
+    @Override
+    public ProjectStatusesDto getPossibleStatusForStartingProject() {
+        return new ProjectStatusesDto(List.of(ProjectStatusEnum.PLANNED, ProjectStatusEnum.CONFIRMED));
     }
 
     private ProjectEntity setProjectEntity(ProjectRequestDto request, EventResponseDto eventResponseDto) {
