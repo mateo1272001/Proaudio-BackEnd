@@ -48,6 +48,7 @@ public class ItemServiceImpl implements ItemService {
 
         List<ItemEntity> entityList = new ArrayList<>();
 
+
         for (ItemRequestDto item : items.getItems()) {
 
             List<ItemEntity> itemEntities = createItemBlock(item);
@@ -197,7 +198,7 @@ public class ItemServiceImpl implements ItemService {
         itemProductResponseDto.setProductId(productDetail.getProductId());
         itemProductResponseDto.setBrand(productDetail.getBrand());
         itemProductResponseDto.setModel(productDetail.getModel());
-        itemProductResponseDto.setPhotos(productDetail.getPhotos());
+        itemProductResponseDto.setPhotos(Objects.nonNull(productDetail.getPhotos()) ? productDetail.getPhotos() : null);
 
         return FillItemDetails(item, itemProductResponseDto);
     }
