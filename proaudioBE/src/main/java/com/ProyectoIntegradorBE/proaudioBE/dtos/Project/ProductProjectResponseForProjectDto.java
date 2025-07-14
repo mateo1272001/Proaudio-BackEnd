@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 
 @Data
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class ProductsProjectResponseDto {
+public class ProductProjectResponseForProjectDto {
 
     private Long productId;
 

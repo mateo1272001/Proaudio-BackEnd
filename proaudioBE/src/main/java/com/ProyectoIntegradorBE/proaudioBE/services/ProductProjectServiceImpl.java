@@ -42,4 +42,14 @@ public class ProductProjectServiceImpl implements ProductProjectService {
 
         return productProjectMapper.toDto(productProjectEntity);
     }
+    //
+    //    @Override
+    //    public ProductProjectResponseListDto getProductProjectByProjectId(Long projectId, BasicEnumStatus status) {
+    //
+    //        List<ProductProjectEntity> productProjects =
+    //                productProjectRepository.findByProjectIdAndStatus(projectId, status);
+    //
+    //        return new ProductProjectResponseListDto(productProjectMapper.toDtoList(productProjects));
+    //    }
+
 }

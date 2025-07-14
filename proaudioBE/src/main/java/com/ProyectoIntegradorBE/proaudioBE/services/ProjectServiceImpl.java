@@ -12,6 +12,7 @@ import com.ProyectoIntegradorBE.proaudioBE.entities.ProjectEntity;
 import com.ProyectoIntegradorBE.proaudioBE.enums.*;
 import com.ProyectoIntegradorBE.proaudioBE.exceptions.BadRequestException;
 import com.ProyectoIntegradorBE.proaudioBE.mappers.EventMapper;
+import com.ProyectoIntegradorBE.proaudioBE.mappers.ProjectMapper;
 import com.ProyectoIntegradorBE.proaudioBE.repositories.ProjectRepository;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.*;
 import lombok.RequiredArgsConstructor;
@@ -40,11 +41,17 @@ public class ProjectServiceImpl implements ProjectService {
 
     private final EventMapper eventMapper;
 
+    private final ProjectMapper projectMapper;
+
     private final ProjectRepository projectRepository;
+
+    private final List<ProjectStatusEnum> UPDATE_STATUSES =
+            List.of(ProjectStatusEnum.PLANNED, ProjectStatusEnum.CONFIRMED, ProjectStatusEnum.DISCARDED);
+
 
     private static ProjectResponseDto makeProjectResponseDto(ProjectRequestDto request, ProjectEntity projectEntity,
                                                              EventResponseDto eventResponseDto,
-                                                             List<ProductsProjectResponseDto> products,
+                                                             List<ProductProjectResponseForProjectDto> products,
                                                              List<ExpenseResponseDto> expenses) {
         ProjectResponseDto projectResponseDto = new ProjectResponseDto();
         projectResponseDto.setProjectId(projectEntity.getProjectId());
@@ -68,14 +75,13 @@ public class ProjectServiceImpl implements ProjectService {
     @Transactional
     public ProjectResponseDto createProject(ProjectRequestDto request) {
 
-        EventResponseDto eventResponseDto = Objects.nonNull(request.getEvent().getEventId()) ?
-                eventService.GetEvent(request.getEvent().getEventId()) : eventService.CreateEvent(request.getEvent());
+        EventResponseDto eventResponseDto = getOrCreateEvent(request);
 
         ProjectEntity projectEntity = setProjectEntity(request, eventResponseDto);
 
         projectEntity = projectRepository.save(projectEntity);
 
-        List<ProductsProjectResponseDto> products = new ArrayList<>();
+        List<ProductProjectResponseForProjectDto> products = new ArrayList<>();
         if (Objects.nonNull(request.getProducts())) {
             products = setProducts(request.getProducts(), projectEntity.getProjectId());
         }
@@ -88,6 +94,112 @@ public class ProjectServiceImpl implements ProjectService {
         return makeProjectResponseDto(request, projectEntity, eventResponseDto, products, expenses);
     }
 
+    private EventResponseDto getOrCreateEvent(ProjectRequestDto request) {
+        return Objects.nonNull(request.getEvent().getEventId()) ?
+                eventService.GetEvent(request.getEvent().getEventId()) : eventService.CreateEvent(request.getEvent());
+    }
+
+    @Override
+    public ProjectSimpleReponseDto updateProject(Long id, ProjectRequestDto request) {
+
+        ProjectSimpleReponseDto projectResponseDto = getProject(id);
+
+        ProjectStatusEnum statusEnum = projectResponseDto.getStatus();
+        boolean statusIsUpdatable = UPDATE_STATUSES.contains(statusEnum);
+
+        ProjectEntity entityResponse = new ProjectEntity();
+
+        //always updatable
+        entityResponse.setName(request.getName());
+        entityResponse.setDescription(Objects.nonNull(request.getDescription()) ? request.getDescription() : null);
+        entityResponse.setStatus(request.getStatus());
+        entityResponse.setPaymentStatus(request.getPaymentStatus());
+        entityResponse.setProjectType(request.getProjectType());
+        entityResponse.setCostAddition(request.getCostAddition());
+
+        //only on CONFIRMED, PLANNED or DISCARDED
+        if (request.getStartDate().isAfter(request.getEndDate())) {
+            throw new BadRequestException("¡La fecha de fin no puede ser anterior a la fecha de inicio!");
+        }
+
+        if (!request.getStartDate().equals(projectResponseDto.getStartDate())) {
+            if (!statusIsUpdatable) {
+                throw new BadRequestException(
+                        "La fecha de inicio solo se puede modificar si el projecto aún no empieza!");
+            }
+            entityResponse.setStartDate(request.getStartDate());
+        }
+
+        if (!request.getEndDate().equals(projectResponseDto.getEndDate())) {
+            if (!statusIsUpdatable) {
+                throw new BadRequestException(
+                        "La fecha de inicio solo se puede modificar si el projecto aún no empieza!");
+            }
+            entityResponse.setEndDate(request.getEndDate());
+        }
+        //        EventResponseDto eventResponseDto = new EventResponseDto();
+        //        boolean changeRequested = false;
+        //        if (statusIsUpdatable) {
+        //            eventResponseDto = Objects.nonNull(request.getEvent().getEventId()) ?
+        //                    eventService.GetEvent(request.getEvent().getEventId()) : eventService.CreateEvent(request.getEvent());
+        //        }
+        //        if (Objects.nonNull(eventResponseDto.getEventId()) &&
+        //                !eventResponseDto.getEventId().equals(entityResponse.getEventId())) {
+        //            entityResponse.setEventId(eventResponseDto.getEventId());
+        //            changeRequested = true;
+        //        }
+        //        if (!statusIsUpdatable && changeRequested) {
+        //            throw new BadRequestException("El estado solo se puede modificar si el projecto aún no empieza!");
+        //        }
+        if (Objects.nonNull(request.getEvent().getEventId())) {
+            entityResponse.setEventId(projectResponseDto.getEventId());
+            Long requestEventId = request.getEvent().getEventId();
+
+            if (!requestEventId.equals(projectResponseDto.getEventId())) {
+                if (!statusIsUpdatable) {
+                    throw new BadRequestException("El estado solo se puede modificar si el projecto aún no empieza!");
+                }
+                EventResponseDto eventResponseDto = eventService.GetEvent(requestEventId);
+                entityResponse.setEventId(eventResponseDto.getEventId());
+            }
+
+        } else {
+            if (!statusIsUpdatable) {
+                throw new BadRequestException("El estado solo se puede modificar si el projecto aún no empieza!");
+            }
+            EventResponseDto eventResponseDto = eventService.CreateEvent(request.getEvent());
+            entityResponse.setEventId(eventResponseDto.getEventId());
+        }
+
+        entityResponse.setClientId(projectResponseDto.getClientId()); //todo [CLIENT] add client update
+
+        projectRepository.save(entityResponse);
+
+        return projectMapper.toDto(entityResponse);
+    }
+
+    @Override
+    public ProjectSimpleReponseDto getProject(Long id) {
+
+        ProjectEntity projectEntity = projectRepository.findById(id)
+                .orElseThrow(() -> new BadRequestException("Project con ID no encontrado: " + id));
+        //        EventResponseDto eventResponseDto = eventService.GetEvent(projectEntity.getEventId());
+        //        projectResponseDto.setEvent(eventResponseDto);
+        //
+        //        //        ClientResponseDto clientResponseDto = ...
+        //        //todo [CLIENT] add client to response
+        //
+        //        ProductProjectResponseListDto productProjectResponseListDto =
+        //                productProjectService.getProductProjectByProjectId(id, BasicEnumStatus.ENABLED);
+        //        projectResponseDto.setProducts(
+        //                productProjectService.toProductResponse(productProjectResponseListDto.getProductProjectList()));
+        //
+        //        ExpenseResponseListDto expenseResponseListDto =
+        //                expenseService.GetExpensesByProject(projectEntity.getProjectId());
+        //        projectResponseDto.setExpenses(expenseResponseListDto.getExpenses());
+        return projectMapper.toDto(projectEntity);
+    }
+
     @Override
     public ProjectTypesResponseDto getProjectTypes() {
 
@@ -97,7 +209,17 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public ProjectStatusesDto getPossibleStatusByProjectId(Long id) {
         //todo [PROJECT get] calculate next status for project
-        return new ProjectStatusesDto(Arrays.stream(ProjectStatusEnum.values()).toList());
+        ProjectEntity projectEntity = projectRepository.findById(id)
+                .orElseThrow(() -> new BadRequestException(String.format("Proyecto con ID %s no encontrado: ", id)));
+
+        List<ProjectStatusEnum> possibleStatus = switch (projectEntity.getStatus()) {
+            case PLANNED, DISCARDED -> List.of(ProjectStatusEnum.CONFIRMED);
+            case CONFIRMED, ON_COURSE -> List.of(ProjectStatusEnum.DISCARDED);
+            case EXPIRED -> List.of(ProjectStatusEnum.COMPLETED);
+            case COMPLETED -> List.of();
+        };
+
+        return new ProjectStatusesDto(possibleStatus);
     }
 
     @Override
@@ -106,7 +228,6 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     private ProjectEntity setProjectEntity(ProjectRequestDto request, EventResponseDto eventResponseDto) {
-
 
         if (request.getStartDate().isAfter(request.getEndDate())) {
             throw new BadRequestException("¡La fecha de fin no puede ser anterior a la fecha de inicio!");
@@ -146,10 +267,10 @@ public class ProjectServiceImpl implements ProjectService {
         return response;
     }
 
-    private List<ProductsProjectResponseDto> setProducts(List<ProjectProductRequestDto> productRequests,
-                                                         Long projectId) {
+    private List<ProductProjectResponseForProjectDto> setProducts(List<ProjectProductRequestDto> productRequests,
+                                                                  Long projectId) {
 
-        List<ProductsProjectResponseDto> productsResponse = new ArrayList<>();
+        List<ProductProjectResponseForProjectDto> productsResponse = new ArrayList<>();
 
         List<Long> productIds = productRequests.stream().map(ProjectProductRequestDto::getProductId).toList();
         List<ItemResponseDto> items = itemService.GetByProductIds(productIds);
@@ -172,23 +293,25 @@ public class ProjectServiceImpl implements ProjectService {
         return productsResponse;
     }
 
-    private ProductsProjectResponseDto makeProductResponse(ProjectProductRequestDto productRequest, Long projectId) {
+    private ProductProjectResponseForProjectDto makeProductResponse(ProjectProductRequestDto productRequest,
+                                                                    Long projectId) {
         ProductResponseDto product = productService.GetProduct(productRequest.getProductId());
 
         if (!product.getStatus().equals(ProductStatus.ACTIVE)) {
             throw new BadRequestException("¡Este producto no está disponible!");
         }
 
-        ProductsProjectResponseDto productsProjectResponseDto = new ProductsProjectResponseDto();
-        productsProjectResponseDto.setProductId(product.getProductId());
-        productsProjectResponseDto.setModel(product.getModel());
-        productsProjectResponseDto.setComments(productsProjectResponseDto.getComments());
-        productsProjectResponseDto.setStatus(product.getStatus());
-        productsProjectResponseDto.setCreatedAt(product.getCreatedAt());
-        productsProjectResponseDto.setUpdatedAt(product.getUpdatedAt());
-        productsProjectResponseDto.setReplacementValue(product.getReplacementValue());
-        productsProjectResponseDto.setAmount(productRequest.getAmount());
-        return productsProjectResponseDto;
+        ProductProjectResponseForProjectDto productProjectResponseForProjectDto =
+                new ProductProjectResponseForProjectDto();
+        productProjectResponseForProjectDto.setProductId(product.getProductId());
+        productProjectResponseForProjectDto.setModel(product.getModel());
+        productProjectResponseForProjectDto.setComments(productProjectResponseForProjectDto.getComments());
+        productProjectResponseForProjectDto.setStatus(product.getStatus());
+        productProjectResponseForProjectDto.setCreatedAt(product.getCreatedAt());
+        productProjectResponseForProjectDto.setUpdatedAt(product.getUpdatedAt());
+        productProjectResponseForProjectDto.setReplacementValue(product.getReplacementValue());
+        productProjectResponseForProjectDto.setAmount(productRequest.getAmount());
+        return productProjectResponseForProjectDto;
     }
 
     private ProductProjectResponseDto createProductProject(ProjectProductRequestDto productRequest, Long projectId) {

@@ -1,14 +1,15 @@
 package com.ProyectoIntegradorBE.proaudioBE.services.interfaces;
 
-import com.ProyectoIntegradorBE.proaudioBE.dtos.Project.ProjectRequestDto;
-import com.ProyectoIntegradorBE.proaudioBE.dtos.Project.ProjectResponseDto;
-import com.ProyectoIntegradorBE.proaudioBE.dtos.Project.ProjectStatusesDto;
-import com.ProyectoIntegradorBE.proaudioBE.dtos.Project.ProjectTypesResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Project.*;
 import org.springframework.stereotype.Service;
 
 @Service
 public interface ProjectService {
     ProjectResponseDto createProject(ProjectRequestDto request);
+
+    ProjectSimpleReponseDto updateProject(Long id, ProjectRequestDto request);
+
+    ProjectSimpleReponseDto getProject(Long id);
 
     ProjectTypesResponseDto getProjectTypes();
 

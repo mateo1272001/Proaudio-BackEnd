@@ -1,10 +1,5 @@
 package com.ProyectoIntegradorBE.proaudioBE.dtos.Project;
 
-
-import com.ProyectoIntegradorBE.proaudioBE.dtos.Client.ClientRequestDto;
-import com.ProyectoIntegradorBE.proaudioBE.dtos.Event.EventResponseDto;
-import com.ProyectoIntegradorBE.proaudioBE.dtos.Expense.ExpenseResponseDto;
-import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.ItemResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.enums.PaymentStatusEnum;
 import com.ProyectoIntegradorBE.proaudioBE.enums.ProjectStatusEnum;
 import com.ProyectoIntegradorBE.proaudioBE.enums.ProjectTypeEnum;
@@ -14,11 +9,10 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Data
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class ProjectResponseDto {
+public class ProjectSimpleReponseDto {
 
     private Long projectId;
 
@@ -30,9 +24,9 @@ public class ProjectResponseDto {
 
     private LocalDateTime endDate;
 
-    private EventResponseDto event;
+    private Long eventId;
 
-    private ClientRequestDto client;
+    private Long clientId;
 
     private ProjectStatusEnum status;
 
@@ -42,10 +36,5 @@ public class ProjectResponseDto {
 
     private BigDecimal costAddition;
 
-    private List<ProductProjectResponseForProjectDto> products;
-
-    private List<ExpenseResponseDto> expenses;
-
-    private List<ItemResponseDto> items;
 
 }

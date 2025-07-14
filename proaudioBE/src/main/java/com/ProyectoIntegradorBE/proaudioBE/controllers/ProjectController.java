@@ -1,9 +1,6 @@
 package com.ProyectoIntegradorBE.proaudioBE.controllers;
 
-import com.ProyectoIntegradorBE.proaudioBE.dtos.Project.ProjectRequestDto;
-import com.ProyectoIntegradorBE.proaudioBE.dtos.Project.ProjectResponseDto;
-import com.ProyectoIntegradorBE.proaudioBE.dtos.Project.ProjectStatusesDto;
-import com.ProyectoIntegradorBE.proaudioBE.dtos.Project.ProjectTypesResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Project.*;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ProjectService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +16,18 @@ public class ProjectController {
     private ProjectResponseDto createProject(@RequestBody ProjectRequestDto request) {
 
         return projectService.createProject(request);
+    }
+
+    @PutMapping("{id}")
+    private ProjectSimpleReponseDto updateProject(@PathVariable Long id, @RequestBody ProjectRequestDto request) {
+
+        return projectService.updateProject(id, request);
+    }
+
+    @GetMapping("{id}")
+    private ProjectSimpleReponseDto getProject(@PathVariable Long id) {
+
+        return projectService.getProject(id);
     }
 
     @GetMapping("/types")
