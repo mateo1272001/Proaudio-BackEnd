@@ -40,4 +40,6 @@ public class ItemEntity {
 
     private LocalDateTime updatedAt;
 
+    //    private String serialNumber; //todo [ITEM] add serial number usage to code
+
 }

@@ -211,4 +211,17 @@ public class ItemServiceImpl implements ItemService {
     public ItemStatusResponseDto GetItemStatuses() {
         return new ItemStatusResponseDto(Arrays.stream(ItemStatusEnum.values()).toList());
     }
+
+    @Override
+    public List<ItemResponseDto> GetByProductIds(List<Long> productIds) {
+
+        List<ItemEntity> itemEntities = itemRepository.findByProductIdInAndStatusIn(productIds, GetUsableStatuses());
+
+        return itemMapper.toDtoList(itemEntities);
+
+    }
+
+    private List<ItemStatusEnum> GetUsableStatuses() {
+        return List.of(ItemStatusEnum.CREATED, ItemStatusEnum.GOOD, ItemStatusEnum.WITH_DETAILS);
+    }
 }

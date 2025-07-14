@@ -1,6 +1,7 @@
-package com.ProyectoIntegradorBE.proaudioBE.dtos.Product;
+package com.ProyectoIntegradorBE.proaudioBE.dtos.Expense;
 
 import com.ProyectoIntegradorBE.proaudioBE.enums.BasicEnumStatus;
+import com.ProyectoIntegradorBE.proaudioBE.enums.ExpenseTypeEnum;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import jakarta.annotation.Nullable;
@@ -11,21 +12,21 @@ import java.math.BigDecimal;
 
 @Data
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class PriceReponseDto {
-
-    @NotNull
-    private Long rentPriceId;
+public class ExpenseRequestDto {
 
     @Nullable
-    private Long productId;
+    private Long expenseId;
+    
+    private Long projectId;
+
+    @NotNull
+    private ExpenseTypeEnum type;
 
     @NotNull
     private BigDecimal value;
 
-    @NotNull
     private String description;
 
-    @NotNull
     private BasicEnumStatus status;
 
 }

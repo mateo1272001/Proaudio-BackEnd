@@ -1,31 +1,25 @@
-package com.ProyectoIntegradorBE.proaudioBE.dtos.Product;
+package com.ProyectoIntegradorBE.proaudioBE.dtos.GeneralParmeters;
 
 import com.ProyectoIntegradorBE.proaudioBE.enums.BasicEnumStatus;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-
-import java.math.BigDecimal;
+import org.springframework.lang.Nullable;
 
 @Data
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class PriceReponseDto {
+public class GeneralParameterRequestDto {
 
     @NotNull
-    private Long rentPriceId;
+    private String parameterKey;
+
+    @NotNull
+    private String value;
+
+    private BasicEnumStatus status;
 
     @Nullable
-    private Long productId;
-
-    @NotNull
-    private BigDecimal value;
-
-    @NotNull
-    private String description;
-
-    @NotNull
-    private BasicEnumStatus status;
+    private Long generalParametersId;
 
 }

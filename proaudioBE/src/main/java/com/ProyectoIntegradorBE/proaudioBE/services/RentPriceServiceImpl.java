@@ -3,6 +3,7 @@ package com.ProyectoIntegradorBE.proaudioBE.services;
 import com.ProyectoIntegradorBE.proaudioBE.Utils.CollectionUtils;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.PriceReponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.PriceRequestDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.PriceResponseListDto;
 import com.ProyectoIntegradorBE.proaudioBE.entities.RentPriceEntity;
 import com.ProyectoIntegradorBE.proaudioBE.enums.BasicEnumStatus;
 import com.ProyectoIntegradorBE.proaudioBE.exceptions.BadRequestException;
@@ -93,6 +94,15 @@ public class RentPriceServiceImpl implements RentPriceService {
         RentPriceEntity rentPriceEntity = rentPriceRepository.save(rentPriceEntityOpt.get());
 
         return rentPriceMapper.toDto(rentPriceEntity);
+    }
+
+    @Override
+    public PriceResponseListDto getPricesByProductId(Long id) {
+
+        List<RentPriceEntity> rentPriceEntities =
+                rentPriceRepository.findByProductIdAndStatus(id, BasicEnumStatus.ENABLED);
+
+        return new PriceResponseListDto(rentPriceMapper.toDtoList(rentPriceEntities));
     }
 
     public List<PriceReponseDto> findRentPriceByProductId(Long id) throws BadRequestException {
