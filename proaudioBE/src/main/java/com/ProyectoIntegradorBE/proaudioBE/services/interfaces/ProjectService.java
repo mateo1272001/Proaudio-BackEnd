@@ -16,4 +16,6 @@ public interface ProjectService {
     ProjectStatusesDto getPossibleStatusByProjectId(Long id);
 
     ProjectStatusesDto getPossibleStatusForStartingProject();
+
+    void updateProjectStatusAutomatically();
 }

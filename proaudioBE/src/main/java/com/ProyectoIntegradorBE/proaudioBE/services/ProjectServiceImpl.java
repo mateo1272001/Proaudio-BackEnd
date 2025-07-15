@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -110,6 +111,7 @@ public class ProjectServiceImpl implements ProjectService {
         ProjectEntity entityResponse = new ProjectEntity();
 
         //always updatable
+        entityResponse.setProjectId(projectResponseDto.getProjectId());
         entityResponse.setName(request.getName());
         entityResponse.setDescription(Objects.nonNull(request.getDescription()) ? request.getDescription() : null);
         entityResponse.setStatus(request.getStatus());
@@ -225,6 +227,65 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public ProjectStatusesDto getPossibleStatusForStartingProject() {
         return new ProjectStatusesDto(List.of(ProjectStatusEnum.PLANNED, ProjectStatusEnum.CONFIRMED));
+    }
+
+    @Override
+    public void updateProjectStatusAutomatically() {
+
+        List<ProjectEntity> projectEntities = projectRepository.findByStatusIn(
+                List.of(ProjectStatusEnum.PLANNED, ProjectStatusEnum.CONFIRMED, ProjectStatusEnum.ON_COURSE,
+                        ProjectStatusEnum.EXPIRED));
+
+        for (ProjectEntity projectEntity : projectEntities) {
+
+            projectEntity.setStatus(switch (projectEntity.getStatus()) {
+                case PLANNED -> calculateFromStatusPlanned(projectEntity);
+                case CONFIRMED -> calculateFromStatusConfirmed(projectEntity);
+                case ON_COURSE -> calculateFromStatusOnCourse(projectEntity);
+                case EXPIRED -> calculateFromStatusExpired(projectEntity);
+                case DISCARDED -> ProjectStatusEnum.DISCARDED;
+                case COMPLETED -> ProjectStatusEnum.COMPLETED;
+            });
+
+            projectRepository.save(projectEntity);
+        }
+    }
+
+    private ProjectStatusEnum calculateFromStatusExpired(ProjectEntity projectEntity) {
+        if (projectEntity.getStartDate().isAfter(LocalDateTime.now())) {
+            return ProjectStatusEnum.COMPLETED;
+        } else {
+            return ProjectStatusEnum.EXPIRED;
+        }
+    }
+
+
+    private ProjectStatusEnum calculateFromStatusOnCourse(ProjectEntity projectEntity) {
+        if (LocalDateTime.now().isAfter(projectEntity.getEndDate())) {
+            if (true == true) { //todo [PROJECT] add validation for returned items
+                return ProjectStatusEnum.EXPIRED;
+            } else {
+                return ProjectStatusEnum.COMPLETED;
+            }
+        } else {
+            return ProjectStatusEnum.ON_COURSE;
+        }
+    }
+
+    private ProjectStatusEnum calculateFromStatusConfirmed(ProjectEntity projectEntity) {
+        if (LocalDateTime.now().isAfter(projectEntity.getStartDate())) {
+            return ProjectStatusEnum.ON_COURSE;
+        } else {
+            return ProjectStatusEnum.CONFIRMED;
+        }
+    }
+
+    private ProjectStatusEnum calculateFromStatusPlanned(ProjectEntity projectEntity) {
+        if (LocalDateTime.now().isAfter(projectEntity.getStartDate())) {
+            return ProjectStatusEnum.DISCARDED;
+        } else {
+            return ProjectStatusEnum.PLANNED;
+        }
     }
 
     private ProjectEntity setProjectEntity(ProjectRequestDto request, EventResponseDto eventResponseDto) {

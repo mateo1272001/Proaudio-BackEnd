@@ -2,6 +2,7 @@ package com.ProyectoIntegradorBE.proaudioBE.dtos.Event;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import jakarta.annotation.Nullable;
 import lombok.Data;
 
 @Data
@@ -18,6 +19,7 @@ public class EventRequestDto {
 
     private String description;
 
+    @Nullable
     private String status;
 
 }

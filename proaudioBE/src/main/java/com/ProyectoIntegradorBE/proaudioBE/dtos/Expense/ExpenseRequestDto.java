@@ -27,6 +27,7 @@ public class ExpenseRequestDto {
 
     private String description;
 
+    @Nullable
     private BasicEnumStatus status;
 
 }

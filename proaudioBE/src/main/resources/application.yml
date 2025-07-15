@@ -38,6 +38,8 @@ spring:
             enable: true
   server:
     port: 8080
+  cron:
+    project-status: "0 * * * * *" #executing every minute
 
 ---
 
@@ -58,6 +60,8 @@ spring:
         dialect: org.hibernate.dialect.MySQLDialect
   server:
     port: 8081
+  cron:
+    project-status: "0 0 8,20 * * *" #executing at 8am and 8pm everyday
 
 ---
 
@@ -77,3 +81,5 @@ spring:
         dialect: org.hibernate.dialect.MySQLDialect
   server:
     port: 80
+  cron:
+    project-status: "0 0 8,20 * * *" #executing at 8am and 8pm everyday
