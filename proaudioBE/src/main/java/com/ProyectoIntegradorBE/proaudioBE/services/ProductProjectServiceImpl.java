@@ -33,7 +33,7 @@ public class ProductProjectServiceImpl implements ProductProjectService {
         productProjectEntity.setProductId(productProjectRequestDto.getProductId());
         productProjectEntity.setProjectId(productProjectRequestDto.getProjectId());
         productProjectEntity.setAmount(
-                Objects.nonNull(productProjectEntity.getAmount()) ? productProjectEntity.getAmount() : 1);
+                Objects.nonNull(productProjectRequestDto.getAmount()) ? productProjectRequestDto.getAmount() : 1);
         productProjectEntity.setStatus(
                 Objects.nonNull(productProjectRequestDto.getStatus()) ? productProjectRequestDto.getStatus() :
                         BasicEnumStatus.ENABLED);
