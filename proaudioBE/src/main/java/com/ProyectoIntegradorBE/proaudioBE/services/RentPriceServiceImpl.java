@@ -82,6 +82,17 @@ public class RentPriceServiceImpl implements RentPriceService {
     }
 
     @Override
+    public PriceReponseDto getPrice(Long rentPriceId) {
+
+        RentPriceEntity rentPriceEntity =
+                rentPriceRepository.findByRentPriceIdAndStatus(rentPriceId, BasicEnumStatus.ENABLED).orElseThrow(
+                        () -> new BadRequestException(
+                                String.format("Rent Price con ID %s no encontrado: ", rentPriceId)));
+
+        return rentPriceMapper.toDto(rentPriceEntity);
+    }
+
+    @Override
     public PriceReponseDto DeletePrice(Long id) throws BadRequestException {
 
         Optional<RentPriceEntity> rentPriceEntityOpt = rentPriceRepository.findByRentPriceIdAndStatus(id, BasicEnumStatus.ENABLED);

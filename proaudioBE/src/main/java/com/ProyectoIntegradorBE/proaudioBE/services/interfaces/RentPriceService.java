@@ -15,6 +15,8 @@ public interface RentPriceService {
 
     List<PriceReponseDto> updatePrices(List<PriceRequestDto> priceRequestDto, Long productId) throws BadRequestException;
 
+    PriceReponseDto getPrice(Long productId);
+
     PriceReponseDto DeletePrice(Long id) throws BadRequestException;
 
     PriceResponseListDto getPricesByProductId(Long id);

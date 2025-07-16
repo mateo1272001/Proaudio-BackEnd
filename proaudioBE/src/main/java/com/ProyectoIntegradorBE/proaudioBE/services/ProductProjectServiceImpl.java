@@ -32,6 +32,7 @@ public class ProductProjectServiceImpl implements ProductProjectService {
         ProductProjectEntity productProjectEntity = new ProductProjectEntity();
         productProjectEntity.setProductId(productProjectRequestDto.getProductId());
         productProjectEntity.setProjectId(productProjectRequestDto.getProjectId());
+        productProjectEntity.setRentPriceId(productProjectRequestDto.getRentPriceId());
         productProjectEntity.setAmount(
                 Objects.nonNull(productProjectEntity.getAmount()) ? productProjectEntity.getAmount() : 1);
         productProjectEntity.setStatus(
@@ -42,14 +43,5 @@ public class ProductProjectServiceImpl implements ProductProjectService {
 
         return productProjectMapper.toDto(productProjectEntity);
     }
-    //
-    //    @Override
-    //    public ProductProjectResponseListDto getProductProjectByProjectId(Long projectId, BasicEnumStatus status) {
-    //
-    //        List<ProductProjectEntity> productProjects =
-    //                productProjectRepository.findByProjectIdAndStatus(projectId, status);
-    //
-    //        return new ProductProjectResponseListDto(productProjectMapper.toDtoList(productProjects));
-    //    }
 
 }

@@ -15,6 +15,8 @@ public class ProductProjectRequestDto {
 
     private Long projectId;
 
+    private Long rentPriceId;
+
     private Integer amount;
 
     private BasicEnumStatus status;

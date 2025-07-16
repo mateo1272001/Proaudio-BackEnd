@@ -21,6 +21,9 @@ public class ProductProjectEntity {
     private Long projectId;
 
     @NotNull
+    private Long rentPriceId;
+
+    @NotNull
     private Integer amount;
 
     @Enumerated(EnumType.STRING)

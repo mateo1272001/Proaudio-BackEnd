@@ -4,6 +4,7 @@ import com.ProyectoIntegradorBE.proaudioBE.dtos.Event.EventResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Expense.ExpenseRequestDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Expense.ExpenseResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.ItemResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.PriceReponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.ProductResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.ProductProject.ProductProjectRequestDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.ProductProject.ProductProjectResponseDto;
@@ -39,6 +40,8 @@ public class ProjectServiceImpl implements ProjectService {
     private final ExpenseService expenseService;
 
     private final ProductProjectService productProjectService;
+
+    private final RentPriceService rentPriceService;
 
     private final EventMapper eventMapper;
 
@@ -139,20 +142,7 @@ public class ProjectServiceImpl implements ProjectService {
             }
             entityResponse.setEndDate(request.getEndDate());
         }
-        //        EventResponseDto eventResponseDto = new EventResponseDto();
-        //        boolean changeRequested = false;
-        //        if (statusIsUpdatable) {
-        //            eventResponseDto = Objects.nonNull(request.getEvent().getEventId()) ?
-        //                    eventService.GetEvent(request.getEvent().getEventId()) : eventService.CreateEvent(request.getEvent());
-        //        }
-        //        if (Objects.nonNull(eventResponseDto.getEventId()) &&
-        //                !eventResponseDto.getEventId().equals(entityResponse.getEventId())) {
-        //            entityResponse.setEventId(eventResponseDto.getEventId());
-        //            changeRequested = true;
-        //        }
-        //        if (!statusIsUpdatable && changeRequested) {
-        //            throw new BadRequestException("El estado solo se puede modificar si el projecto aún no empieza!");
-        //        }
+
         if (Objects.nonNull(request.getEvent().getEventId())) {
             entityResponse.setEventId(projectResponseDto.getEventId());
             Long requestEventId = request.getEvent().getEventId();
@@ -347,15 +337,14 @@ public class ProjectServiceImpl implements ProjectService {
 
             createProductProject(productRequest, projectId);
 
-            productsResponse.add(makeProductResponse(productRequest, projectId));
+            productsResponse.add(makeProductResponse(productRequest));
 
         }
 
         return productsResponse;
     }
 
-    private ProductProjectResponseForProjectDto makeProductResponse(ProjectProductRequestDto productRequest,
-                                                                    Long projectId) {
+    private ProductProjectResponseForProjectDto makeProductResponse(ProjectProductRequestDto productRequest) {
         ProductResponseDto product = productService.GetProduct(productRequest.getProductId());
 
         if (!product.getStatus().equals(ProductStatus.ACTIVE)) {
@@ -376,9 +365,17 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     private ProductProjectResponseDto createProductProject(ProjectProductRequestDto productRequest, Long projectId) {
+
+        PriceReponseDto priceReponseDto = rentPriceService.getPrice(productRequest.getPriceId());
+
+        if (!priceReponseDto.getProductId().equals(productRequest.getProductId())) {
+            throw new BadRequestException("¡Este precio no corresponde al producto!");
+        }
+
         ProductProjectRequestDto productProjectRequestDto = new ProductProjectRequestDto();
         productProjectRequestDto.setProductId(productRequest.getProductId());
         productProjectRequestDto.setProjectId(projectId);
+        productProjectRequestDto.setRentPriceId(productRequest.getPriceId());
         productProjectRequestDto.setAmount(productRequest.getAmount());
         productProjectRequestDto.setStatus(BasicEnumStatus.ENABLED);
 
