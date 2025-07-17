@@ -15,4 +15,5 @@ public interface ItemRepository extends CrudRepository<ItemEntity, Long>, JpaRep
 
     List<ItemEntity> findByProductIdInAndStatusIn(List<Long> productIds, List<ItemStatusEnum> itemStatusEnums);
 
+    List<ItemEntity> findByProductIdAndStatusIn(Long productId, List<ItemStatusEnum> itemStatusEnums);
 }

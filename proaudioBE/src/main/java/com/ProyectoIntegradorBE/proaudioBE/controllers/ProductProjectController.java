@@ -1,13 +1,60 @@
 package com.ProyectoIntegradorBE.proaudioBE.controllers;
 
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.ItemResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.PriceReponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.ProductProject.ProductProjectRequestDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.ProductProject.ProductProjectResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.exceptions.BadRequestException;
+import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.*;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/product/project")
 public class ProductProjectController {
+
+    private final ProductProjectService productProjectService;
+
+    private final ProjectService projectService;
+
+    private final ProductService productService;
+
+    private final RentPriceService rentPriceService;
+
+    private final ItemService itemService;
+
+    @PostMapping
+    private ProductProjectResponseDto createProductProject(
+            @RequestBody ProductProjectRequestDto productProjectRequestDto) {
+
+        projectService.getProject(productProjectRequestDto.getProjectId());
+        productService.GetProduct(productProjectRequestDto.getProductId());
+        PriceReponseDto priceReponseDto = rentPriceService.getPrice(productProjectRequestDto.getRentPriceId());
+
+        if (!productProjectRequestDto.getProductId().equals(priceReponseDto.getProductId())) {
+            throw new BadRequestException("¡Este precio no corresponde al producto!");
+        }
+
+        List<ItemResponseDto> items = itemService.GetByProductId(productProjectRequestDto.getProductId());
+
+        ProductProjectResponseDto productProjectResponseDto =
+                productProjectService.createProductProject(productProjectRequestDto, items);
+
+        productProjectResponseDto.setPrice(priceReponseDto.getValue());
+
+        return productProjectResponseDto;
+
+    }
+
+    @DeleteMapping("{id}")
+    private ProductProjectResponseDto deleteProductProject(@PathVariable Long id) {
+
+        return productProjectService.deleteProductProject(id);
+
+    }
 
 
 }

@@ -222,6 +222,13 @@ public class ItemServiceImpl implements ItemService {
 
     }
 
+    @Override
+    public List<ItemResponseDto> GetByProductId(Long productId) {
+        List<ItemEntity> itemEntities = itemRepository.findByProductIdAndStatusIn(productId, GetUsableStatuses());
+
+        return itemMapper.toDtoList(itemEntities);
+    }
+
     private List<ItemStatusEnum> GetUsableStatuses() {
         return List.of(ItemStatusEnum.CREATED, ItemStatusEnum.GOOD, ItemStatusEnum.WITH_DETAILS);
     }

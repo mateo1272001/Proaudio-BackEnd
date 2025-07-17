@@ -331,11 +331,7 @@ public class ProjectServiceImpl implements ProjectService {
             List<ItemResponseDto> itemsOfProduct =
                     items.stream().filter(i -> i.getProductId().equals(productRequest.getProductId())).toList();
 
-            if (itemsOfProduct.size() < productRequest.getAmount()) {
-                throw new BadRequestException("¡No hay suficientes artículos disponibles!");
-            }
-
-            createProductProject(productRequest, projectId);
+            createProductProject(productRequest, projectId, itemsOfProduct);
 
             productsResponse.add(makeProductResponse(productRequest));
 
@@ -364,7 +360,8 @@ public class ProjectServiceImpl implements ProjectService {
         return productProjectResponseForProjectDto;
     }
 
-    private ProductProjectResponseDto createProductProject(ProjectProductRequestDto productRequest, Long projectId) {
+    private ProductProjectResponseDto createProductProject(ProjectProductRequestDto productRequest, Long projectId,
+                                                           List<ItemResponseDto> itemsOfProduct) {
 
         PriceReponseDto priceReponseDto = rentPriceService.getPrice(productRequest.getPriceId());
 
@@ -379,7 +376,7 @@ public class ProjectServiceImpl implements ProjectService {
         productProjectRequestDto.setAmount(productRequest.getAmount());
         productProjectRequestDto.setStatus(BasicEnumStatus.ENABLED);
 
-        return productProjectService.createProductProject(productProjectRequestDto);
+        return productProjectService.createProductProject(productProjectRequestDto, itemsOfProduct);
     }
 
     private BigDecimal CalculateCostAddition(BigDecimal costAddition) {
