@@ -16,7 +16,7 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/proaudio_channels?useSSL=false&serverTimezone=UTC
     username: root
-    password: proaudioproject2025
+    password: Maiescuel8042.
   jpa:
     hibernate:
       ddl-auto: none

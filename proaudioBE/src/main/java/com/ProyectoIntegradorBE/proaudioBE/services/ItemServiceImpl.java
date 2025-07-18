@@ -48,8 +48,12 @@ public class ItemServiceImpl implements ItemService {
 
         List<ItemEntity> entityList = new ArrayList<>();
 
-
         for (ItemRequestDto item : items.getItems()) {
+
+            if (item.getAmountBought() != item.getSerialNumbers().size()) {
+                throw new BadRequestException(
+                        "La cantidad de numeros de serie debe ser igual a los productos comprados");
+            }
 
             List<ItemEntity> itemEntities = createItemBlock(item);
             entityList.addAll(itemEntities);
@@ -91,6 +95,9 @@ public class ItemServiceImpl implements ItemService {
             itemEntity.setLocation(LocationEnum.IN_DEPOSIT);
             itemEntity.setStatus(ItemStatusEnum.CREATED);
             itemEntity.setUpdatedAt(LocalDateTime.now());
+            itemEntity.setItemRange(item.getItemRange());
+
+            itemEntity.setSerialNumber(item.getSerialNumbers().get(i));
 
             itemEntities.add(itemEntity);
         }
@@ -108,6 +115,7 @@ public class ItemServiceImpl implements ItemService {
         itemEntity.setStatus(Objects.nonNull(item.getStatus()) ? item.getStatus() : itemEntity.getStatus());
         itemEntity.setDescription(
                 Objects.nonNull(item.getDescription()) ? item.getDescription() : itemEntity.getDescription());
+        itemEntity.setItemRange(Objects.nonNull(item.getRange()) ? item.getRange() : itemEntity.getItemRange());
         itemEntity.setUpdatedAt(LocalDateTime.now());
 
         itemEntity = itemRepository.save(itemEntity);
@@ -172,12 +180,6 @@ public class ItemServiceImpl implements ItemService {
 
     }
 
-    //    private PageableDto buildPageableDto(Page<?> page) {
-    //        return PageableDto.builder().pageNumber(page.getNumber()).pageSize(page.getSize())
-    //                .totalPages(page.getTotalPages()).totalElements(page.getTotalElements()).hasNext(page.hasNext())
-    //                .hasPrevious(page.hasPrevious()).build();
-    //    }
-
     private static ItemDetailsResponseDto FillItemDetails(ItemResponseDto item,
                                                           ItemProductResponseDto itemProductResponseDto) {
         ItemDetailsResponseDto itemDetailsResponseDto = new ItemDetailsResponseDto();
@@ -199,6 +201,8 @@ public class ItemServiceImpl implements ItemService {
         itemProductResponseDto.setBrand(productDetail.getBrand());
         itemProductResponseDto.setModel(productDetail.getModel());
         itemProductResponseDto.setPhotos(Objects.nonNull(productDetail.getPhotos()) ? productDetail.getPhotos() : null);
+        itemProductResponseDto.setRange(item.getItemRange());
+        itemProductResponseDto.setSerialNumber(item.getSerialNumber());
 
         return FillItemDetails(item, itemProductResponseDto);
     }

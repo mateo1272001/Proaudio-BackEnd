@@ -19,4 +19,8 @@ public class ItemProductResponseDto {
 
     private List<PhotoResponseDto> photos;
 
+    private String range;
+
+    private String serialNumber;
+
 }
