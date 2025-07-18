@@ -218,20 +218,6 @@ public class ProductServiceImpl implements ProductService {
         response.setDependencyTags(new ArrayList<>());
         response.setRelationTags(new ArrayList<>());
 
-        //        for(TagResponseDto tag : tags) {
-        //
-        //            ProductTagResponseDto productTagResponseDto =
-        //                    productTagResponseDtos.stream().filter(pt -> pt.getTagId()
-        //                            .equals(tag.getTagId()))
-        //                            .findFirst().orElseThrow(() -> new BadRequestException(""));
-        //
-        //            switch (productTagResponseDto.getType()) {
-        //                case DESCRIPTIVE -> response.getDescriptionTags().add(tag);
-        //                case RELATION -> response.getRelationTags().add(tag);
-        //                case DEPENDENCY -> response.getDependencyTags().add(tag);
-        //            }
-        //
-        //        }
         for (ProductTagResponseDto productTagResponseDto : productTagResponseDtos) {
 
             TagResponseDto tagResponseDto =

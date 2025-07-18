@@ -32,4 +32,8 @@ public class ItemResponseDto {
 
     private String QrImage;
 
+    private String itemRange;
+
+    private String serialNumber;
+
 }

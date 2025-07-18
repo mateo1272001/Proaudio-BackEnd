@@ -7,6 +7,7 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
@@ -22,5 +23,9 @@ public class ItemRequestDto {
     private LocalDate boughtAt;
 
     private Integer amountBought;
+
+    private String itemRange;
+
+    private List<String> serialNumbers;
 
 }
