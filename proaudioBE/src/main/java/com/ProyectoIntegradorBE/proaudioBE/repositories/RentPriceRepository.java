@@ -12,7 +12,8 @@ import java.util.Optional;
 @Repository
 public interface RentPriceRepository extends CrudRepository<RentPriceEntity, Long> {
 
-    public List<RentPriceEntity> findByProductIdAndStatus(Long id, BasicEnumStatus status);
+    List<RentPriceEntity> findByProductIdAndStatus(Long id, BasicEnumStatus status);
 
     Optional<RentPriceEntity> findByRentPriceIdAndStatus(Long id, BasicEnumStatus basicEnumStatus);
+
 }

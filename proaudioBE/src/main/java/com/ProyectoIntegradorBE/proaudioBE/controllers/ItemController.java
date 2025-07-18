@@ -72,8 +72,6 @@ public class ItemController {
 
         ProductDetailResponseDto productDetailResponseDto = productService.GetProductDetails(item.getProductId());
 
-        productService.GetProductPhotos(item.getProductId());
-
         return itemService.GetItemDetails(item, productDetailResponseDto);
 
     }
