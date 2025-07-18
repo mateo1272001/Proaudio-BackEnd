@@ -40,6 +40,8 @@ public class ItemServiceImpl implements ItemService {
 
     private final ItemMapper itemMapper;
 
+    private final UtilService utilService;
+
     @Override
     @Transactional
     public ItemResponseListDto CreateItem(ItemRequestListDto items) throws Exception {
@@ -164,17 +166,17 @@ public class ItemServiceImpl implements ItemService {
 
         List<ItemRowDto> dtoList = pages.getContent().stream().map(itemMapper::toRowDto).toList();
 
-        PageableDto pagination = buildPageableDto(pages);
+        PageableDto pagination = utilService.buildPageableDto(pages);
 
         return new ItemSectionResponseDto(dtoList, pagination);
 
     }
 
-    private PageableDto buildPageableDto(Page<?> page) {
-        return PageableDto.builder().pageNumber(page.getNumber()).pageSize(page.getSize())
-                .totalPages(page.getTotalPages()).totalElements(page.getTotalElements()).hasNext(page.hasNext())
-                .hasPrevious(page.hasPrevious()).build();
-    }
+    //    private PageableDto buildPageableDto(Page<?> page) {
+    //        return PageableDto.builder().pageNumber(page.getNumber()).pageSize(page.getSize())
+    //                .totalPages(page.getTotalPages()).totalElements(page.getTotalElements()).hasNext(page.hasNext())
+    //                .hasPrevious(page.hasPrevious()).build();
+    //    }
 
     private static ItemDetailsResponseDto FillItemDetails(ItemResponseDto item,
                                                           ItemProductResponseDto itemProductResponseDto) {
@@ -209,5 +211,25 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public ItemStatusResponseDto GetItemStatuses() {
         return new ItemStatusResponseDto(Arrays.stream(ItemStatusEnum.values()).toList());
+    }
+
+    @Override
+    public List<ItemResponseDto> GetByProductIds(List<Long> productIds) {
+
+        List<ItemEntity> itemEntities = itemRepository.findByProductIdInAndStatusIn(productIds, GetUsableStatuses());
+
+        return itemMapper.toDtoList(itemEntities);
+
+    }
+
+    @Override
+    public List<ItemResponseDto> GetByProductId(Long productId) {
+        List<ItemEntity> itemEntities = itemRepository.findByProductIdAndStatusIn(productId, GetUsableStatuses());
+
+        return itemMapper.toDtoList(itemEntities);
+    }
+
+    private List<ItemStatusEnum> GetUsableStatuses() {
+        return List.of(ItemStatusEnum.CREATED, ItemStatusEnum.GOOD, ItemStatusEnum.WITH_DETAILS);
     }
 }

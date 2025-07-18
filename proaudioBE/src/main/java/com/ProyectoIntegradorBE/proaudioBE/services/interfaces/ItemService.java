@@ -2,6 +2,9 @@ package com.ProyectoIntegradorBE.proaudioBE.services.interfaces;
 
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.*;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.ProductDetailResponseDto;
+import jakarta.validation.constraints.NotNull;
+
+import java.util.List;
 
 public interface ItemService {
 
@@ -21,4 +24,8 @@ public interface ItemService {
     ItemActionsDto GetItemActions(String qrId);
 
     ItemStatusResponseDto GetItemStatuses();
+
+    List<ItemResponseDto> GetByProductIds(List<Long> productIds);
+
+    List<ItemResponseDto> GetByProductId(@NotNull Long productId);
 }
