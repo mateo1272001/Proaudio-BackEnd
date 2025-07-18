@@ -115,7 +115,7 @@ public class ItemServiceImpl implements ItemService {
         itemEntity.setStatus(Objects.nonNull(item.getStatus()) ? item.getStatus() : itemEntity.getStatus());
         itemEntity.setDescription(
                 Objects.nonNull(item.getDescription()) ? item.getDescription() : itemEntity.getDescription());
-        itemEntity.setItemRange(Objects.nonNull(item.getRange()) ? item.getRange() : itemEntity.getItemRange());
+        itemEntity.setItemRange(Objects.nonNull(item.getItemRange()) ? item.getItemRange() : itemEntity.getItemRange());
         itemEntity.setUpdatedAt(LocalDateTime.now());
 
         itemEntity = itemRepository.save(itemEntity);

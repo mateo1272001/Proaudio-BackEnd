@@ -15,6 +15,6 @@ public class UpdateItemRequestDto {
 
     private String description;
 
-    private String range;
+    private String itemRange;
 
 }
