@@ -20,4 +20,6 @@ public interface ProjectService {
     void updateProjectStatusAutomatically();
 
     ProjectDetailsResponseDto getProjectDetails(Long id);
+
+    ProjectPaymentStatusesDto getPossiblePaymentStatusByProjectId(Long id);
 }

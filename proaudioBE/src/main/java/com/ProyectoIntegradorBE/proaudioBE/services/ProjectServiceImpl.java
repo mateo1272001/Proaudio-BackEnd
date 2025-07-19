@@ -249,6 +249,23 @@ public class ProjectServiceImpl implements ProjectService {
         return projectDetailsResponseDto;
     }
 
+    @Override
+    public ProjectPaymentStatusesDto getPossiblePaymentStatusByProjectId(Long id) {
+
+        ProjectEntity projectEntity = projectRepository.findById(id)
+                .orElseThrow(() -> new BadRequestException(String.format("Proyecto con ID %s no encontrado: ", id)));
+
+        List<PaymentStatusEnum> possibleStatus = switch (projectEntity.getPaymentStatus()) {
+            case BUDGETED -> List.of(PaymentStatusEnum.BILL_CREATED);
+            case BILL_CREATED -> List.of(PaymentStatusEnum.PARTIALLY_PAID, PaymentStatusEnum.PAID);
+            case PARTIALLY_PAID -> List.of(PaymentStatusEnum.PAID);
+            case PAID -> List.of();
+        };
+
+        return new ProjectPaymentStatusesDto(possibleStatus);
+
+    }
+
     private ProjectStatusEnum calculateFromStatusExpired(ProjectEntity projectEntity) {
         if (projectEntity.getStartDate().isAfter(LocalDateTime.now())) {
             return ProjectStatusEnum.COMPLETED;
