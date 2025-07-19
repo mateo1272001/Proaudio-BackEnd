@@ -175,20 +175,7 @@ public class ProjectServiceImpl implements ProjectService {
 
         ProjectEntity projectEntity = projectRepository.findById(id)
                 .orElseThrow(() -> new BadRequestException("Project con ID no encontrado: " + id));
-        //        EventResponseDto eventResponseDto = eventService.GetEvent(projectEntity.getEventId());
-        //        projectResponseDto.setEvent(eventResponseDto);
-        //
-        //        //        ClientResponseDto clientResponseDto = ...
-        //        //todo [CLIENT] add client to response
-        //
-        //        ProductProjectResponseListDto productProjectResponseListDto =
-        //                productProjectService.getProductProjectByProjectId(id, BasicEnumStatus.ENABLED);
-        //        projectResponseDto.setProducts(
-        //                productProjectService.toProductResponse(productProjectResponseListDto.getProductProjectList()));
-        //
-        //        ExpenseResponseListDto expenseResponseListDto =
-        //                expenseService.GetExpensesByProject(projectEntity.getProjectId());
-        //        projectResponseDto.setExpenses(expenseResponseListDto.getExpenses());
+
         return projectMapper.toDto(projectEntity);
     }
 
@@ -200,7 +187,6 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public ProjectStatusesDto getPossibleStatusByProjectId(Long id) {
-        //todo [PROJECT get] calculate next status for project
         ProjectEntity projectEntity = projectRepository.findById(id)
                 .orElseThrow(() -> new BadRequestException(String.format("Proyecto con ID %s no encontrado: ", id)));
 
@@ -239,6 +225,28 @@ public class ProjectServiceImpl implements ProjectService {
 
             projectRepository.save(projectEntity);
         }
+    }
+
+    @Override
+    public ProjectDetailsResponseDto getProjectDetails(Long id) {
+
+        ProjectSimpleReponseDto projectSimpleReponseDto = getProject(id);
+
+        ProjectDetailsResponseDto projectDetailsResponseDto = new ProjectDetailsResponseDto();
+        projectDetailsResponseDto.setProjectId(projectSimpleReponseDto.getProjectId());
+        projectDetailsResponseDto.setName(projectSimpleReponseDto.getName());
+        projectDetailsResponseDto.setStartDate(projectSimpleReponseDto.getStartDate());
+        projectDetailsResponseDto.setEndDate(projectSimpleReponseDto.getEndDate());
+        projectDetailsResponseDto.setEvent(eventService.GetEvent(projectSimpleReponseDto.getEventId()));
+        //        projectDetailsResponseDto.setClient(); //todo [CLIENT] add when clients are included
+        projectDetailsResponseDto.setStatus(projectSimpleReponseDto.getStatus());
+        projectDetailsResponseDto.setPaymentStatus(projectSimpleReponseDto.getPaymentStatus());
+        projectDetailsResponseDto.setProjectType(projectSimpleReponseDto.getProjectType());
+        projectDetailsResponseDto.setProducts(productProjectService.getProductsInProject(id));
+        //        projectDetailsResponseDto.setItems(); //todo [PROJECTS] add when items are included to projects
+
+
+        return projectDetailsResponseDto;
     }
 
     private ProjectStatusEnum calculateFromStatusExpired(ProjectEntity projectEntity) {

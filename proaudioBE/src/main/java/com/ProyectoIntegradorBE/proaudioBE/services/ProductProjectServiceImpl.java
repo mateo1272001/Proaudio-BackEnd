@@ -3,6 +3,8 @@ package com.ProyectoIntegradorBE.proaudioBE.services;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.ItemResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.ProductProject.ProductProjectRequestDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.ProductProject.ProductProjectResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Project.ProductInProjectResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Project.ProductsInProjectResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.entities.ProductProjectEntity;
 import com.ProyectoIntegradorBE.proaudioBE.enums.BasicEnumStatus;
 import com.ProyectoIntegradorBE.proaudioBE.exceptions.BadRequestException;
@@ -70,6 +72,15 @@ public class ProductProjectServiceImpl implements ProductProjectService {
         productProjectEntity = productProjectRepository.save(productProjectEntity);
 
         return productProjectMapper.toDto(productProjectEntity);
+    }
+
+    @Override
+    public ProductsInProjectResponseDto getProductsInProject(Long id) {
+
+        List<ProductInProjectResponseDto> productProjectDetailsDto =
+                productProjectRepository.findProductProjectDetail(id);
+
+        return new ProductsInProjectResponseDto(productProjectDetailsDto);
     }
 
 }

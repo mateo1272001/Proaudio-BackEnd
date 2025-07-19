@@ -76,4 +76,6 @@ public class ItemController {
 
     }
 
+    //todo [ITEMS] regenerate QR method
+
 }
