@@ -8,6 +8,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ItemRepository extends CrudRepository<ItemEntity, Long>, JpaRepository<ItemEntity, Long>,
@@ -16,4 +17,6 @@ public interface ItemRepository extends CrudRepository<ItemEntity, Long>, JpaRep
     List<ItemEntity> findByProductIdInAndStatusIn(List<Long> productIds, List<ItemStatusEnum> itemStatusEnums);
 
     List<ItemEntity> findByProductIdAndStatusIn(Long productId, List<ItemStatusEnum> itemStatusEnums);
+
+    Optional<ItemEntity> findByItemId(Long id);
 }

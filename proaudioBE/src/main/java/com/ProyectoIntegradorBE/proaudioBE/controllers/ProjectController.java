@@ -45,4 +45,14 @@ public class ProjectController {
         return projectService.getPossibleStatusForStartingProject();
     }
 
+    @GetMapping("/possible/payment/status/{id}")
+    private ProjectPaymentStatusesDto getPossiblePaymentStatusByProjectId(@PathVariable Long id) {
+        return projectService.getPossiblePaymentStatusByProjectId(id);
+    }
+    //todo [PROJECT] create possible payment endpoints
+
+    @GetMapping("/details/{id}")
+    private ProjectDetailsResponseDto getProjectDetails(@PathVariable Long id) {
+        return projectService.getProjectDetails(id);
+    }
 }

@@ -18,4 +18,8 @@ public interface ProjectService {
     ProjectStatusesDto getPossibleStatusForStartingProject();
 
     void updateProjectStatusAutomatically();
+
+    ProjectDetailsResponseDto getProjectDetails(Long id);
+
+    ProjectPaymentStatusesDto getPossiblePaymentStatusByProjectId(Long id);
 }

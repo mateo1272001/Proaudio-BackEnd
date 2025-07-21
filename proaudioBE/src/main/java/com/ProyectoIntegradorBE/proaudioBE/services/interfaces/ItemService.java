@@ -28,4 +28,6 @@ public interface ItemService {
     List<ItemResponseDto> GetByProductIds(List<Long> productIds);
 
     List<ItemResponseDto> GetByProductId(@NotNull Long productId);
+
+    ItemResponseDto regenerateItemQr(Long id) throws Exception;
 }

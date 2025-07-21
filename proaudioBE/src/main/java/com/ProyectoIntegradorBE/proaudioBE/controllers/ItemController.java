@@ -76,4 +76,11 @@ public class ItemController {
 
     }
 
+    @PostMapping("{id}/regenerate/qr")
+    private ItemResponseDto regenerateItemQr(@PathVariable Long id) throws Exception {
+
+        return itemService.regenerateItemQr(id);
+
+    }
+
 }
