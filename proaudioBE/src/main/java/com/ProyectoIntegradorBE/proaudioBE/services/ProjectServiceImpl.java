@@ -176,7 +176,12 @@ public class ProjectServiceImpl implements ProjectService {
         ProjectEntity projectEntity = projectRepository.findById(id)
                 .orElseThrow(() -> new BadRequestException("Project con ID no encontrado: " + id));
 
-        return projectMapper.toDto(projectEntity);
+        EventResponseDto event = eventService.GetEvent(projectEntity.getEventId());
+
+        ProjectSimpleReponseDto projectSimpleReponseDto = projectMapper.toDto(projectEntity);
+        projectSimpleReponseDto.setEvent(event);
+
+        return projectSimpleReponseDto;
     }
 
     @Override
@@ -192,7 +197,8 @@ public class ProjectServiceImpl implements ProjectService {
 
         List<ProjectStatusEnum> possibleStatus = switch (projectEntity.getStatus()) {
             case PLANNED, DISCARDED -> List.of(ProjectStatusEnum.CONFIRMED);
-            case CONFIRMED, ON_COURSE -> List.of(ProjectStatusEnum.DISCARDED);
+            case CONFIRMED -> List.of(ProjectStatusEnum.DISCARDED, ProjectStatusEnum.PLANNED);
+            case ON_COURSE -> List.of(ProjectStatusEnum.DISCARDED);
             case EXPIRED -> List.of(ProjectStatusEnum.COMPLETED);
             case COMPLETED -> List.of();
         };
@@ -243,6 +249,7 @@ public class ProjectServiceImpl implements ProjectService {
         projectDetailsResponseDto.setPaymentStatus(projectSimpleReponseDto.getPaymentStatus());
         projectDetailsResponseDto.setProjectType(projectSimpleReponseDto.getProjectType());
         projectDetailsResponseDto.setProducts(productProjectService.getProductsInProject(id));
+        projectDetailsResponseDto.setExpenses(expenseService.GetExpensesByProject(id).getExpenses());
         //        projectDetailsResponseDto.setItems(); //todo [PROJECTS] add when items are included to projects
 
 

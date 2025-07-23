@@ -1,10 +1,12 @@
 package com.ProyectoIntegradorBE.proaudioBE.dtos.Project;
 
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Event.EventResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.enums.PaymentStatusEnum;
 import com.ProyectoIntegradorBE.proaudioBE.enums.ProjectStatusEnum;
 import com.ProyectoIntegradorBE.proaudioBE.enums.ProjectTypeEnum;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import jakarta.annotation.Nullable;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -35,6 +37,9 @@ public class ProjectSimpleReponseDto {
     private ProjectTypeEnum projectType;
 
     private BigDecimal costAddition;
+
+    @Nullable
+    private EventResponseDto event;
 
 
 }
