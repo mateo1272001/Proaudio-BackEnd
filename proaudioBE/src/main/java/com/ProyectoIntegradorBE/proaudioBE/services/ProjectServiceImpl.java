@@ -122,6 +122,11 @@ public class ProjectServiceImpl implements ProjectService {
         entityResponse.setProjectType(request.getProjectType());
         entityResponse.setCostAddition(request.getCostAddition());
 
+        entityResponse.setStartDate(projectResponseDto.getStartDate());
+        entityResponse.setEndDate(projectResponseDto.getEndDate());
+        entityResponse.setClientId(projectResponseDto.getClientId());
+        entityResponse.setEventId(projectResponseDto.getEventId());
+
         //only on CONFIRMED, PLANNED or DISCARDED
         if (request.getStartDate().isAfter(request.getEndDate())) {
             throw new BadRequestException("¡La fecha de fin no puede ser anterior a la fecha de inicio!");
@@ -149,7 +154,7 @@ public class ProjectServiceImpl implements ProjectService {
 
             if (!requestEventId.equals(projectResponseDto.getEventId())) {
                 if (!statusIsUpdatable) {
-                    throw new BadRequestException("El estado solo se puede modificar si el projecto aún no empieza!");
+                    throw new BadRequestException("El evento solo se puede modificar si el projecto aún no empieza!");
                 }
                 EventResponseDto eventResponseDto = eventService.GetEvent(requestEventId);
                 entityResponse.setEventId(eventResponseDto.getEventId());
@@ -157,7 +162,7 @@ public class ProjectServiceImpl implements ProjectService {
 
         } else {
             if (!statusIsUpdatable) {
-                throw new BadRequestException("El estado solo se puede modificar si el projecto aún no empieza!");
+                throw new BadRequestException("El evento solo se puede modificar si el projecto aún no empieza!");
             }
             EventResponseDto eventResponseDto = eventService.CreateEvent(request.getEvent());
             entityResponse.setEventId(eventResponseDto.getEventId());
@@ -248,7 +253,7 @@ public class ProjectServiceImpl implements ProjectService {
         projectDetailsResponseDto.setStatus(projectSimpleReponseDto.getStatus());
         projectDetailsResponseDto.setPaymentStatus(projectSimpleReponseDto.getPaymentStatus());
         projectDetailsResponseDto.setProjectType(projectSimpleReponseDto.getProjectType());
-        projectDetailsResponseDto.setProducts(productProjectService.getProductsInProject(id));
+        projectDetailsResponseDto.setProducts(productProjectService.getProductsInProject(id).getProducts());
         projectDetailsResponseDto.setExpenses(expenseService.GetExpensesByProject(id).getExpenses());
         //        projectDetailsResponseDto.setItems(); //todo [PROJECTS] add when items are included to projects
 

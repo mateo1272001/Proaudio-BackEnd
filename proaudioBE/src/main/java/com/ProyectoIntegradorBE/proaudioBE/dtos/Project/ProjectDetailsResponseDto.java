@@ -36,7 +36,7 @@ public class ProjectDetailsResponseDto {
 
     private ProjectTypeEnum projectType;
 
-    private ProductsInProjectResponseDto products;
+    private List<ProductInProjectResponseDto> products;
 
     private List<ExpenseResponseDto> expenses;
 

@@ -4,8 +4,6 @@ spring:
   servlet:
     multipart:
       max-file-size: 10MB
-      max-request-size: 10MB
-
 
 ---
 
@@ -14,7 +12,8 @@ spring:
     activate:
       on-profile: dev
   datasource:
-    url: jdbc:mysql://localhost:3306/proaudio_channels?useSSL=false&serverTimezone=UTC
+    url: jdbc:mysql://localhost:3306/proaudio_channels?useSSL=false&serverTimezone=America/Argentina/Buenos_Aires
+
     username: root
     password: Maiescuel8042.
   jpa:

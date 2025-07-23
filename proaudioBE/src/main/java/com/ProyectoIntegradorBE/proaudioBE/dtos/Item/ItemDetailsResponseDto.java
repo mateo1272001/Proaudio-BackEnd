@@ -25,6 +25,11 @@ public class ItemDetailsResponseDto {
 
     private ItemProductResponseDto product;
 
+    private String range;
+
+    private String serialNumber;
+
+
     //    private Object activities;
 
 }
