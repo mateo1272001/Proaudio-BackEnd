@@ -1,10 +1,9 @@
 spring:
   profiles:
-    active: test # Cambiar según el entorno
+    active: dev # Cambiar según el entorno
   servlet:
     multipart:
       max-file-size: 10MB
-      max-request-size: 10MB
 
 ---
 
@@ -13,9 +12,10 @@ spring:
     activate:
       on-profile: dev
   datasource:
-    url: jdbc:mysql://localhost:3306/proaudio_channels?useSSL=false&serverTimezone=UTC
+    url: jdbc:mysql://localhost:3306/proaudio_channels?useSSL=false&serverTimezone=America/Argentina/Buenos_Aires
+
     username: root
-    password: Maiescuel8042.
+    password: proaudioproject2025
   jpa:
     hibernate:
       ddl-auto: none
@@ -47,9 +47,9 @@ spring:
     activate:
       on-profile: test
   datasource:
-    url: jdbc:mysql://localhost:3306/proaudio_channels?useSSL=false&serverTimezone=UTC
-    username: root
-    password: Usr.Tst1
+    url: jdbc:mysql://localhost:3306/qrapp_test
+    username: test_user
+    password: test_password
   jpa:
     hibernate:
       ddl-auto: none
@@ -58,7 +58,7 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
   server:
-    port: 8080
+    port: 8081
   cron:
     project-status: "0 0 8,20 * * *" #executing at 8am and 8pm everyday
 

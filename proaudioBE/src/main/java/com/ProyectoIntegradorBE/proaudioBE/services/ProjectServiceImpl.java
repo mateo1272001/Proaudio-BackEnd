@@ -122,6 +122,11 @@ public class ProjectServiceImpl implements ProjectService {
         entityResponse.setProjectType(request.getProjectType());
         entityResponse.setCostAddition(request.getCostAddition());
 
+        entityResponse.setStartDate(projectResponseDto.getStartDate());
+        entityResponse.setEndDate(projectResponseDto.getEndDate());
+        entityResponse.setClientId(projectResponseDto.getClientId());
+        entityResponse.setEventId(projectResponseDto.getEventId());
+
         //only on CONFIRMED, PLANNED or DISCARDED
         if (request.getStartDate().isAfter(request.getEndDate())) {
             throw new BadRequestException("¡La fecha de fin no puede ser anterior a la fecha de inicio!");
@@ -149,7 +154,7 @@ public class ProjectServiceImpl implements ProjectService {
 
             if (!requestEventId.equals(projectResponseDto.getEventId())) {
                 if (!statusIsUpdatable) {
-                    throw new BadRequestException("El estado solo se puede modificar si el projecto aún no empieza!");
+                    throw new BadRequestException("El evento solo se puede modificar si el projecto aún no empieza!");
                 }
                 EventResponseDto eventResponseDto = eventService.GetEvent(requestEventId);
                 entityResponse.setEventId(eventResponseDto.getEventId());
@@ -157,7 +162,7 @@ public class ProjectServiceImpl implements ProjectService {
 
         } else {
             if (!statusIsUpdatable) {
-                throw new BadRequestException("El estado solo se puede modificar si el projecto aún no empieza!");
+                throw new BadRequestException("El evento solo se puede modificar si el projecto aún no empieza!");
             }
             EventResponseDto eventResponseDto = eventService.CreateEvent(request.getEvent());
             entityResponse.setEventId(eventResponseDto.getEventId());
@@ -176,7 +181,12 @@ public class ProjectServiceImpl implements ProjectService {
         ProjectEntity projectEntity = projectRepository.findById(id)
                 .orElseThrow(() -> new BadRequestException("Project con ID no encontrado: " + id));
 
-        return projectMapper.toDto(projectEntity);
+        EventResponseDto event = eventService.GetEvent(projectEntity.getEventId());
+
+        ProjectSimpleReponseDto projectSimpleReponseDto = projectMapper.toDto(projectEntity);
+        projectSimpleReponseDto.setEvent(event);
+
+        return projectSimpleReponseDto;
     }
 
     @Override
@@ -192,7 +202,8 @@ public class ProjectServiceImpl implements ProjectService {
 
         List<ProjectStatusEnum> possibleStatus = switch (projectEntity.getStatus()) {
             case PLANNED, DISCARDED -> List.of(ProjectStatusEnum.CONFIRMED);
-            case CONFIRMED, ON_COURSE -> List.of(ProjectStatusEnum.DISCARDED);
+            case CONFIRMED -> List.of(ProjectStatusEnum.DISCARDED, ProjectStatusEnum.PLANNED);
+            case ON_COURSE -> List.of(ProjectStatusEnum.DISCARDED);
             case EXPIRED -> List.of(ProjectStatusEnum.COMPLETED);
             case COMPLETED -> List.of();
         };
@@ -242,7 +253,8 @@ public class ProjectServiceImpl implements ProjectService {
         projectDetailsResponseDto.setStatus(projectSimpleReponseDto.getStatus());
         projectDetailsResponseDto.setPaymentStatus(projectSimpleReponseDto.getPaymentStatus());
         projectDetailsResponseDto.setProjectType(projectSimpleReponseDto.getProjectType());
-        projectDetailsResponseDto.setProducts(productProjectService.getProductsInProject(id));
+        projectDetailsResponseDto.setProducts(productProjectService.getProductsInProject(id).getProducts());
+        projectDetailsResponseDto.setExpenses(expenseService.GetExpensesByProject(id).getExpenses());
         //        projectDetailsResponseDto.setItems(); //todo [PROJECTS] add when items are included to projects
 
 

@@ -190,6 +190,8 @@ public class ItemServiceImpl implements ItemService {
         itemDetailsResponseDto.setLocation(item.getLocation());
         itemDetailsResponseDto.setPriceBought(Objects.nonNull(item.getPriceBought()) ? item.getPriceBought() : null);
         itemDetailsResponseDto.setBoughtAt(item.getBoughtAt());
+        itemDetailsResponseDto.setRange(item.getItemRange());
+        itemDetailsResponseDto.setSerialNumber(item.getSerialNumber());
         //        itemDetailsResponseDto.setActivities()
         return itemDetailsResponseDto;
     }
@@ -201,9 +203,6 @@ public class ItemServiceImpl implements ItemService {
         itemProductResponseDto.setProductId(productDetail.getProductId());
         itemProductResponseDto.setBrand(productDetail.getBrand());
         itemProductResponseDto.setModel(productDetail.getModel());
-        itemProductResponseDto.setPhotos(Objects.nonNull(productDetail.getPhotos()) ? productDetail.getPhotos() : null);
-        itemProductResponseDto.setRange(item.getItemRange());
-        itemProductResponseDto.setSerialNumber(item.getSerialNumber());
 
         return FillItemDetails(item, itemProductResponseDto);
     }
