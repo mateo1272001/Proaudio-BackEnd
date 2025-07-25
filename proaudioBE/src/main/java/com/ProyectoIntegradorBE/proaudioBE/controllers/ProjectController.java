@@ -47,10 +47,26 @@ public class ProjectController {
         return projectService.getPossibleStatusForStartingProject();
     }
 
+    @GetMapping("/status/all")
+    private ProjectStatusesDto getAllStatus() {
+        return projectService.getAllStatus();
+    }
+
     @GetMapping("/possible/payment/status/{id}")
     private ProjectPaymentStatusesDto getPossiblePaymentStatusByProjectId(@PathVariable Long id) {
         return projectService.getPossiblePaymentStatusByProjectId(id);
     }
+
+    @GetMapping("/payment/status/all")
+    private ProjectPaymentStatusesDto getAllPaymentStatus() {
+        return projectService.getAllPaymentStatus();
+    }
+
+    @GetMapping("/running/status/all")
+    private RunningStatusResponseDto getAllRunningStatus() {
+        return projectService.getAllRunningEnum();
+    }
+
 
     @GetMapping("/details/{id}")
     private ProjectDetailsResponseDto getProjectDetails(@PathVariable Long id) {

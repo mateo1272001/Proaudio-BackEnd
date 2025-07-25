@@ -352,6 +352,21 @@ public class ProjectServiceImpl implements ProjectService {
         return new ProjectListResponseDto(responseDtos, pagination);
     }
 
+    @Override
+    public ProjectStatusesDto getAllStatus() {
+        return new ProjectStatusesDto(Arrays.stream(ProjectStatusEnum.values()).toList());
+    }
+
+    @Override
+    public ProjectPaymentStatusesDto getAllPaymentStatus() {
+        return new ProjectPaymentStatusesDto(Arrays.stream(PaymentStatusEnum.values()).toList());
+    }
+
+    @Override
+    public RunningStatusResponseDto getAllRunningEnum() {
+        return new RunningStatusResponseDto(Arrays.stream(ProjectRunningStatusEnum.values()).toList());
+    }
+
     private List<ProjectRowResponseDto> createRows(List<ProjectEntity> content) {
 
         List<ProjectRowResponseDto> responseDtos = new ArrayList<>();
