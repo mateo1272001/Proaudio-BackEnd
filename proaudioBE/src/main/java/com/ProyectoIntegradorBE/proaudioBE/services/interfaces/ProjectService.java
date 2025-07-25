@@ -27,4 +27,10 @@ public interface ProjectService {
 
     ProjectListResponseDto getProjectList(Integer page, Integer size, String sortBy, String direction,
                                           List<String> filterStatus, String filterPaymentStatus, String name);
+
+    ProjectStatusesDto getAllStatus();
+
+    ProjectPaymentStatusesDto getAllPaymentStatus();
+
+    RunningStatusResponseDto getAllRunningEnum();
 }
