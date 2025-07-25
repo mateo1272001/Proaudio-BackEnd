@@ -22,4 +22,6 @@ public interface ProjectService {
     ProjectDetailsResponseDto getProjectDetails(Long id);
 
     ProjectPaymentStatusesDto getPossiblePaymentStatusByProjectId(Long id);
+
+    public byte[] generateProjectPdf(Long projectId);
 }

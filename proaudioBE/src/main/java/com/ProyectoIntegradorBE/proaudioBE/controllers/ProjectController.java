@@ -3,6 +3,7 @@ package com.ProyectoIntegradorBE.proaudioBE.controllers;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Project.*;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ProjectService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -53,5 +54,30 @@ public class ProjectController {
     @GetMapping("/details/{id}")
     private ProjectDetailsResponseDto getProjectDetails(@PathVariable Long id) {
         return projectService.getProjectDetails(id);
+    }
+
+    /*@GetMapping("/{id}/budget-pdf")
+    public ResponseEntity<Resource> getExamplePdf(@PathVariable Long id) throws IOException {
+        ClassPathResource pdfFile = new ClassPathResource("static/ejemplo.pdf");
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=ejemplo.pdf");
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .contentLength(pdfFile.contentLength())
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdfFile); // sin casteo
+    }*/
+
+    @GetMapping("/{id}/budget-pdf")
+    public ResponseEntity<byte[]> getBudgetPdf(@PathVariable Long id) {
+        byte[] pdfBytes = projectService.generateProjectPdf(id);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDisposition(ContentDisposition.inline().filename("presupuesto.pdf").build());
+
+        return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
     }
 }
