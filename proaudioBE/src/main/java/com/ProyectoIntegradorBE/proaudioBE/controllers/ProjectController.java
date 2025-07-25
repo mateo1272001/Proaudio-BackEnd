@@ -5,6 +5,8 @@ import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ProjectService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/project")
@@ -53,5 +55,16 @@ public class ProjectController {
     @GetMapping("/details/{id}")
     private ProjectDetailsResponseDto getProjectDetails(@PathVariable Long id) {
         return projectService.getProjectDetails(id);
+    }
+
+    @GetMapping("/all")
+    private ProjectListResponseDto getProjectList(@RequestParam(defaultValue = "0") Integer page,
+                                                  @RequestParam(defaultValue = "10") Integer size,
+                                                  @RequestParam(required = false, defaultValue = "start_date")
+                                                  String sortBy, @RequestParam(required = false) String direction,
+                                                  @RequestParam(required = false) List<String> filterStatus,
+                                                  @RequestParam(required = false) String filterPaymentStatus,
+                                                  @RequestParam(required = false) String name) {
+        return projectService.getProjectList(page, size, sortBy, direction, filterStatus, filterPaymentStatus, name);
     }
 }

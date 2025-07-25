@@ -4,6 +4,7 @@ import com.ProyectoIntegradorBE.proaudioBE.dtos.Event.EventResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Expense.ExpenseRequestDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Expense.ExpenseResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.ItemResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.PageableDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.PriceReponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.ProductResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.ProductProject.ProductProjectRequestDto;
@@ -15,8 +16,15 @@ import com.ProyectoIntegradorBE.proaudioBE.exceptions.BadRequestException;
 import com.ProyectoIntegradorBE.proaudioBE.mappers.EventMapper;
 import com.ProyectoIntegradorBE.proaudioBE.mappers.ProjectMapper;
 import com.ProyectoIntegradorBE.proaudioBE.repositories.ProjectRepository;
+import com.ProyectoIntegradorBE.proaudioBE.repositories.specifications.ProjectSpecification;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.*;
+import io.micrometer.common.util.StringUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,6 +50,8 @@ public class ProjectServiceImpl implements ProjectService {
     private final ProductProjectService productProjectService;
 
     private final RentPriceService rentPriceService;
+
+    private final UtilService utilService;
 
     private final EventMapper eventMapper;
 
@@ -275,6 +285,93 @@ public class ProjectServiceImpl implements ProjectService {
         };
 
         return new ProjectPaymentStatusesDto(possibleStatus);
+
+    }
+
+    private static Specification<ProjectEntity> getProjectEntitySpecification(String filterPaymentStatus, String name,
+                                                                              Boolean paymentIsFiltered,
+                                                                              Boolean nameIsFiltered,
+                                                                              List<ProjectStatusEnum> statuses) {
+        if (paymentIsFiltered && nameIsFiltered) {
+            return ProjectSpecification.filterBy(statuses, filterPaymentStatus, name);
+        } else {
+            if (paymentIsFiltered) {
+                return ProjectSpecification.filterByStatusAndPaymentStatus(statuses, filterPaymentStatus);
+            }
+            if (nameIsFiltered) {
+                return ProjectSpecification.filterByStatusAndName(statuses, name);
+            }
+            return ProjectSpecification.filterBy(statuses);
+        }
+    }
+
+    @Override
+    public ProjectListResponseDto getProjectList(Integer page, Integer size, String sortBy, String direction,
+                                                 List<String> filterStatus, String filterPaymentStatus, String name) {
+
+        page = (page != null ? page : 0);
+        DirectionEnum dir =
+                Objects.isNull(direction) ? DirectionEnum.DESC : DirectionEnum.valueOf(direction.toUpperCase());
+
+        size = Objects.nonNull(size) ? size : 10;
+
+        ProjectSortByEnum sortByEnum =
+                Objects.isNull(sortBy) ? ProjectSortByEnum.START_DATE : ProjectSortByEnum.valueOf(sortBy.toUpperCase());
+
+        String sortColumn = switch (sortByEnum) {
+            case START_DATE -> "startDate";
+            case END_DATE -> "endDate";
+            case NAME -> "name";
+        };
+
+        List<ProjectStatusEnum> statuses = new ArrayList<>();
+
+        if (Objects.isNull(filterStatus) || filterStatus.isEmpty()) {
+            statuses = Arrays.stream(ProjectStatusEnum.values()).toList();
+        } else {
+            for (String status : filterStatus) {
+                statuses.add(ProjectStatusEnum.valueOf(status.toUpperCase()));
+            }
+        }
+
+        Boolean paymentIsFiltered = !StringUtils.isBlank(filterPaymentStatus);
+        Boolean nameIsFiltered = !StringUtils.isBlank(name);
+
+        Specification<ProjectEntity> spec =
+                getProjectEntitySpecification(filterPaymentStatus, name, paymentIsFiltered, nameIsFiltered, statuses);
+
+        Sort sort = Sort.by(Sort.Direction.fromString(dir.name()), sortColumn);
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Page<ProjectEntity> pages = projectRepository.findAll(spec, pageable);
+
+        List<ProjectRowResponseDto> responseDtos = createRows(pages.getContent());
+
+        PageableDto pagination = utilService.buildPageableDto(pages);
+
+        return new ProjectListResponseDto(responseDtos, pagination);
+    }
+
+    private List<ProjectRowResponseDto> createRows(List<ProjectEntity> content) {
+
+        List<ProjectRowResponseDto> responseDtos = new ArrayList<>();
+
+        for (ProjectEntity project : content) {
+            ProjectRowResponseDto projectRowResponseDto = new ProjectRowResponseDto();
+            projectRowResponseDto.setProjectId(project.getProjectId());
+            projectRowResponseDto.setName(project.getName());
+            projectRowResponseDto.setStatus(project.getStatus());
+            projectRowResponseDto.setPaymentStatus(project.getPaymentStatus());
+            projectRowResponseDto.setStartDate(project.getStartDate());
+            projectRowResponseDto.setEndDate(project.getEndDate());
+            projectRowResponseDto.setRunningStatus(
+                    project.getStartDate().isAfter(LocalDateTime.now()) ? ProjectRunningStatusEnum.RUNNING :
+                            project.getStartDate().isAfter(LocalDateTime.now().minusWeeks(1L)) ?
+                                    ProjectRunningStatusEnum.PREPARING : ProjectRunningStatusEnum.NONE);
+            responseDtos.add(projectRowResponseDto);
+        }
+
+        return responseDtos;
 
     }
 

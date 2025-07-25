@@ -3,6 +3,8 @@ package com.ProyectoIntegradorBE.proaudioBE.services.interfaces;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Project.*;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public interface ProjectService {
     ProjectResponseDto createProject(ProjectRequestDto request);
@@ -22,4 +24,7 @@ public interface ProjectService {
     ProjectDetailsResponseDto getProjectDetails(Long id);
 
     ProjectPaymentStatusesDto getPossiblePaymentStatusByProjectId(Long id);
+
+    ProjectListResponseDto getProjectList(Integer page, Integer size, String sortBy, String direction,
+                                          List<String> filterStatus, String filterPaymentStatus, String name);
 }
