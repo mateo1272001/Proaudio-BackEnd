@@ -16,6 +16,7 @@ import com.ProyectoIntegradorBE.proaudioBE.repositories.specifications.ItemSpeci
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ItemService;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.QrService;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.util.InternalException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -48,8 +49,12 @@ public class ItemServiceImpl implements ItemService {
 
         List<ItemEntity> entityList = new ArrayList<>();
 
-
         for (ItemRequestDto item : items.getItems()) {
+
+            if (item.getAmountBought() != item.getSerialNumbers().size()) {
+                throw new BadRequestException(
+                        "La cantidad de numeros de serie debe ser igual a los productos comprados");
+            }
 
             List<ItemEntity> itemEntities = createItemBlock(item);
             entityList.addAll(itemEntities);
@@ -91,6 +96,9 @@ public class ItemServiceImpl implements ItemService {
             itemEntity.setLocation(LocationEnum.IN_DEPOSIT);
             itemEntity.setStatus(ItemStatusEnum.CREATED);
             itemEntity.setUpdatedAt(LocalDateTime.now());
+            itemEntity.setItemRange(item.getItemRange());
+
+            itemEntity.setSerialNumber(item.getSerialNumbers().get(i));
 
             itemEntities.add(itemEntity);
         }
@@ -108,6 +116,7 @@ public class ItemServiceImpl implements ItemService {
         itemEntity.setStatus(Objects.nonNull(item.getStatus()) ? item.getStatus() : itemEntity.getStatus());
         itemEntity.setDescription(
                 Objects.nonNull(item.getDescription()) ? item.getDescription() : itemEntity.getDescription());
+        itemEntity.setItemRange(Objects.nonNull(item.getItemRange()) ? item.getItemRange() : itemEntity.getItemRange());
         itemEntity.setUpdatedAt(LocalDateTime.now());
 
         itemEntity = itemRepository.save(itemEntity);
@@ -172,12 +181,6 @@ public class ItemServiceImpl implements ItemService {
 
     }
 
-    //    private PageableDto buildPageableDto(Page<?> page) {
-    //        return PageableDto.builder().pageNumber(page.getNumber()).pageSize(page.getSize())
-    //                .totalPages(page.getTotalPages()).totalElements(page.getTotalElements()).hasNext(page.hasNext())
-    //                .hasPrevious(page.hasPrevious()).build();
-    //    }
-
     private static ItemDetailsResponseDto FillItemDetails(ItemResponseDto item,
                                                           ItemProductResponseDto itemProductResponseDto) {
         ItemDetailsResponseDto itemDetailsResponseDto = new ItemDetailsResponseDto();
@@ -187,6 +190,8 @@ public class ItemServiceImpl implements ItemService {
         itemDetailsResponseDto.setLocation(item.getLocation());
         itemDetailsResponseDto.setPriceBought(Objects.nonNull(item.getPriceBought()) ? item.getPriceBought() : null);
         itemDetailsResponseDto.setBoughtAt(item.getBoughtAt());
+        itemDetailsResponseDto.setRange(item.getItemRange());
+        itemDetailsResponseDto.setSerialNumber(item.getSerialNumber());
         //        itemDetailsResponseDto.setActivities()
         return itemDetailsResponseDto;
     }
@@ -198,7 +203,6 @@ public class ItemServiceImpl implements ItemService {
         itemProductResponseDto.setProductId(productDetail.getProductId());
         itemProductResponseDto.setBrand(productDetail.getBrand());
         itemProductResponseDto.setModel(productDetail.getModel());
-        itemProductResponseDto.setPhotos(Objects.nonNull(productDetail.getPhotos()) ? productDetail.getPhotos() : null);
 
         return FillItemDetails(item, itemProductResponseDto);
     }
@@ -227,6 +231,18 @@ public class ItemServiceImpl implements ItemService {
         List<ItemEntity> itemEntities = itemRepository.findByProductIdAndStatusIn(productId, GetUsableStatuses());
 
         return itemMapper.toDtoList(itemEntities);
+    }
+
+    @Override
+    public ItemResponseDto regenerateItemQr(Long id) throws Exception {
+
+        ItemEntity itemEntity = itemRepository.findByItemId(id)
+                .orElseThrow(() -> new BadRequestException("Artículo no encontrado con ID " + id));
+
+        ItemResponseDto itemResponseDto = GenerateQrAndResponse(List.of(itemEntity)).stream().findFirst()
+                .orElseThrow(() -> new InternalException("Error regenerating QR code"));
+
+        return itemResponseDto;
     }
 
     private List<ItemStatusEnum> GetUsableStatuses() {

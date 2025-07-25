@@ -70,14 +70,16 @@ public class ProductServiceImpl implements ProductService {
 
         List<ProductTagResponseDto> tags = CreateProductTags(productRequestDto, product);
 
-        List<MultipartFile> photoList = Stream.of(files).toList();
+        if (files != null && files.length > 0) {
+            List<MultipartFile> photoList = Stream.of(files).toList();
 
-        List<PhotoResponseDto> photos =
-                photoService.createPhotos(productResponseDto.getProductId(), photoList);
+            List<PhotoResponseDto> photos =
+                    photoService.createPhotos(productResponseDto.getProductId(), photoList);
+            productResponseDto.setPhotos(photos);
+        }
 
         productResponseDto.setPrices(prices);
         productResponseDto.setTags(tags);
-        productResponseDto.setPhotos(photos);
 
         return productResponseDto;
 
@@ -216,20 +218,6 @@ public class ProductServiceImpl implements ProductService {
         response.setDependencyTags(new ArrayList<>());
         response.setRelationTags(new ArrayList<>());
 
-        //        for(TagResponseDto tag : tags) {
-        //
-        //            ProductTagResponseDto productTagResponseDto =
-        //                    productTagResponseDtos.stream().filter(pt -> pt.getTagId()
-        //                            .equals(tag.getTagId()))
-        //                            .findFirst().orElseThrow(() -> new BadRequestException(""));
-        //
-        //            switch (productTagResponseDto.getType()) {
-        //                case DESCRIPTIVE -> response.getDescriptionTags().add(tag);
-        //                case RELATION -> response.getRelationTags().add(tag);
-        //                case DEPENDENCY -> response.getDependencyTags().add(tag);
-        //            }
-        //
-        //        }
         for (ProductTagResponseDto productTagResponseDto : productTagResponseDtos) {
 
             TagResponseDto tagResponseDto =
