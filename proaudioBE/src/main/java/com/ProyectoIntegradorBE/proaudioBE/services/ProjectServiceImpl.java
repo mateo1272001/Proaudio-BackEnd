@@ -25,19 +25,25 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StreamUtils;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
+import org.xhtmlrenderer.pdf.ITextRenderer;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
 public class ProjectServiceImpl implements ProjectService {
+
+    private final TemplateEngine templateEngine;
 
     private final EventService eventService;
 
@@ -530,5 +536,68 @@ public class ProjectServiceImpl implements ProjectService {
 
     private BigDecimal CalculateCostAddition(BigDecimal costAddition) {
         return costAddition;
+    }
+
+
+    private String convertirImagenABase64(String path) throws IOException {
+        ClassPathResource imgFile = new ClassPathResource(path);
+        byte[] bytes = StreamUtils.copyToByteArray(imgFile.getInputStream());
+        return Base64.getEncoder().encodeToString(bytes);
+    }
+
+    public byte[] generateProjectPdf(Long projectId) {
+        //ProjectSimpleReponseDto project = getProject(projectId);
+        // Simulamos los datos del proyecto
+        Map<String, Object> project = new HashMap<>();
+        project.put("clientName", "Empresa XYZ S.A.");
+        project.put("eventName", "Lanzamiento de Producto 2025");
+        project.put("ubication", "Montevideo, Uruguay");
+        project.put("eventDateStart", "10/08/2025");
+        project.put("eventDateEnd", "12/08/2025");
+        project.put("dateValidUntil", "30/08/2025");
+
+        // Lista de productos (modelName, amount)
+        List<Map<String, Object>> products = new ArrayList<>();
+        Map<String, Object> prod1 = new HashMap<>();
+        prod1.put("modelName", "Consola de Sonido Behringer X32");
+        prod1.put("amount", 2);
+        products.add(prod1);
+
+        Map<String, Object> prod2 = new HashMap<>();
+        prod2.put("modelName", "Sistema de Parlantes JBL PRX815");
+        prod2.put("amount", 4);
+        products.add(prod2);
+
+        project.put("products", products);
+
+        project.put("totalBudget", "$4,200 USD");
+        project.put("user", "Juan Pérez");
+        project.put("userPhone", "+598 91 234 567");
+        project.put("email", "juan.perez@proaudio.com.uy");
+
+
+        // Cargar el HTML con Thymeleaf
+        Context context = new Context();
+        context.setVariable("project", project);
+
+        try {
+            String logoBase64 = convertirImagenABase64("static/logo-lettering.png");
+            context.setVariable("logoBase64", logoBase64);
+        } catch (IOException e) {
+            throw new RuntimeException("Error al cargar imágenes para el PDF", e);
+        }
+
+        String htmlContent = templateEngine.process("project-pdf.html", context);
+
+        // Convertir HTML a PDF
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            ITextRenderer renderer = new ITextRenderer();
+            renderer.setDocumentFromString(htmlContent);
+            renderer.layout();
+            renderer.createPDF(outputStream);
+            return outputStream.toByteArray();
+        } catch (Exception e) {
+            throw new RuntimeException("Error al generar PDF del proyecto", e);
+        }
     }
 }

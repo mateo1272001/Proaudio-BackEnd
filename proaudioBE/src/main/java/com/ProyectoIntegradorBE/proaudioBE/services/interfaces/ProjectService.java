@@ -33,4 +33,6 @@ public interface ProjectService {
     ProjectPaymentStatusesDto getAllPaymentStatus();
 
     RunningStatusResponseDto getAllRunningEnum();
+
+    public byte[] generateProjectPdf(Long projectId);
 }
