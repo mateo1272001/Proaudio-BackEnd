@@ -89,7 +89,7 @@ public class ProjectController {
     }
 
     @GetMapping("{id}/products")
-    private ProductsInProjectResponseDto getProductsInProject(Long id) {
+    private ProductsInProjectResponseDto getProductsInProject(@PathVariable Long id) {
         projectService.getProject(id);
         return productProjectService.getProductsInProject(id);
     }
