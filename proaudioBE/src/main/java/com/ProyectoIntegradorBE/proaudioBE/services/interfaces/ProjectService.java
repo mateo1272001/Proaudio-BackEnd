@@ -34,5 +34,5 @@ public interface ProjectService {
 
     RunningStatusResponseDto getAllRunningEnum();
 
-    public byte[] generateProjectPdf(Long projectId);
+    byte[] generateBudget(Long id);
 }

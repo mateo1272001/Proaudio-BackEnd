@@ -3,6 +3,7 @@ package com.ProyectoIntegradorBE.proaudioBE.services;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Event.EventResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Expense.ExpenseRequestDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Expense.ExpenseResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.GeneralParmeters.GeneralParameterResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.ItemResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.PageableDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.PriceReponseDto;
@@ -13,31 +14,29 @@ import com.ProyectoIntegradorBE.proaudioBE.dtos.Project.*;
 import com.ProyectoIntegradorBE.proaudioBE.entities.ProjectEntity;
 import com.ProyectoIntegradorBE.proaudioBE.enums.*;
 import com.ProyectoIntegradorBE.proaudioBE.exceptions.BadRequestException;
-import com.ProyectoIntegradorBE.proaudioBE.mappers.EventMapper;
 import com.ProyectoIntegradorBE.proaudioBE.mappers.ProjectMapper;
 import com.ProyectoIntegradorBE.proaudioBE.repositories.ProjectRepository;
 import com.ProyectoIntegradorBE.proaudioBE.repositories.specifications.ProjectSpecification;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.*;
 import io.micrometer.common.util.StringUtils;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.util.InternalException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StreamUtils;
 import org.thymeleaf.TemplateEngine;
-import org.thymeleaf.context.Context;
-import org.xhtmlrenderer.pdf.ITextRenderer;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -59,7 +58,9 @@ public class ProjectServiceImpl implements ProjectService {
 
     private final UtilService utilService;
 
-    private final EventMapper eventMapper;
+    private final GeneralParameterService generalParameterService;
+
+    private final PdfService pdfService;
 
     private final ProjectMapper projectMapper;
 
@@ -68,6 +69,7 @@ public class ProjectServiceImpl implements ProjectService {
     private final List<ProjectStatusEnum> UPDATE_STATUSES =
             List.of(ProjectStatusEnum.PLANNED, ProjectStatusEnum.CONFIRMED, ProjectStatusEnum.DISCARDED);
 
+    private final String KM_PARAMETER = "km_cost";
 
     private static ProjectResponseDto makeProjectResponseDto(ProjectRequestDto request, ProjectEntity projectEntity,
                                                              EventResponseDto eventResponseDto,
@@ -538,66 +540,133 @@ public class ProjectServiceImpl implements ProjectService {
         return costAddition;
     }
 
+    //
+    //    private String convertirImagenABase64(String path) throws IOException {
+    //        ClassPathResource imgFile = new ClassPathResource(path);
+    //        byte[] bytes = StreamUtils.copyToByteArray(imgFile.getInputStream());
+    //        return Base64.getEncoder().encodeToString(bytes);
+    //    }
+    //
+    //    public byte[] generateProjectPdf(Long projectId) {
+    //        //ProjectSimpleReponseDto project = getProject(projectId);
+    //        // Simulamos los datos del proyecto
+    //        Map<String, Object> project = new HashMap<>();
+    //        project.put("clientName", "Empresa XYZ S.A.");
+    //        project.put("eventName", "Lanzamiento de Producto 2025");
+    //        project.put("ubication", "Montevideo, Uruguay");
+    //        project.put("eventDateStart", "10/08/2025");
+    //        project.put("eventDateEnd", "12/08/2025");
+    //        project.put("dateValidUntil", "30/08/2025");
+    //
+    //        // Lista de productos (modelName, amount)
+    //        List<Map<String, Object>> products = new ArrayList<>();
+    //        Map<String, Object> prod1 = new HashMap<>();
+    //        prod1.put("modelName", "Consola de Sonido Behringer X32");
+    //        prod1.put("amount", 2);
+    //        products.add(prod1);
+    //
+    //        Map<String, Object> prod2 = new HashMap<>();
+    //        prod2.put("modelName", "Sistema de Parlantes JBL PRX815");
+    //        prod2.put("amount", 4);
+    //        products.add(prod2);
+    //
+    //        project.put("products", products);
+    //
+    //        project.put("totalBudget", "$4,200 USD");
+    //        project.put("user", "Juan Pérez");
+    //        project.put("userPhone", "+598 91 234 567");
+    //        project.put("email", "juan.perez@proaudio.com.uy");
+    //
+    //
+    //        // Cargar el HTML con Thymeleaf
+    //        Context context = new Context();
+    //        context.setVariable("project", project);
+    //
+    //        try {
+    //            String logoBase64 = convertirImagenABase64("static/logo-lettering.png");
+    //            context.setVariable("logoBase64", logoBase64);
+    //        } catch (IOException e) {
+    //            throw new RuntimeException("Error al cargar imágenes para el PDF", e);
+    //        }
+    //
+    //        String htmlContent = templateEngine.process("project-pdf.html", context);
+    //
+    //        // Convertir HTML a PDF
+    //        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+    //            ITextRenderer renderer = new ITextRenderer();
+    //            renderer.setDocumentFromString(htmlContent);
+    //            renderer.layout();
+    //            renderer.createPDF(outputStream);
+    //            return outputStream.toByteArray();
+    //        } catch (Exception e) {
+    //            throw new RuntimeException("Error al generar PDF del proyecto", e);
+    //        }
+    //    }
 
-    private String convertirImagenABase64(String path) throws IOException {
-        ClassPathResource imgFile = new ClassPathResource(path);
-        byte[] bytes = StreamUtils.copyToByteArray(imgFile.getInputStream());
-        return Base64.getEncoder().encodeToString(bytes);
+    private static BigDecimal getExpensesBudget(List<ExpenseResponseDto> expenseResponseDto) {
+        BigDecimal totalExpenses = BigDecimal.valueOf(0);
+
+        if (!expenseResponseDto.isEmpty()) {
+            for (ExpenseResponseDto expense : expenseResponseDto) {
+                totalExpenses = totalExpenses.add(expense.getValue());
+            }
+        }
+        return totalExpenses;
     }
 
-    public byte[] generateProjectPdf(Long projectId) {
-        //ProjectSimpleReponseDto project = getProject(projectId);
-        // Simulamos los datos del proyecto
-        Map<String, Object> project = new HashMap<>();
-        project.put("clientName", "Empresa XYZ S.A.");
-        project.put("eventName", "Lanzamiento de Producto 2025");
-        project.put("ubication", "Montevideo, Uruguay");
-        project.put("eventDateStart", "10/08/2025");
-        project.put("eventDateEnd", "12/08/2025");
-        project.put("dateValidUntil", "30/08/2025");
+    @Override
+    public byte[] generateBudget(Long id) {
 
-        // Lista de productos (modelName, amount)
-        List<Map<String, Object>> products = new ArrayList<>();
-        Map<String, Object> prod1 = new HashMap<>();
-        prod1.put("modelName", "Consola de Sonido Behringer X32");
-        prod1.put("amount", 2);
-        products.add(prod1);
+        ProjectSimpleReponseDto projectResponseDto = getProject(id);
 
-        Map<String, Object> prod2 = new HashMap<>();
-        prod2.put("modelName", "Sistema de Parlantes JBL PRX815");
-        prod2.put("amount", 4);
-        products.add(prod2);
+        List<ExpenseResponseDto> expenseResponseDto = expenseService.GetExpensesByProject(id).getExpenses();
+        BigDecimal totalExpenses = getExpensesBudget(expenseResponseDto);
 
-        project.put("products", products);
+        BigDecimal totalTransportCost = getTransportationBudget(projectResponseDto);
 
-        project.put("totalBudget", "$4,200 USD");
-        project.put("user", "Juan Pérez");
-        project.put("userPhone", "+598 91 234 567");
-        project.put("email", "juan.perez@proaudio.com.uy");
+        List<ProductInProjectResponseDto> productsInProject =
+                productProjectService.getProductsInProject(id).getProducts();
 
+        BigDecimal totalInProductsInProject = getProductsBudget(projectResponseDto, productsInProject);
 
-        // Cargar el HTML con Thymeleaf
-        Context context = new Context();
-        context.setVariable("project", project);
+        BigDecimal totalBudget = totalInProductsInProject.add(totalExpenses).add(totalTransportCost)
+                .multiply(projectResponseDto.getCostAddition());
 
-        try {
-            String logoBase64 = convertirImagenABase64("static/logo-lettering.png");
-            context.setVariable("logoBase64", logoBase64);
-        } catch (IOException e) {
-            throw new RuntimeException("Error al cargar imágenes para el PDF", e);
+        return pdfService.generateProjectPdf(projectResponseDto, productsInProject, totalBudget);
+    }
+
+    private BigDecimal getProductsBudget(ProjectSimpleReponseDto projectResponseDto,
+                                         List<ProductInProjectResponseDto> productsInProject) {
+        LocalDateTime startDate = projectResponseDto.getStartDate();
+        LocalDateTime endDate = projectResponseDto.getEndDate();
+
+        long days = ChronoUnit.DAYS.between(startDate.toLocalDate(), endDate.toLocalDate());
+        BigDecimal totalInProductsPerDay = BigDecimal.valueOf(0);
+
+        for (ProductInProjectResponseDto product : productsInProject) {
+            totalInProductsPerDay = totalInProductsPerDay.add(product.getRentPrice());
         }
 
-        String htmlContent = templateEngine.process("project-pdf.html", context);
+        return totalInProductsPerDay.multiply(BigDecimal.valueOf(days));
+    }
 
-        // Convertir HTML a PDF
-        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-            ITextRenderer renderer = new ITextRenderer();
-            renderer.setDocumentFromString(htmlContent);
-            renderer.layout();
-            renderer.createPDF(outputStream);
-            return outputStream.toByteArray();
-        } catch (Exception e) {
-            throw new RuntimeException("Error al generar PDF del proyecto", e);
+    private BigDecimal getTransportationBudget(ProjectSimpleReponseDto projectResponseDto) {
+        List<GeneralParameterResponseDto> generalParameterListReponseDto =
+                generalParameterService.GetParametersByKey(KM_PARAMETER).getList();
+
+        if (generalParameterListReponseDto.isEmpty()) {
+            throw new InternalException("¡No hay un parámetro con ésta key!");
         }
+
+        if (Objects.isNull(projectResponseDto.getEvent().getDistance())) {
+            throw new InternalException("¡El evento no tiene distancia asignada!");
+        }
+
+        GeneralParameterResponseDto parameterCost = generalParameterListReponseDto.getLast();
+        BigDecimal costPerKm = new BigDecimal(parameterCost.getValue());
+
+        Double distance = projectResponseDto.getEvent().getDistance();
+
+        return costPerKm.multiply(BigDecimal.valueOf(distance));
     }
 }

@@ -287,11 +287,11 @@
         <tr>
             <td class="info-cell">
                 <div class="info-box">
-                    <p><span class="bold">Razón Social:</span> BARDIER MORAÑA SANTIAGO Y LUJAMBIO JUAN DANIEL</p>
-                    <p><span class="bold">Dirección:</span> CHUY 3437 AP 501</p>
-                    <p><span class="bold">Teléfono:</span> 098 740585 / 098 672279</p>
-                    <p><span class="bold">Email:</span> santi@proaudiochannels.com</p>
-                    <p><span class="bold">RUT:</span> 219549720018. / LITERAL E</p>
+                    <p><span class="bold">Razón Social:</span> [[${companyInfo.name}]]</p>
+                    <p><span class="bold">Dirección:</span> [[${companyInfo.address}]]</p>
+                    <p><span class="bold">Teléfono:</span> [[${companyInfo.phone}]]</p>
+                    <p><span class="bold">Email:</span> [[${companyInfo.email}]]</p>
+                    <p><span class="bold">RUT:</span> [[${companyInfo.rut}]]</p>
                 </div>
             </td>
             <td class="info-cell">
@@ -326,8 +326,8 @@
 </div>
 
 <div class="section">
-    <p><span class="bold">Forma de pago:</span> [[${formaPago}]]</p>
-    <p class="small-text">Presupuesto hecho en base a [[${horasTrabajo}]] hs de trabajo.</p>
+    <p><span class="bold">Forma de pago:</span> [[${project.paymentMethod}]]</p>
+    <p class="small-text">Presupuesto hecho en base a [[${project.hoursWorked}]] hs de trabajo.</p>
     <p class="small-text">Máximo diez días post fecha servicio</p>
     <p class="small-text">Empresa inscripta en R.U.P.E.</p>
 </div>
