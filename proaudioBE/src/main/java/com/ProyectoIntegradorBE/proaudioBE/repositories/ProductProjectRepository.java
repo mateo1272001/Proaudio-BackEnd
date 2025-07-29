@@ -31,7 +31,8 @@ public interface ProductProjectRepository extends CrudRepository<ProductProjectE
                 p.model,
                 p.comments,
                 pp.amount,
-                rp.value AS rent_price
+                rp.value AS rent_price,
+                pp.product_project_id
             FROM product_project pp
             JOIN product p ON pp.product_id = p.product_id
             LEFT JOIN rent_price rp ON pp.rent_price_id = rp.rent_price_id
