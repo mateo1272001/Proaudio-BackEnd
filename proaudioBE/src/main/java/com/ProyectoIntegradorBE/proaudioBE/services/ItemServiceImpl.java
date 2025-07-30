@@ -245,6 +245,32 @@ public class ItemServiceImpl implements ItemService {
         return itemResponseDto;
     }
 
+    @Override
+    public ItemResponseDto updateLocation(Long itemId, LocationEnum locationEnum) {
+
+        ItemEntity itemEntity = itemRepository.findById(itemId)
+                .orElseThrow(() -> new BadRequestException("Artículo no encontrado con ID " + itemId));
+
+        if (locationEnum.equals(itemEntity.getLocation())) {
+            throw new BadRequestException("El artículo ya está en este lugar");
+        }
+
+        if (locationEnum.equals(LocationEnum.USING) && !itemEntity.getLocation().equals(LocationEnum.IN_DEPOSIT)) {
+            throw new BadRequestException("El artículo debe ser devuelto primero");
+        }
+
+        if (locationEnum.equals(LocationEnum.USING) && itemEntity.getStatus().equals(ItemStatusEnum.CREATED)) {
+            itemEntity.setStatus(ItemStatusEnum.GOOD);
+            itemEntity = itemRepository.save(itemEntity);
+        }
+
+        itemEntity.setLocation(locationEnum);
+
+        itemEntity = itemRepository.save(itemEntity);
+
+        return itemMapper.toDto(itemEntity);
+    }
+
     private List<ItemStatusEnum> GetUsableStatuses() {
         return List.of(ItemStatusEnum.CREATED, ItemStatusEnum.GOOD, ItemStatusEnum.WITH_DETAILS);
     }

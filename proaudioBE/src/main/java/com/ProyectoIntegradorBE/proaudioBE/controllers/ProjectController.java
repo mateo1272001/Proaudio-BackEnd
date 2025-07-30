@@ -1,5 +1,6 @@
 package com.ProyectoIntegradorBE.proaudioBE.controllers;
 
+import com.ProyectoIntegradorBE.proaudioBE.dtos.ItemProject.ItemProjectResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Project.*;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ProductProjectService;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ProjectService;
@@ -94,7 +95,6 @@ public class ProjectController {
         return productProjectService.getProductsInProject(id);
     }
 
-
     @PostMapping("/{id}/budget")
     public ResponseEntity<byte[]> makeProjectBudget(@PathVariable Long id) {
         byte[] pdfBytes = projectService.generateBudget(id);
@@ -105,4 +105,28 @@ public class ProjectController {
 
         return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
     }
+
+    @PostMapping("/{idProject}/item/{idItem}/exit")
+    public ItemProjectResponseDto itemExitFromDeposit(@PathVariable Long idProject, @PathVariable Long idItem) {
+
+        return projectService.singleItemExit(idProject, idItem);
+
+
+    }
+
+    @PostMapping("/{idProject}/item/{idItem}/return")
+    public ItemProjectResponseDto itemReturnToDeposit(@PathVariable Long idProject, @PathVariable Long idItem) {
+
+        return projectService.singleItemReturn(idProject, idItem);
+
+    }
+
+    @DeleteMapping("/{idProject}/item/{idItem}/delete")
+    public ItemProjectResponseDto itemProjectDelete(@PathVariable Long idProject, @PathVariable Long idItem) {
+
+        return projectService.itemProjectDelete(idProject, idItem);
+
+
+    }
+
 }

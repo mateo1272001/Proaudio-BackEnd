@@ -1,5 +1,6 @@
 package com.ProyectoIntegradorBE.proaudioBE.services.interfaces;
 
+import com.ProyectoIntegradorBE.proaudioBE.dtos.ItemProject.ItemProjectResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Project.*;
 import org.springframework.stereotype.Service;
 
@@ -35,4 +36,10 @@ public interface ProjectService {
     RunningStatusResponseDto getAllRunningEnum();
 
     byte[] generateBudget(Long id);
+
+    ItemProjectResponseDto singleItemExit(Long idProject, Long idItem);
+
+    ItemProjectResponseDto singleItemReturn(Long idProject, Long idItem);
+
+    ItemProjectResponseDto itemProjectDelete(Long idProject, Long idItem);
 }

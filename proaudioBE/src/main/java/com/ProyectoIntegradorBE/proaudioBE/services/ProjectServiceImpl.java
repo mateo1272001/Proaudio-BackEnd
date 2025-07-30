@@ -5,11 +5,11 @@ import com.ProyectoIntegradorBE.proaudioBE.dtos.Expense.ExpenseRequestDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Expense.ExpenseResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.GeneralParmeters.GeneralParameterResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.ItemResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.ItemProject.ItemProjectResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.PageableDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.PriceReponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.ProductResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.ProductProject.ProductProjectRequestDto;
-import com.ProyectoIntegradorBE.proaudioBE.dtos.ProductProject.ProductProjectResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Project.*;
 import com.ProyectoIntegradorBE.proaudioBE.entities.ProjectEntity;
 import com.ProyectoIntegradorBE.proaudioBE.enums.*;
@@ -47,6 +47,8 @@ public class ProjectServiceImpl implements ProjectService {
     private final EventService eventService;
 
     private final ItemService itemService;
+
+    private final ItemProjectService itemProjectService;
 
     private final ProductService productService;
 
@@ -251,7 +253,7 @@ public class ProjectServiceImpl implements ProjectService {
                 case DISCARDED -> ProjectStatusEnum.DISCARDED;
                 case COMPLETED -> ProjectStatusEnum.COMPLETED;
             });
-
+            //todo [ITEM PROJECT] alter item project status when status ends
             projectRepository.save(projectEntity);
         }
     }
@@ -517,7 +519,8 @@ public class ProjectServiceImpl implements ProjectService {
         return productProjectResponseForProjectDto;
     }
 
-    private ProductProjectResponseDto createProductProject(ProjectProductRequestDto productRequest, Long projectId,
+    private ProductInProjectResponseDtoImpl createProductProject(ProjectProductRequestDto productRequest,
+                                                                 Long projectId,
                                                            List<ItemResponseDto> itemsOfProduct) {
 
         PriceReponseDto priceReponseDto = rentPriceService.getPrice(productRequest.getPriceId());
@@ -633,6 +636,82 @@ public class ProjectServiceImpl implements ProjectService {
                 .multiply(projectResponseDto.getCostAddition());
 
         return pdfService.generateProjectPdf(projectResponseDto, productsInProject, totalBudget);
+    }
+
+    @Override
+    @Transactional
+    public ItemProjectResponseDto singleItemExit(Long idProject, Long idItem) {
+
+        ProjectSimpleReponseDto projectSimpleReponseDto = this.getProject(idProject);
+
+        if (projectSimpleReponseDto.getStatus().equals(ProjectStatusEnum.DISCARDED) ||
+                projectSimpleReponseDto.getStatus().equals(ProjectStatusEnum.EXPIRED) ||
+                projectSimpleReponseDto.getStatus().equals(ProjectStatusEnum.COMPLETED)) {
+            throw new BadRequestException("¡No es posible agregar artículos a un projecto que no empezó o ya terminó!");
+        }
+
+        ItemResponseDto itemResponseDto = itemService.updateLocation(idItem, LocationEnum.USING);
+
+        if (itemResponseDto.getStatus().equals(ItemStatusEnum.DELETED) ||
+                itemResponseDto.getStatus().equals(ItemStatusEnum.OUT_OF_USAGE)) {
+            throw new BadRequestException("¡Artículo en estado no disponible para ser usado!");
+        }
+
+        ItemProjectResponseDto itemProjectResponseDto =
+                itemProjectService.createItemProject(itemResponseDto, projectSimpleReponseDto);
+
+        itemProjectResponseDto.setItemBoughtAt(itemResponseDto.getBoughtAt());
+        itemProjectResponseDto.setItemPriceBought(itemResponseDto.getPriceBought());
+        itemProjectResponseDto.setItemDescription(itemResponseDto.getDescription());
+        itemProjectResponseDto.setItemStatus(itemResponseDto.getStatus());
+        itemProjectResponseDto.setProductId(itemResponseDto.getProductId());
+
+        return itemProjectResponseDto;
+    }
+
+    @Override
+    @Transactional
+    public ItemProjectResponseDto singleItemReturn(Long idProject, Long idItem) {
+
+        ProjectSimpleReponseDto projectSimpleReponseDto = this.getProject(idProject);
+
+        ItemResponseDto itemResponseDto = itemService.updateLocation(idItem, LocationEnum.IN_DEPOSIT);
+
+        ItemProjectResponseDto itemProjectResponseDto =
+                itemProjectService.changeStatusItemProject(itemResponseDto, projectSimpleReponseDto,
+                        ItemProjectStatus.RETURNED);
+
+        itemProjectResponseDto.setItemBoughtAt(itemResponseDto.getBoughtAt());
+        itemProjectResponseDto.setItemPriceBought(itemResponseDto.getPriceBought());
+        itemProjectResponseDto.setItemDescription(itemResponseDto.getDescription());
+        itemProjectResponseDto.setItemStatus(itemResponseDto.getStatus());
+        itemProjectResponseDto.setProductId(itemResponseDto.getProductId());
+
+        return itemProjectResponseDto;
+    }
+
+    @Override
+    public ItemProjectResponseDto itemProjectDelete(Long idProject, Long idItem) {
+
+        ProjectSimpleReponseDto projectSimpleReponseDto = this.getProject(idProject);
+
+        ItemResponseDto itemResponseDto = itemService.GetItem(idItem);
+
+        if (!itemResponseDto.getLocation().equals(LocationEnum.IN_DEPOSIT)) {
+            throw new BadRequestException("No se puede eliminar. ¡Está siendo utilizado!");
+        }
+
+        ItemProjectResponseDto itemProjectResponseDto =
+                itemProjectService.changeStatusItemProject(itemResponseDto, projectSimpleReponseDto,
+                        ItemProjectStatus.DISABLED);
+
+        itemProjectResponseDto.setItemBoughtAt(itemResponseDto.getBoughtAt());
+        itemProjectResponseDto.setItemPriceBought(itemResponseDto.getPriceBought());
+        itemProjectResponseDto.setItemDescription(itemResponseDto.getDescription());
+        itemProjectResponseDto.setItemStatus(itemResponseDto.getStatus());
+        itemProjectResponseDto.setProductId(itemResponseDto.getProductId());
+
+        return itemProjectResponseDto;
     }
 
     private BigDecimal getProductsBudget(ProjectSimpleReponseDto projectResponseDto,

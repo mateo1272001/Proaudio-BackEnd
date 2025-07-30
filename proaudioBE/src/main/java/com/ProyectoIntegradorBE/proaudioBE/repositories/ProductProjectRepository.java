@@ -40,4 +40,8 @@ public interface ProductProjectRepository extends CrudRepository<ProductProjectE
               AND pp.status = 'ENABLED'
             """, nativeQuery = true)
     List<ProductInProjectResponseDto> findProductProjectDetail(Long projectId);
+
+    Optional<ProductProjectEntity> findByProductIdAndProjectIdAndStatus(Long productId, Long projectId,
+                                                                        BasicEnumStatus basicEnumStatus);
+
 }

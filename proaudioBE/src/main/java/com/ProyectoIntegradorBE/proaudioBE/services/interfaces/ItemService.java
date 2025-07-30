@@ -2,6 +2,7 @@ package com.ProyectoIntegradorBE.proaudioBE.services.interfaces;
 
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.*;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.ProductDetailResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.enums.LocationEnum;
 import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
@@ -30,4 +31,6 @@ public interface ItemService {
     List<ItemResponseDto> GetByProductId(@NotNull Long productId);
 
     ItemResponseDto regenerateItemQr(Long id) throws Exception;
+
+    ItemResponseDto updateLocation(Long itemId, LocationEnum locationEnum);
 }

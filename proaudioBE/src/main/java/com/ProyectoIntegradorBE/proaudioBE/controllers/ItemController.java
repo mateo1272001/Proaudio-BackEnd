@@ -2,8 +2,10 @@ package com.ProyectoIntegradorBE.proaudioBE.controllers;
 
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.*;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.ProductDetailResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ItemProjectService;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ItemService;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ProductService;
+import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ProjectService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,6 +17,10 @@ public class ItemController {
     private final ItemService itemService;
 
     private final ProductService productService;
+
+    private final ItemProjectService itemProjectService;
+
+    private final ProjectService projectService;
 
     @PostMapping
     private ItemResponseListDto CreateItem(@RequestBody ItemRequestListDto items) throws Exception {

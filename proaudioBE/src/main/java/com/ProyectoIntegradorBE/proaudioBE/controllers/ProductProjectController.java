@@ -3,7 +3,7 @@ package com.ProyectoIntegradorBE.proaudioBE.controllers;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.ItemResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.PriceReponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.ProductProject.ProductProjectRequestDto;
-import com.ProyectoIntegradorBE.proaudioBE.dtos.ProductProject.ProductProjectResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Project.ProductInProjectResponseDtoImpl;
 import com.ProyectoIntegradorBE.proaudioBE.exceptions.BadRequestException;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.*;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +27,7 @@ public class ProductProjectController {
     private final ItemService itemService;
 
     @PostMapping
-    private ProductProjectResponseDto createProductProject(
+    private ProductInProjectResponseDtoImpl createProductProject(
             @RequestBody ProductProjectRequestDto productProjectRequestDto) {
 
         projectService.getProject(productProjectRequestDto.getProjectId());
@@ -40,17 +40,12 @@ public class ProductProjectController {
 
         List<ItemResponseDto> items = itemService.GetByProductId(productProjectRequestDto.getProductId());
 
-        ProductProjectResponseDto productProjectResponseDto =
-                productProjectService.createProductProject(productProjectRequestDto, items);
-
-        productProjectResponseDto.setPrice(priceReponseDto.getValue());
-
-        return productProjectResponseDto;
+        return productProjectService.createProductProject(productProjectRequestDto, items);
 
     }
 
     @DeleteMapping("{id}")
-    private ProductProjectResponseDto deleteProductProject(@PathVariable Long id) {
+    private ProductInProjectResponseDtoImpl deleteProductProject(@PathVariable Long id) {
 
         return productProjectService.deleteProductProject(id);
 
