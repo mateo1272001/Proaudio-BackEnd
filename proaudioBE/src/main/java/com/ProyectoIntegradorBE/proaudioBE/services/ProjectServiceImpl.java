@@ -664,7 +664,10 @@ public class ProjectServiceImpl implements ProjectService {
         itemProjectResponseDto.setItemPriceBought(itemResponseDto.getPriceBought());
         itemProjectResponseDto.setItemDescription(itemResponseDto.getDescription());
         itemProjectResponseDto.setItemStatus(itemResponseDto.getStatus());
+        itemProjectResponseDto.setItemRange(itemProjectResponseDto.getItemRange());
+        itemProjectResponseDto.setItemSerialNumber(itemResponseDto.getSerialNumber());
         itemProjectResponseDto.setProductId(itemResponseDto.getProductId());
+        itemProjectResponseDto.setProductModel(itemProjectResponseDto.getProductModel());
 
         return itemProjectResponseDto;
     }
@@ -686,6 +689,8 @@ public class ProjectServiceImpl implements ProjectService {
         itemProjectResponseDto.setItemDescription(itemResponseDto.getDescription());
         itemProjectResponseDto.setItemStatus(itemResponseDto.getStatus());
         itemProjectResponseDto.setProductId(itemResponseDto.getProductId());
+        ProductResponseDto productResponseDto = productService.GetProduct(itemResponseDto.getProductId());
+        itemProjectResponseDto.setProductModel(productResponseDto.getModel());
 
         return itemProjectResponseDto;
     }
@@ -710,6 +715,8 @@ public class ProjectServiceImpl implements ProjectService {
         itemProjectResponseDto.setItemDescription(itemResponseDto.getDescription());
         itemProjectResponseDto.setItemStatus(itemResponseDto.getStatus());
         itemProjectResponseDto.setProductId(itemResponseDto.getProductId());
+        ProductResponseDto productResponseDto = productService.GetProduct(itemResponseDto.getProductId());
+        itemProjectResponseDto.setProductModel(productResponseDto.getModel());
 
         return itemProjectResponseDto;
     }

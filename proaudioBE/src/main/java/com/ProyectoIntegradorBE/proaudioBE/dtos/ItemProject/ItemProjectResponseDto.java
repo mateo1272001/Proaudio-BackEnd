@@ -32,6 +32,12 @@ public class ItemProjectResponseDto {
 
     private ItemStatusEnum itemStatus;
 
+    private String itemSerialNumber;
+
+    private String itemRange;
+
     private Long productId;
+
+    private String productModel;
 
 }

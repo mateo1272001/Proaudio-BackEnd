@@ -2,7 +2,7 @@ package com.ProyectoIntegradorBE.proaudioBE.services;
 
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.ItemResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.ProductProject.ProductProjectRequestDto;
-import com.ProyectoIntegradorBE.proaudioBE.dtos.ProductProject.ProductProjectResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.ProductProject.ProductProjectWithModelResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Project.ProductInProjectResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Project.ProductInProjectResponseDtoImpl;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Project.ProductsInProjectResponseDto;
@@ -105,14 +105,11 @@ public class ProductProjectServiceImpl implements ProductProjectService {
     }
 
     @Override
-    public ProductProjectResponseDto getByProductAndProjectId(Long productId, Long projectId) {
+    public ProductProjectWithModelResponseDto getByProductAndProjectId(Long productId, Long projectId) {
 
-        ProductProjectEntity productProjectEntity =
-                productProjectRepository.findByProductIdAndProjectIdAndStatus(productId, projectId,
-                        BasicEnumStatus.ENABLED).orElseThrow(
-                        () -> new BadRequestException("¡Este producto no está asociado al proyecto espeficiado!"));
-
-        return productProjectMapper.toDto(productProjectEntity);
+        return productProjectRepository.findByProductIdAndProjectIdAndStatus(productId, projectId,
+                        BasicEnumStatus.ENABLED)
+                .orElseThrow(() -> new BadRequestException("¡Este producto no está asociado al proyecto espeficiado!"));
     }
 
 }

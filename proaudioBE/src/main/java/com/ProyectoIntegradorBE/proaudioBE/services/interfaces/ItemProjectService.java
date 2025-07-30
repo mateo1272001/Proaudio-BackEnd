@@ -2,6 +2,7 @@ package com.ProyectoIntegradorBE.proaudioBE.services.interfaces;
 
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.ItemResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.ItemProject.ItemProjectResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.ItemProject.ItemProjectResponseListDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Project.ProjectSimpleReponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.enums.ItemProjectStatus;
 
@@ -13,4 +14,5 @@ public interface ItemProjectService {
                                                    ProjectSimpleReponseDto projectSimpleReponseDto,
                                                    ItemProjectStatus itemProjectStatus);
 
+    ItemProjectResponseListDto getItemsInProject(Long id);
 }
