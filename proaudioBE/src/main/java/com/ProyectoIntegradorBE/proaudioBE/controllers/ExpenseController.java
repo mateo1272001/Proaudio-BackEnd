@@ -5,6 +5,7 @@ import com.ProyectoIntegradorBE.proaudioBE.dtos.Expense.ExpenseResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Expense.ExpenseResponseListDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Expense.ExpenseTypeListResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ExpenseService;
+import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ProjectService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -16,9 +17,12 @@ public class ExpenseController {
 
     private final ExpenseService expenseService;
 
+    private final ProjectService projectService;
+
     @PostMapping
     private ExpenseResponseDto CreateExpense(@Valid @RequestBody ExpenseRequestDto expenseRequestDto) {
 
+        projectService.getProject(expenseRequestDto.getProjectId());
         return expenseService.CreateExpense(expenseRequestDto);
 
     }

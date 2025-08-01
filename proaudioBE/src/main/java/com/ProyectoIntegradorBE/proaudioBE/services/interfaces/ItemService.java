@@ -2,32 +2,35 @@ package com.ProyectoIntegradorBE.proaudioBE.services.interfaces;
 
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.*;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.ProductDetailResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.enums.LocationEnum;
 import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
 
 public interface ItemService {
 
-    ItemResponseListDto CreateItem(ItemRequestListDto items) throws Exception;
+    ItemResponseListDto createItem(ItemRequestListDto items) throws Exception;
 
-    ItemResponseDto UpdateItem(UpdateItemRequestDto item, Long id);
+    ItemResponseDto updateItem(UpdateItemRequestDto item, Long id);
 
-    ItemResponseDto DeleteItem(Long itemId);
+    ItemResponseDto deleteItem(Long itemId);
 
-    ItemResponseDto GetItem(Long itemId);
+    ItemResponseDto getItem(Long itemId);
 
-    ItemSectionResponseDto GetItemList(Long productId, String status, String sortBy, String direction, Integer page,
+    ItemSectionResponseDto getItemList(Long productId, String status, String sortBy, String direction, Integer page,
                                        Integer size);
 
-    ItemDetailsResponseDto GetItemDetails(ItemResponseDto item, ProductDetailResponseDto product);
+    ItemDetailsResponseDto getItemDetails(ItemResponseDto item, ProductDetailResponseDto product);
 
     ItemActionsDto GetItemActions(String qrId);
 
-    ItemStatusResponseDto GetItemStatuses();
+    ItemStatusResponseDto getItemStatuses();
 
-    List<ItemResponseDto> GetByProductIds(List<Long> productIds);
+    List<ItemResponseDto> getByProductIds(List<Long> productIds);
 
-    List<ItemResponseDto> GetByProductId(@NotNull Long productId);
+    List<ItemResponseDto> getByProductId(@NotNull Long productId);
 
     ItemResponseDto regenerateItemQr(Long id) throws Exception;
+
+    ItemResponseDto updateLocation(LocationEnum locationEnum, ItemResponseDto itemResponseDto);
 }

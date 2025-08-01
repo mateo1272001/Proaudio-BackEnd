@@ -3,23 +3,27 @@ package com.ProyectoIntegradorBE.proaudioBE.services;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Event.EventResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Expense.ExpenseRequestDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Expense.ExpenseResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.GeneralParmeters.GeneralParameterResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.ItemResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.ItemProject.ItemProjectResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.PageableDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.PriceReponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.ProductResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.ProductProject.ProductProjectRequestDto;
-import com.ProyectoIntegradorBE.proaudioBE.dtos.ProductProject.ProductProjectResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.ProductProject.ProductProjectWithModelResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Project.*;
+import com.ProyectoIntegradorBE.proaudioBE.entities.ItemProjectEntity;
 import com.ProyectoIntegradorBE.proaudioBE.entities.ProjectEntity;
 import com.ProyectoIntegradorBE.proaudioBE.enums.*;
 import com.ProyectoIntegradorBE.proaudioBE.exceptions.BadRequestException;
-import com.ProyectoIntegradorBE.proaudioBE.mappers.EventMapper;
+import com.ProyectoIntegradorBE.proaudioBE.mappers.ItemProjectMapper;
 import com.ProyectoIntegradorBE.proaudioBE.mappers.ProjectMapper;
 import com.ProyectoIntegradorBE.proaudioBE.repositories.ProjectRepository;
 import com.ProyectoIntegradorBE.proaudioBE.repositories.specifications.ProjectSpecification;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.*;
 import io.micrometer.common.util.StringUtils;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.util.InternalException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -27,9 +31,12 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.thymeleaf.TemplateEngine;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -39,9 +46,13 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class ProjectServiceImpl implements ProjectService {
 
+    private final TemplateEngine templateEngine;
+
     private final EventService eventService;
 
     private final ItemService itemService;
+
+    private final ItemProjectService itemProjectService;
 
     private final ProductService productService;
 
@@ -53,15 +64,26 @@ public class ProjectServiceImpl implements ProjectService {
 
     private final UtilService utilService;
 
-    private final EventMapper eventMapper;
+    private final GeneralParameterService generalParameterService;
+
+    private final PdfService pdfService;
 
     private final ProjectMapper projectMapper;
+
+    public static final List<ProjectStatusEnum> PROJECT_STARTED_STATUS =
+            List.of(ProjectStatusEnum.ON_COURSE, ProjectStatusEnum.EXPIRED, ProjectStatusEnum.COMPLETED);
 
     private final ProjectRepository projectRepository;
 
     private final List<ProjectStatusEnum> UPDATE_STATUSES =
             List.of(ProjectStatusEnum.PLANNED, ProjectStatusEnum.CONFIRMED, ProjectStatusEnum.DISCARDED);
 
+    private final String KM_PARAMETER = "km_cost";
+    public static final List<ProjectStatusEnum> PROJECT_NOT_STARTED_STATUS =
+            List.of(ProjectStatusEnum.PLANNED, ProjectStatusEnum.CONFIRMED, ProjectStatusEnum.DISCARDED);
+    public static final List<ProjectStatusEnum> EXIT_POSSIBLE_STATUS =
+            List.of(ProjectStatusEnum.ON_COURSE, ProjectStatusEnum.CONFIRMED);
+    private final ItemProjectMapper itemProjectMapper;
 
     private static ProjectResponseDto makeProjectResponseDto(ProjectRequestDto request, ProjectEntity projectEntity,
                                                              EventResponseDto eventResponseDto,
@@ -243,32 +265,15 @@ public class ProjectServiceImpl implements ProjectService {
                 case DISCARDED -> ProjectStatusEnum.DISCARDED;
                 case COMPLETED -> ProjectStatusEnum.COMPLETED;
             });
-
+            //todo [ITEM PROJECT] alter item project status when status ends
             projectRepository.save(projectEntity);
         }
     }
 
-    @Override
-    public ProjectDetailsResponseDto getProjectDetails(Long id) {
-
-        ProjectSimpleReponseDto projectSimpleReponseDto = getProject(id);
-
-        ProjectDetailsResponseDto projectDetailsResponseDto = new ProjectDetailsResponseDto();
-        projectDetailsResponseDto.setProjectId(projectSimpleReponseDto.getProjectId());
-        projectDetailsResponseDto.setName(projectSimpleReponseDto.getName());
-        projectDetailsResponseDto.setStartDate(projectSimpleReponseDto.getStartDate());
-        projectDetailsResponseDto.setEndDate(projectSimpleReponseDto.getEndDate());
-        projectDetailsResponseDto.setEvent(eventService.GetEvent(projectSimpleReponseDto.getEventId()));
-        //        projectDetailsResponseDto.setClient(); //todo [CLIENT] add when clients are included
-        projectDetailsResponseDto.setStatus(projectSimpleReponseDto.getStatus());
-        projectDetailsResponseDto.setPaymentStatus(projectSimpleReponseDto.getPaymentStatus());
-        projectDetailsResponseDto.setProjectType(projectSimpleReponseDto.getProjectType());
-        projectDetailsResponseDto.setProducts(productProjectService.getProductsInProject(id).getProducts());
-        projectDetailsResponseDto.setExpenses(expenseService.GetExpensesByProject(id).getExpenses());
-        //        projectDetailsResponseDto.setItems(); //todo [PROJECTS] add when items are included to projects
-
-
-        return projectDetailsResponseDto;
+    private static boolean hasProjectStarted(ProjectSimpleReponseDto projectSimpleReponseDto) {
+        boolean projectStarted;
+        projectStarted = PROJECT_STARTED_STATUS.contains(projectSimpleReponseDto.getStatus());
+        return projectStarted;
     }
 
     @Override
@@ -467,26 +472,10 @@ public class ProjectServiceImpl implements ProjectService {
         return response;
     }
 
-    private List<ProductProjectResponseForProjectDto> setProducts(List<ProjectProductRequestDto> productRequests,
-                                                                  Long projectId) {
-
-        List<ProductProjectResponseForProjectDto> productsResponse = new ArrayList<>();
-
-        List<Long> productIds = productRequests.stream().map(ProjectProductRequestDto::getProductId).toList();
-        List<ItemResponseDto> items = itemService.GetByProductIds(productIds);
-
-        for (ProjectProductRequestDto productRequest : productRequests) {
-
-            List<ItemResponseDto> itemsOfProduct =
-                    items.stream().filter(i -> i.getProductId().equals(productRequest.getProductId())).toList();
-
-            createProductProject(productRequest, projectId, itemsOfProduct);
-
-            productsResponse.add(makeProductResponse(productRequest));
-
+    private static void validateExitAvailability(ProjectSimpleReponseDto projectSimpleReponseDto) {
+        if (!EXIT_POSSIBLE_STATUS.contains(projectSimpleReponseDto.getStatus())) {
+            throw new BadRequestException("El proyecto debe estar confirmado o en curso para enviar artículos");
         }
-
-        return productsResponse;
     }
 
     private ProductProjectResponseForProjectDto makeProductResponse(ProjectProductRequestDto productRequest) {
@@ -509,7 +498,8 @@ public class ProjectServiceImpl implements ProjectService {
         return productProjectResponseForProjectDto;
     }
 
-    private ProductProjectResponseDto createProductProject(ProjectProductRequestDto productRequest, Long projectId,
+    private ProductInProjectResponseDtoImpl createProductProject(ProjectProductRequestDto productRequest,
+                                                                 Long projectId,
                                                            List<ItemResponseDto> itemsOfProduct) {
 
         PriceReponseDto priceReponseDto = rentPriceService.getPrice(productRequest.getPriceId());
@@ -530,5 +520,367 @@ public class ProjectServiceImpl implements ProjectService {
 
     private BigDecimal CalculateCostAddition(BigDecimal costAddition) {
         return costAddition;
+    }
+
+    //
+    //    private String convertirImagenABase64(String path) throws IOException {
+    //        ClassPathResource imgFile = new ClassPathResource(path);
+    //        byte[] bytes = StreamUtils.copyToByteArray(imgFile.getInputStream());
+    //        return Base64.getEncoder().encodeToString(bytes);
+    //    }
+    //
+    //    public byte[] generateProjectPdf(Long projectId) {
+    //        //ProjectSimpleReponseDto project = getProject(projectId);
+    //        // Simulamos los datos del proyecto
+    //        Map<String, Object> project = new HashMap<>();
+    //        project.put("clientName", "Empresa XYZ S.A.");
+    //        project.put("eventName", "Lanzamiento de Producto 2025");
+    //        project.put("ubication", "Montevideo, Uruguay");
+    //        project.put("eventDateStart", "10/08/2025");
+    //        project.put("eventDateEnd", "12/08/2025");
+    //        project.put("dateValidUntil", "30/08/2025");
+    //
+    //        // Lista de productos (modelName, amount)
+    //        List<Map<String, Object>> products = new ArrayList<>();
+    //        Map<String, Object> prod1 = new HashMap<>();
+    //        prod1.put("modelName", "Consola de Sonido Behringer X32");
+    //        prod1.put("amount", 2);
+    //        products.add(prod1);
+    //
+    //        Map<String, Object> prod2 = new HashMap<>();
+    //        prod2.put("modelName", "Sistema de Parlantes JBL PRX815");
+    //        prod2.put("amount", 4);
+    //        products.add(prod2);
+    //
+    //        project.put("products", products);
+    //
+    //        project.put("totalBudget", "$4,200 USD");
+    //        project.put("user", "Juan Pérez");
+    //        project.put("userPhone", "+598 91 234 567");
+    //        project.put("email", "juan.perez@proaudio.com.uy");
+    //
+    //
+    //        // Cargar el HTML con Thymeleaf
+    //        Context context = new Context();
+    //        context.setVariable("project", project);
+    //
+    //        try {
+    //            String logoBase64 = convertirImagenABase64("static/logo-lettering.png");
+    //            context.setVariable("logoBase64", logoBase64);
+    //        } catch (IOException e) {
+    //            throw new RuntimeException("Error al cargar imágenes para el PDF", e);
+    //        }
+    //
+    //        String htmlContent = templateEngine.process("project-pdf.html", context);
+    //
+    //        // Convertir HTML a PDF
+    //        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+    //            ITextRenderer renderer = new ITextRenderer();
+    //            renderer.setDocumentFromString(htmlContent);
+    //            renderer.layout();
+    //            renderer.createPDF(outputStream);
+    //            return outputStream.toByteArray();
+    //        } catch (Exception e) {
+    //            throw new RuntimeException("Error al generar PDF del proyecto", e);
+    //        }
+    //    }
+
+    private static BigDecimal getExpensesBudget(List<ExpenseResponseDto> expenseResponseDto) {
+        BigDecimal totalExpenses = BigDecimal.valueOf(0);
+
+        if (!expenseResponseDto.isEmpty()) {
+            for (ExpenseResponseDto expense : expenseResponseDto) {
+                totalExpenses = totalExpenses.add(expense.getValue());
+            }
+        }
+        return totalExpenses;
+    }
+
+    @Override
+    public ProjectDetailsResponseDto getProjectDetails(Long id) {
+
+        ProjectSimpleReponseDto projectSimpleReponseDto = getProject(id);
+
+        ProjectDetailsResponseDto projectDetailsResponseDto = new ProjectDetailsResponseDto();
+        projectDetailsResponseDto.setProjectId(projectSimpleReponseDto.getProjectId());
+        projectDetailsResponseDto.setName(projectSimpleReponseDto.getName());
+        projectDetailsResponseDto.setStartDate(projectSimpleReponseDto.getStartDate());
+        projectDetailsResponseDto.setEndDate(projectSimpleReponseDto.getEndDate());
+        projectDetailsResponseDto.setEvent(eventService.GetEvent(projectSimpleReponseDto.getEventId()));
+        //        projectDetailsResponseDto.setClient(); //todo [CLIENT] add when clients are included
+        projectDetailsResponseDto.setStatus(projectSimpleReponseDto.getStatus());
+        projectDetailsResponseDto.setPaymentStatus(projectSimpleReponseDto.getPaymentStatus());
+        projectDetailsResponseDto.setProjectType(projectSimpleReponseDto.getProjectType());
+        projectDetailsResponseDto.setProducts(productProjectService.getProductsInProject(id).getProducts());
+        projectDetailsResponseDto.setExpenses(expenseService.GetExpensesByProject(id).getExpenses());
+        projectDetailsResponseDto.setCostAddition(projectSimpleReponseDto.getCostAddition());
+        projectDetailsResponseDto.setItems(itemProjectService.getItemsInProject(id).getItems());
+
+        return projectDetailsResponseDto;
+    }
+
+    @Override
+    public byte[] generateBudget(Long id) {
+
+        ProjectSimpleReponseDto projectResponseDto = getProject(id);
+
+        List<ExpenseResponseDto> expenseResponseDto = expenseService.GetExpensesByProject(id).getExpenses();
+        BigDecimal totalExpenses = getExpensesBudget(expenseResponseDto);
+
+        BigDecimal totalTransportCost = getTransportationBudget(projectResponseDto);
+
+        List<ProductInProjectResponseDto> productsInProject =
+                productProjectService.getProductsInProject(id).getProducts();
+
+        BigDecimal totalInProductsInProject = getProductsBudget(projectResponseDto, productsInProject);
+
+        BigDecimal percentageValue =
+                projectResponseDto.getCostAddition().divide(new BigDecimal(100), 4, RoundingMode.HALF_UP);
+
+        BigDecimal totalBudget = totalInProductsInProject.add(totalExpenses).add(totalTransportCost)
+                .multiply(percentageValue);
+
+        return pdfService.generateProjectPdf(projectResponseDto, productsInProject, totalBudget);
+    }
+
+    private List<ProductProjectResponseForProjectDto> setProducts(List<ProjectProductRequestDto> productRequests,
+                                                                  Long projectId) {
+
+        List<ProductProjectResponseForProjectDto> productsResponse = new ArrayList<>();
+
+        List<Long> productIds = productRequests.stream().map(ProjectProductRequestDto::getProductId).toList();
+        List<ItemResponseDto> items = itemService.getByProductIds(productIds);
+
+        for (ProjectProductRequestDto productRequest : productRequests) {
+
+            List<ItemResponseDto> itemsOfProduct =
+                    items.stream().filter(i -> i.getProductId().equals(productRequest.getProductId())).toList();
+
+            createProductProject(productRequest, projectId, itemsOfProduct);
+
+            productsResponse.add(makeProductResponse(productRequest));
+
+        }
+
+        return productsResponse;
+    }
+
+    @Override
+    @Transactional
+    public ItemProjectResponseDto singleItemExit(Long idProject, Long idItem) {
+
+        ProjectSimpleReponseDto projectSimpleReponseDto = this.getProject(idProject);
+        validateExitAvailability(projectSimpleReponseDto);
+        boolean projectStarted = hasProjectStarted(projectSimpleReponseDto);
+
+        ItemResponseDto itemResponseDto = itemService.getItem(idItem);
+        LocationEnum itemLocation = itemResponseDto.getLocation();
+
+        ItemProjectResponseDto itemProjectResponseDto =
+                itemProjectService.getItemProjectByProjectIdAndItemId(idProject, idItem);
+
+        itemProjectResponseDto =
+                actOnItemLocation(itemLocation, itemProjectResponseDto, projectStarted, itemResponseDto,
+                        projectSimpleReponseDto);
+
+        itemProjectResponseDto.setItemBoughtAt(itemResponseDto.getBoughtAt());
+        itemProjectResponseDto.setItemPriceBought(itemResponseDto.getPriceBought());
+        itemProjectResponseDto.setItemDescription(itemResponseDto.getDescription());
+        itemProjectResponseDto.setItemStatus(itemResponseDto.getStatus());
+        itemProjectResponseDto.setItemRange(itemProjectResponseDto.getItemRange());
+        itemProjectResponseDto.setItemSerialNumber(itemResponseDto.getSerialNumber());
+        itemProjectResponseDto.setProductId(itemResponseDto.getProductId());
+        itemProjectResponseDto.setProductModel(itemProjectResponseDto.getProductModel());
+
+        return itemProjectResponseDto;
+    }
+
+    private ItemProjectResponseDto actOnItemLocation(LocationEnum itemLocation,
+                                                     ItemProjectResponseDto itemProjectResponseDto,
+                                                     boolean projectStarted, ItemResponseDto itemResponseDto,
+                                                     ProjectSimpleReponseDto projectSimpleReponseDto) {
+
+        boolean itemInProject = Boolean.FALSE;
+        if (Objects.nonNull(itemProjectResponseDto) &&
+                itemProjectResponseDto.getStatus().equals(ItemProjectStatus.ENABLED)) {
+            itemInProject = Boolean.TRUE;
+        }
+
+        switch (itemLocation) {
+            case IN_DEPOSIT -> {
+                itemProjectResponseDto =
+                        actionsForItemInDeposit(itemResponseDto, projectSimpleReponseDto, itemProjectResponseDto);
+            }
+            case USING -> {
+                itemProjectResponseDto =
+                        actionsIfItemIsBeingUsed(itemInProject, projectStarted, projectSimpleReponseDto,
+                                itemResponseDto, itemProjectResponseDto);
+            }
+            case NOT_RETURNED -> {
+                if (itemInProject && !projectStarted) {
+                    throw new InternalException("Acción imposible");
+                }
+                throw new BadRequestException("¡El artículo ya está en otro proyecto!");
+            }
+        }
+        return itemProjectResponseDto;
+    }
+
+    private ItemProjectResponseDto actionsIfItemIsBeingUsed(boolean itemInProject, boolean projectStarted,
+                                                            ProjectSimpleReponseDto projectSimpleReponseDto,
+                                                            ItemResponseDto itemResponseDto,
+                                                            ItemProjectResponseDto itemProjectResponseDto) {
+        if (itemInProject && !projectStarted) {
+
+            itemService.updateLocation(LocationEnum.IN_DEPOSIT, itemResponseDto);
+
+            itemProjectResponseDto =
+                    itemProjectService.changeStatusItemProject(itemResponseDto, projectSimpleReponseDto,
+                            ItemProjectStatus.DISABLED, itemProjectResponseDto);
+
+        } else {
+            throw new BadRequestException("¡El artículo ya está en otro proyecto!");
+        }
+        return itemProjectResponseDto;
+    }
+
+    private ItemProjectResponseDto actionsForItemInDeposit(ItemResponseDto itemResponseDto,
+                                                           ProjectSimpleReponseDto projectSimpleReponseDto,
+                                                           ItemProjectResponseDto itemProjectResponseDto) {
+
+        itemService.updateLocation(LocationEnum.USING, itemResponseDto);
+
+        List<ProductProjectWithModelResponseDto> productProjectWithModelResponseDtos =
+                productProjectService.getByProductAndProjectId(itemResponseDto.getProductId(),
+                        projectSimpleReponseDto.getProjectId());
+
+        if (Objects.isNull(itemProjectResponseDto)) {
+            return itemProjectService.createItemProject(itemResponseDto, projectSimpleReponseDto.getProjectId(),
+                    productProjectWithModelResponseDtos);
+        }
+
+        ItemProjectEntity itemProjectEntity = itemProjectMapper.toEntity(itemProjectResponseDto);
+
+        itemProjectService.checkIfItemLimitIsSurpassed(itemResponseDto, projectSimpleReponseDto.getProjectId(),
+                productProjectWithModelResponseDtos, itemProjectEntity);
+        return itemProjectService.changeStatusItemProject(itemResponseDto, projectSimpleReponseDto,
+                ItemProjectStatus.ENABLED, itemProjectResponseDto);
+    }
+
+    //    @Override
+    //    @Transactional
+    //    public ItemProjectResponseDto singleItemExit(Long idProject, Long idItem) {
+    //
+    //        ProjectSimpleReponseDto projectSimpleReponseDto = this.getProject(idProject);
+    //        ItemResponseDto itemResponseDto =
+    //                itemService.updateLocation(idItem, LocationEnum.USING, projectSimpleReponseDto);
+    //
+    //        validate(projectSimpleReponseDto, itemResponseDto);
+    //
+    //        //si ya existe solo cambio status. Llamnar a change status y simplificar validaciones
+    //        ItemProjectResponseDto itemProjectResponseDto =
+    //                itemProjectService.createItemProject(itemResponseDto, projectSimpleReponseDto);
+    //
+    //        itemProjectResponseDto.setItemBoughtAt(itemResponseDto.getBoughtAt());
+    //        itemProjectResponseDto.setItemPriceBought(itemResponseDto.getPriceBought());
+    //        itemProjectResponseDto.setItemDescription(itemResponseDto.getDescription());
+    //        itemProjectResponseDto.setItemStatus(itemResponseDto.getStatus());
+    //        itemProjectResponseDto.setItemRange(itemProjectResponseDto.getItemRange());
+    //        itemProjectResponseDto.setItemSerialNumber(itemResponseDto.getSerialNumber());
+    //        itemProjectResponseDto.setProductId(itemResponseDto.getProductId());
+    //        itemProjectResponseDto.setProductModel(itemProjectResponseDto.getProductModel());
+    //
+    //        return itemProjectResponseDto;
+    //    }
+    @Override
+    @Transactional
+    public ItemProjectResponseDto singleItemReturn(Long idProject, Long idItem) {
+
+        ItemProjectResponseDto itemProjectResponseDto =
+                itemProjectService.getItemProjectByProjectIdAndItemId(idProject, idItem);
+
+        if (Objects.isNull(itemProjectResponseDto) ||
+                itemProjectResponseDto.getStatus().equals(ItemProjectStatus.DISABLED)) {
+            throw new BadRequestException("¡El artículo no está en el proyecto!");
+        }
+
+        ItemResponseDto itemResponseDto = itemService.getItem(idItem);
+
+        if (itemResponseDto.getLocation().equals(LocationEnum.IN_DEPOSIT)) {
+            throw new BadRequestException("¡El artículo ya está en el depósito!");
+        }
+
+        itemResponseDto = itemService.updateLocation(LocationEnum.IN_DEPOSIT, itemResponseDto);
+
+        itemProjectResponseDto.setItemBoughtAt(itemResponseDto.getBoughtAt());
+        itemProjectResponseDto.setItemPriceBought(itemResponseDto.getPriceBought());
+        itemProjectResponseDto.setItemDescription(itemResponseDto.getDescription());
+        itemProjectResponseDto.setItemStatus(itemResponseDto.getStatus());
+        itemProjectResponseDto.setProductId(itemResponseDto.getProductId());
+        ProductResponseDto productResponseDto = productService.GetProduct(itemResponseDto.getProductId());
+        itemProjectResponseDto.setProductModel(productResponseDto.getModel());
+
+        return itemProjectResponseDto;
+    }
+
+    //    @Override
+    //    public ItemProjectResponseDto itemProjectDelete(Long idProject, Long idItem) {
+    //
+    //        ProjectSimpleReponseDto projectSimpleReponseDto = this.getProject(idProject);
+    //
+    //        ItemResponseDto itemResponseDto = itemService.getItem(idItem);
+    //
+    //        if (!itemResponseDto.getLocation().equals(LocationEnum.IN_DEPOSIT)) {
+    //            throw new BadRequestException("No se puede eliminar. ¡Está siendo utilizado!");
+    //        }
+    //
+    //        ItemProjectResponseDto itemProjectResponseDto =
+    //                itemProjectService.changeStatusItemProject(itemResponseDto, projectSimpleReponseDto,
+    //                        ItemProjectStatus.DISABLED);
+    //
+    //        itemProjectResponseDto.setItemBoughtAt(itemResponseDto.getBoughtAt());
+    //        itemProjectResponseDto.setItemPriceBought(itemResponseDto.getPriceBought());
+    //        itemProjectResponseDto.setItemDescription(itemResponseDto.getDescription());
+    //        itemProjectResponseDto.setItemStatus(itemResponseDto.getStatus());
+    //        itemProjectResponseDto.setProductId(itemResponseDto.getProductId());
+    //        ProductResponseDto productResponseDto = productService.GetProduct(itemResponseDto.getProductId());
+    //        itemProjectResponseDto.setProductModel(productResponseDto.getModel());
+    //
+    //        return itemProjectResponseDto;
+    //    }
+
+    private BigDecimal getProductsBudget(ProjectSimpleReponseDto projectResponseDto,
+                                         List<ProductInProjectResponseDto> productsInProject) {
+        LocalDateTime startDate = projectResponseDto.getStartDate();
+        LocalDateTime endDate = projectResponseDto.getEndDate();
+
+        long days = ChronoUnit.DAYS.between(startDate.toLocalDate(), endDate.toLocalDate());
+        BigDecimal totalInProductsPerDay = BigDecimal.valueOf(0);
+
+        for (ProductInProjectResponseDto product : productsInProject) {
+            totalInProductsPerDay = totalInProductsPerDay.add(product.getRentPrice());
+        }
+
+        return totalInProductsPerDay.multiply(BigDecimal.valueOf(days));
+    }
+
+    private BigDecimal getTransportationBudget(ProjectSimpleReponseDto projectResponseDto) {
+        List<GeneralParameterResponseDto> generalParameterListReponseDto =
+                generalParameterService.GetParametersByKey(KM_PARAMETER).getList();
+
+        if (generalParameterListReponseDto.isEmpty()) {
+            throw new InternalException("¡No hay un parámetro con ésta key!");
+        }
+
+        if (Objects.isNull(projectResponseDto.getEvent().getDistance())) {
+            throw new InternalException("¡El evento no tiene distancia asignada!");
+        }
+
+        GeneralParameterResponseDto parameterCost = generalParameterListReponseDto.getLast();
+        BigDecimal costPerKm = new BigDecimal(parameterCost.getValue());
+
+        Double distance = projectResponseDto.getEvent().getDistance();
+
+        return costPerKm.multiply(BigDecimal.valueOf(distance));
     }
 }
