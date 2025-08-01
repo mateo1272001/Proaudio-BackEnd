@@ -12,4 +12,6 @@ public interface ProductInProjectResponseDto {
     Integer getAmount();
 
     BigDecimal getRentPrice();
+
+    Long getProductProjectId();
 }

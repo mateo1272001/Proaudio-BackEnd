@@ -1,6 +1,7 @@
 package com.ProyectoIntegradorBE.proaudioBE.controllers;
 
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Project.*;
+import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ProductProjectService;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ProjectService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -13,6 +14,8 @@ import java.util.List;
 public class ProjectController {
 
     private final ProjectService projectService;
+
+    private final ProductProjectService productProjectService;
 
     @PostMapping()
     private ProjectResponseDto createProject(@RequestBody ProjectRequestDto request) {
@@ -83,4 +86,11 @@ public class ProjectController {
                                                   @RequestParam(required = false) String name) {
         return projectService.getProjectList(page, size, sortBy, direction, filterStatus, filterPaymentStatus, name);
     }
+
+    @GetMapping("{id}/products")
+    private ProductsInProjectResponseDto getProductsInProject(@PathVariable Long id) {
+        projectService.getProject(id);
+        return productProjectService.getProductsInProject(id);
+    }
+
 }
