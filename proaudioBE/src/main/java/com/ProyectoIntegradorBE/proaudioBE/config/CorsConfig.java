@@ -12,10 +12,8 @@ public class CorsConfig {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**")
-                        .allowedOrigins("https://test.d287o0p9ndx0gm.amplifyapp.com")
-                        .allowedMethods("*")
-                        .allowedHeaders("*")
+                registry.addMapping("/api/**").allowedOrigins("https://proaudiochannels.com.uy")
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS").allowedHeaders("*")
                         .allowCredentials(true);
             }
         };
