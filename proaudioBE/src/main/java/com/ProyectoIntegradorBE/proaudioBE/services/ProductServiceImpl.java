@@ -136,7 +136,9 @@ public class ProductServiceImpl implements ProductService {
         ProductEntity productEntity = productRepository.findById(id)
                 .orElseThrow(() -> new BadRequestException("Product ID no encontrado: " + id));
 
-        //todo [ITEM] add item validation
+        if (!itemService.getByProductId(id).isEmpty()) {
+            throw new BadRequestException("No se puede borrar un producto con artículos asociados");
+        }
 
         productEntity.setStatus(ProductStatus.ELIMINATED);
         productRepository.save(productEntity);

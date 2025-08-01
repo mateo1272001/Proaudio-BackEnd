@@ -29,8 +29,6 @@ public class ExpenseServiceImpl implements ExpenseService {
     @Override
     public ExpenseResponseDto CreateExpense(ExpenseRequestDto expenseRequestDto) {
 
-        //todo [PROJECT] validate project id
-
         ExpenseEntity expenseEntity = new ExpenseEntity();
         expenseEntity.setProjectId(expenseRequestDto.getProjectId());
         expenseEntity.setType(Objects.nonNull(expenseRequestDto.getType()) ? expenseRequestDto.getType() :

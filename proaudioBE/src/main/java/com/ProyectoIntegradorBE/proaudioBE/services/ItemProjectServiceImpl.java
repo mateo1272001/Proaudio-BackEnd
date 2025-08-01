@@ -89,8 +89,11 @@ public class ItemProjectServiceImpl implements ItemProjectService {
             amountOfProducts = amountOfProducts + pp.getAmount();
         }
 
-        if (itemProjectEntityList.size() >= amountOfProducts && Objects.nonNull(itemProjectEntity) &&
-                !itemProjectEntityList.contains(itemProjectEntity)) {
+        if (Objects.nonNull(itemProjectEntity) && itemProjectEntityList.contains(itemProjectEntity)) {
+            return;
+        }
+
+        if (itemProjectEntityList.size() >= amountOfProducts) {
             throw new BadRequestException("¡Ya se alcanzó la cantidad de artículos necesarios!");
         }
     }

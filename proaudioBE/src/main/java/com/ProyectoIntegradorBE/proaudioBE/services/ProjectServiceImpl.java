@@ -679,24 +679,10 @@ public class ProjectServiceImpl implements ProjectService {
         ItemProjectResponseDto itemProjectResponseDto =
                 itemProjectService.getItemProjectByProjectIdAndItemId(idProject, idItem);
 
-        //        boolean itemInProject = Boolean.FALSE;
-        //        if() {
-        //
-        //        }
-        //        itemInProject = itemProjectResponseDto.getStatus().equals(ItemProjectStatus.ENABLED);
-
-
         itemProjectResponseDto =
                 actOnItemLocation(itemLocation, itemProjectResponseDto, projectStarted, itemResponseDto,
                         projectSimpleReponseDto);
 
-        //        ItemProjectResponseDto itemProjectResponseDto =
-        //                itemProjectService.createItemProject(itemResponseDto, projectSimpleReponseDto);
-        //        validate(projectSimpleReponseDto, itemResponseDto);
-
-        //si ya existe solo cambio status. Llamnar a change status y simplificar validaciones
-        //        ItemProjectResponseDto itemProjectResponseDto =
-        //                itemProjectService.createItemProject(itemResponseDto, projectSimpleReponseDto);
         itemProjectResponseDto.setItemBoughtAt(itemResponseDto.getBoughtAt());
         itemProjectResponseDto.setItemPriceBought(itemResponseDto.getPriceBought());
         itemProjectResponseDto.setItemDescription(itemResponseDto.getDescription());
