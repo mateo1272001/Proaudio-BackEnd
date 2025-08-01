@@ -614,8 +614,7 @@ public class ProjectServiceImpl implements ProjectService {
         projectDetailsResponseDto.setProducts(productProjectService.getProductsInProject(id).getProducts());
         projectDetailsResponseDto.setExpenses(expenseService.GetExpensesByProject(id).getExpenses());
         projectDetailsResponseDto.setCostAddition(projectSimpleReponseDto.getCostAddition());
-        //        projectDetailsResponseDto.setItems(); //todo [PROJECTS] add when items are included to projects
-
+        projectDetailsResponseDto.setItems(itemProjectService.getItemsInProject(id).getItems());
 
         return projectDetailsResponseDto;
     }

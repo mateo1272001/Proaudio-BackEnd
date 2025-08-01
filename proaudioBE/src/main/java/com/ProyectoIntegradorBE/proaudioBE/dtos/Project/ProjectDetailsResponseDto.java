@@ -2,6 +2,7 @@ package com.ProyectoIntegradorBE.proaudioBE.dtos.Project;
 
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Event.EventResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Expense.ExpenseResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.ItemProject.ItemProjectResponseIntDto;
 import com.ProyectoIntegradorBE.proaudioBE.enums.PaymentStatusEnum;
 import com.ProyectoIntegradorBE.proaudioBE.enums.ProjectStatusEnum;
 import com.ProyectoIntegradorBE.proaudioBE.enums.ProjectTypeEnum;
@@ -43,6 +44,6 @@ public class ProjectDetailsResponseDto {
 
     private BigDecimal costAddition;
 
-    //    private ItemsInProjectResponseDto items; todo [PROJECT] add items to response
+    private List<ItemProjectResponseIntDto> items;
 
 }
