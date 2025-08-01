@@ -41,5 +41,5 @@ public interface ProjectService {
 
     ItemProjectResponseDto singleItemReturn(Long idProject, Long idItem);
 
-    ItemProjectResponseDto itemProjectDelete(Long idProject, Long idItem);
+    //    ItemProjectResponseDto itemProjectDelete(Long idProject, Long idItem);
 }

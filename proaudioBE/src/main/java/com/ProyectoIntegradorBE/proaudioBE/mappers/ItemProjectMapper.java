@@ -9,4 +9,5 @@ public interface ItemProjectMapper {
 
     ItemProjectResponseDto toDto(ItemProjectEntity itemProjectEntity);
 
+    ItemProjectEntity toEntity(ItemProjectResponseDto itemProjectResponseDto);
 }

@@ -261,7 +261,7 @@ public class ProductServiceImpl implements ProductService {
 
         });
 
-        return itemService.CreateItem(items);
+        return itemService.createItem(items);
     }
 
     //TAGS

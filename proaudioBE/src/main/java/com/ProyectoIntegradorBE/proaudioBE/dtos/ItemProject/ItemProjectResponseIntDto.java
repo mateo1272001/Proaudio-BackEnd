@@ -2,6 +2,7 @@ package com.ProyectoIntegradorBE.proaudioBE.dtos.ItemProject;
 
 import com.ProyectoIntegradorBE.proaudioBE.enums.ItemProjectStatus;
 import com.ProyectoIntegradorBE.proaudioBE.enums.ItemStatusEnum;
+import com.ProyectoIntegradorBE.proaudioBE.enums.LocationEnum;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
@@ -32,6 +33,8 @@ public interface ItemProjectResponseIntDto {
     String getItemSerialNumber();
 
     String getItemRange();
+
+    LocationEnum getItemLocation();
 
     Long getProductId();
 

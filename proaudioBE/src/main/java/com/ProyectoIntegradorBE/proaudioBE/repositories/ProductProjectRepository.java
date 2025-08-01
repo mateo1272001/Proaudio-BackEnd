@@ -50,7 +50,7 @@ public interface ProductProjectRepository extends CrudRepository<ProductProjectE
             INNER JOIN product p ON (pp.product_id = p.product_id)
             WHERE pp.project_id = :projectId AND pp.product_id = :productId AND pp.status = "ENABLED"
             """, nativeQuery = true)
-    Optional<ProductProjectWithModelResponseDto> findByProductIdAndProjectIdAndStatus(Long productId, Long projectId,
+    List<ProductProjectWithModelResponseDto> findByProductIdAndProjectIdAndStatus(Long productId, Long projectId,
                                                                                       BasicEnumStatus basicEnumStatus);
 
 }

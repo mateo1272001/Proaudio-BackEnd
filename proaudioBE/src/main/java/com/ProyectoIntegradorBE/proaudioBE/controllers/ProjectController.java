@@ -122,11 +122,11 @@ public class ProjectController {
         return projectService.singleItemReturn(idProject, idItem);
     }
 
-    @DeleteMapping("/{idProject}/item/{idItem}/delete")
-    public ItemProjectResponseDto itemProjectDelete(@PathVariable Long idProject, @PathVariable Long idItem) {
-
-        return projectService.itemProjectDelete(idProject, idItem);
-    }
+    //    @DeleteMapping("/{idProject}/item/{idItem}/delete")
+    //    public ItemProjectResponseDto itemProjectDelete(@PathVariable Long idProject, @PathVariable Long idItem) {
+    //
+    //        return projectService.itemProjectDelete(idProject, idItem);
+    //    }
 
     @GetMapping("{id}/items")
     private ItemProjectResponseListDto getItemsInProject(@PathVariable Long id) {

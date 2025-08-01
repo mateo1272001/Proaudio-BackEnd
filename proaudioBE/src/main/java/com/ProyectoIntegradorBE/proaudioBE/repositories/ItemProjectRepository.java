@@ -38,14 +38,15 @@ public interface ItemProjectRepository extends CrudRepository<ItemProjectEntity,
             	i.status AS item_status,
             	i.serial_number AS item_serial_number,
             	i.item_range,
+            	i.location AS item_location,
             	p.product_id,
             	p.model AS product_model
             FROM item_project ip
             INNER JOIN item i ON (ip.item_id = i.item_id)
             INNER JOIN product p ON (p.product_id = i.product_id)
-            WHERE ip.project_id = :projectId;
+            WHERE ip.project_id = :projectId AND ip.status = :status;
             """, nativeQuery = true)
-    List<ItemProjectResponseIntDto> findAllItemsInProject(Long projectId);
+    List<ItemProjectResponseIntDto> findAllItemsInProject(Long projectId, String status);
 
-    Optional<ItemProjectEntity> findByItemIdAndProjectId(Long itemId, Long projectId);
+    ItemProjectEntity findByItemIdAndProjectId(Long itemId, Long projectId);
 }

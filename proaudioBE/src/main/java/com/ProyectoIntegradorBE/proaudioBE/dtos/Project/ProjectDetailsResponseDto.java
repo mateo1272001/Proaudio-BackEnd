@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -39,6 +40,8 @@ public class ProjectDetailsResponseDto {
     private List<ProductInProjectResponseDto> products;
 
     private List<ExpenseResponseDto> expenses;
+
+    private BigDecimal costAddition;
 
     //    private ItemsInProjectResponseDto items; todo [PROJECT] add items to response
 

@@ -5,10 +5,7 @@ import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.*;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.PageableDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.ProductDetailResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.entities.ItemEntity;
-import com.ProyectoIntegradorBE.proaudioBE.enums.DirectionEnum;
-import com.ProyectoIntegradorBE.proaudioBE.enums.ItemSortByEnum;
-import com.ProyectoIntegradorBE.proaudioBE.enums.ItemStatusEnum;
-import com.ProyectoIntegradorBE.proaudioBE.enums.LocationEnum;
+import com.ProyectoIntegradorBE.proaudioBE.enums.*;
 import com.ProyectoIntegradorBE.proaudioBE.exceptions.BadRequestException;
 import com.ProyectoIntegradorBE.proaudioBE.mappers.ItemMapper;
 import com.ProyectoIntegradorBE.proaudioBE.repositories.ItemRepository;
@@ -43,9 +40,13 @@ public class ItemServiceImpl implements ItemService {
 
     private final UtilService utilService;
 
+    public static final List<ProjectStatusEnum> PROJECT_STARTED_STATUS =
+            List.of(ProjectStatusEnum.ON_COURSE, ProjectStatusEnum.EXPIRED, ProjectStatusEnum.COMPLETED);
+
+
     @Override
     @Transactional
-    public ItemResponseListDto CreateItem(ItemRequestListDto items) throws Exception {
+    public ItemResponseListDto createItem(ItemRequestListDto items) throws Exception {
 
         List<ItemEntity> entityList = new ArrayList<>();
 
@@ -108,7 +109,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public ItemResponseDto UpdateItem(UpdateItemRequestDto item, Long id) {
+    public ItemResponseDto updateItem(UpdateItemRequestDto item, Long id) {
 
         ItemEntity itemEntity =
                 itemRepository.findById(id).orElseThrow(() -> new BadRequestException("¡El producto no existe!"));
@@ -126,7 +127,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public ItemResponseDto DeleteItem(Long itemId) {
+    public ItemResponseDto deleteItem(Long itemId) {
 
         ItemEntity itemEntity =
                 itemRepository.findById(itemId).orElseThrow(() -> new BadRequestException("¡El producto no existe!"));
@@ -142,7 +143,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public ItemResponseDto GetItem(Long itemId) {
+    public ItemResponseDto getItem(Long itemId) {
 
         ItemEntity itemEntity =
                 itemRepository.findById(itemId).orElseThrow(() -> new BadRequestException("¡El producto no existe!"));
@@ -151,7 +152,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public ItemSectionResponseDto GetItemList(Long productId, String status, String sortBy, String direction,
+    public ItemSectionResponseDto getItemList(Long productId, String status, String sortBy, String direction,
                                               Integer page, Integer size) {
 
         page = (page != null ? page : 0);
@@ -197,7 +198,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public ItemDetailsResponseDto GetItemDetails(ItemResponseDto item, ProductDetailResponseDto productDetail) {
+    public ItemDetailsResponseDto getItemDetails(ItemResponseDto item, ProductDetailResponseDto productDetail) {
 
         ItemProductResponseDto itemProductResponseDto = new ItemProductResponseDto();
         itemProductResponseDto.setProductId(productDetail.getProductId());
@@ -213,12 +214,12 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public ItemStatusResponseDto GetItemStatuses() {
+    public ItemStatusResponseDto getItemStatuses() {
         return new ItemStatusResponseDto(Arrays.stream(ItemStatusEnum.values()).toList());
     }
 
     @Override
-    public List<ItemResponseDto> GetByProductIds(List<Long> productIds) {
+    public List<ItemResponseDto> getByProductIds(List<Long> productIds) {
 
         List<ItemEntity> itemEntities = itemRepository.findByProductIdInAndStatusIn(productIds, GetUsableStatuses());
 
@@ -227,7 +228,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemResponseDto> GetByProductId(Long productId) {
+    public List<ItemResponseDto> getByProductId(Long productId) {
         List<ItemEntity> itemEntities = itemRepository.findByProductIdAndStatusIn(productId, GetUsableStatuses());
 
         return itemMapper.toDtoList(itemEntities);
@@ -246,18 +247,23 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public ItemResponseDto updateLocation(Long itemId, LocationEnum locationEnum) {
+    public ItemResponseDto updateLocation(LocationEnum locationEnum, ItemResponseDto itemResponseDto) {
 
-        ItemEntity itemEntity = itemRepository.findById(itemId)
-                .orElseThrow(() -> new BadRequestException("Artículo no encontrado con ID " + itemId));
-
-        if (locationEnum.equals(itemEntity.getLocation())) {
-            throw new BadRequestException("El artículo ya está en este lugar");
-        }
-
-        if (locationEnum.equals(LocationEnum.USING) && !itemEntity.getLocation().equals(LocationEnum.IN_DEPOSIT)) {
-            throw new BadRequestException("El artículo debe ser devuelto primero");
-        }
+        //        ItemEntity itemEntity = itemRepository.findById(itemId)
+        //                .orElseThrow(() -> new BadRequestException("Artículo no encontrado con ID " + itemId));
+        //
+        //        boolean projectStarted = PROJECT_STARTED_STATUS.contains(projectSimpleReponseDto.getStatus());
+        //
+        //        if (projectStarted) {
+        //            if (locationEnum.equals(itemEntity.getLocation())) {
+        //                throw new BadRequestException("El artículo ya está en este lugar");
+        //            }
+        //
+        //            if (locationEnum.equals(LocationEnum.USING) && !itemEntity.getLocation().equals(LocationEnum.IN_DEPOSIT)) {
+        //                throw new BadRequestException("El artículo debe ser devuelto primero");
+        //            }
+        //        }
+        ItemEntity itemEntity = itemMapper.toEntity(itemResponseDto);
 
         if (locationEnum.equals(LocationEnum.USING) && itemEntity.getStatus().equals(ItemStatusEnum.CREATED)) {
             itemEntity.setStatus(ItemStatusEnum.GOOD);

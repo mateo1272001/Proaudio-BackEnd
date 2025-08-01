@@ -17,5 +17,5 @@ public interface ProductProjectService {
 
     ProductsInProjectResponseDto getProductsInProject(Long id);
 
-    ProductProjectWithModelResponseDto getByProductAndProjectId(Long productId, Long projectId);
+    List<ProductProjectWithModelResponseDto> getByProductAndProjectId(Long productId, Long projectId);
 }

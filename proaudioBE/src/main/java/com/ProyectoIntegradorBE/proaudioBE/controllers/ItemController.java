@@ -32,28 +32,28 @@ public class ItemController {
     @PutMapping("{id}")
     private ItemResponseDto UpdateItem(@RequestBody UpdateItemRequestDto itemRequestDto, @PathVariable Long id) {
 
-        return itemService.UpdateItem(itemRequestDto, id);
+        return itemService.updateItem(itemRequestDto, id);
 
     }
 
     @DeleteMapping("{id}")
     private ItemResponseDto DeleteItem(@PathVariable Long id) {
 
-        return itemService.DeleteItem(id);
+        return itemService.deleteItem(id);
 
     }
 
     @GetMapping("{id}")
     private ItemResponseDto GetItem(@PathVariable Long id) {
 
-        return itemService.GetItem(id);
+        return itemService.getItem(id);
 
     }
 
     @GetMapping("/status")
     private ItemStatusResponseDto getItemStatuses() {
 
-        return itemService.GetItemStatuses();
+        return itemService.getItemStatuses();
 
     }
 
@@ -67,18 +67,18 @@ public class ItemController {
 
         productService.GetProduct(id);
 
-        return itemService.GetItemList(id, status, sortBy, direction, page, size);
+        return itemService.getItemList(id, status, sortBy, direction, page, size);
 
     }
 
     @GetMapping("{id}/detail")
     private ItemDetailsResponseDto GetItemDetails(@PathVariable Long id) {
 
-        ItemResponseDto item = itemService.GetItem(id);
+        ItemResponseDto item = itemService.getItem(id);
 
         ProductDetailResponseDto productDetailResponseDto = productService.GetProductDetails(item.getProductId());
 
-        return itemService.GetItemDetails(item, productDetailResponseDto);
+        return itemService.getItemDetails(item, productDetailResponseDto);
 
     }
 

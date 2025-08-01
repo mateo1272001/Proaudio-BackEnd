@@ -105,11 +105,10 @@ public class ProductProjectServiceImpl implements ProductProjectService {
     }
 
     @Override
-    public ProductProjectWithModelResponseDto getByProductAndProjectId(Long productId, Long projectId) {
+    public List<ProductProjectWithModelResponseDto> getByProductAndProjectId(Long productId, Long projectId) {
 
         return productProjectRepository.findByProductIdAndProjectIdAndStatus(productId, projectId,
-                        BasicEnumStatus.ENABLED)
-                .orElseThrow(() -> new BadRequestException("¡Este producto no está asociado al proyecto espeficiado!"));
+                BasicEnumStatus.ENABLED);
     }
 
 }

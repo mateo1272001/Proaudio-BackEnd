@@ -38,7 +38,7 @@ public class ProductProjectController {
             throw new BadRequestException("¡Este precio no corresponde al producto!");
         }
 
-        List<ItemResponseDto> items = itemService.GetByProductId(productProjectRequestDto.getProductId());
+        List<ItemResponseDto> items = itemService.getByProductId(productProjectRequestDto.getProductId());
 
         return productProjectService.createProductProject(productProjectRequestDto, items);
 
