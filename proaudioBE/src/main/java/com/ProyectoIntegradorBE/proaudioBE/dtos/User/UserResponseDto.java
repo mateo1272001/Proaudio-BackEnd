@@ -18,6 +18,8 @@ public class UserResponseDto {
 
     private String name;
 
+    private String password;
+
     private String phone_number;
 
     @Enumerated(EnumType.STRING)
