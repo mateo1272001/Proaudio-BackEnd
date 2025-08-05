@@ -4,6 +4,8 @@ spring:
   servlet:
     multipart:
       max-file-size: 10MB
+    session:
+      timeout: 12h #todo check
 
 ---
 
