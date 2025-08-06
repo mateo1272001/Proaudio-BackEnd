@@ -18,7 +18,7 @@ public class EmailService {
 
     public void sendPasswordResetEmail(String toEmail, String token) {
         String subject = "Restablecer tu contraseña";
-        String resetLink = "https://tu-app.com/reset-password?token=" + token;
+        String resetLink = "http://localhost:5173/auth/restore/password?token=" + token;
         String message = """
                 Hola,
                 
