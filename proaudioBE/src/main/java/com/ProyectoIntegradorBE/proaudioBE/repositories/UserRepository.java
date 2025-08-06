@@ -14,4 +14,5 @@ public interface UserRepository extends CrudRepository<UserEntity, Long> {
 
     Optional<UserEntity> findByEmailAndStatus(String email, BasicEnumStatus status);
 
+    Optional<UserEntity> findByUserIdAndStatus(Long userId, BasicEnumStatus basicEnumStatus);
 }

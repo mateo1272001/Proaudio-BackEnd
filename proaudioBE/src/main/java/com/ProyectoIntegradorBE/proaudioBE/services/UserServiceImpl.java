@@ -1,20 +1,26 @@
 package com.ProyectoIntegradorBE.proaudioBE.services;
 
 import com.ProyectoIntegradorBE.proaudioBE.dtos.User.AuthRegisterRequestDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.User.ResetPasswordDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.User.UserResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.entities.PasswordResetTokenEntity;
 import com.ProyectoIntegradorBE.proaudioBE.entities.UserEntity;
 import com.ProyectoIntegradorBE.proaudioBE.enums.BasicEnumStatus;
 import com.ProyectoIntegradorBE.proaudioBE.exceptions.BadRequestException;
 import com.ProyectoIntegradorBE.proaudioBE.mappers.UserMapper;
+import com.ProyectoIntegradorBE.proaudioBE.repositories.PasswordResetTokenRepository;
 import com.ProyectoIntegradorBE.proaudioBE.repositories.UserRepository;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.UserService;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.util.InternalException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -22,7 +28,11 @@ public class UserServiceImpl implements UserService {
 
     private final PasswordEncoder passwordEncoder;
 
+    private final EmailService emailService;
+
     private final UserRepository userRepository;
+
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
 
     private final UserMapper userMapper;
 
@@ -62,6 +72,55 @@ public class UserServiceImpl implements UserService {
         userRepository.save(userEntity);
 
         return ResponseEntity.ok(Collections.singletonMap("message", "Usuario registrado exitosamente"));
+
+    }
+
+    @Override
+    public ResponseEntity<?> forgotPassword(String email) {
+
+        Optional<UserEntity> userOpt = userRepository.findByEmail(email);
+
+        if (userOpt.isPresent()) {
+            UserEntity user = userOpt.get();
+
+            String token = UUID.randomUUID().toString();
+            PasswordResetTokenEntity prt = new PasswordResetTokenEntity();
+            prt.setToken(token);
+            prt.setUserId(user.getUserId());
+            prt.setExpiryDate(LocalDateTime.now().plusMinutes(30));
+            passwordResetTokenRepository.save(prt);
+
+            emailService.sendPasswordResetEmail(user.getEmail(), token);
+        }
+
+        return ResponseEntity.ok(Collections.singletonMap("message", "Si el email existe, recibirás un link."));
+    }
+
+    @Override
+    public ResponseEntity<?> resetPassword(ResetPasswordDto resetRequest) {
+
+        if (!resetRequest.getNewPassword().equals(resetRequest.getNewPasswordRepeat())) {
+            throw new BadRequestException("¡Las contraseñas son distintas!");
+        }
+
+        Optional<PasswordResetTokenEntity> tokenOpt = passwordResetTokenRepository.findByToken(resetRequest.getToken());
+
+        if (tokenOpt.isEmpty() || tokenOpt.get().isUsed() ||
+                tokenOpt.get().getExpiryDate().isBefore(LocalDateTime.now())) {
+            throw new BadRequestException("Este token no es válido");
+        }
+
+        UserEntity userEntity =
+                userRepository.findByUserIdAndStatus(tokenOpt.get().getUserId(), BasicEnumStatus.ENABLED)
+                        .orElseThrow(() -> new InternalException("El ususerio asociado al token no se encuentra"));
+        userEntity.setPassword(passwordEncoder.encode(resetRequest.getNewPassword()));
+        userRepository.save(userEntity);
+
+        PasswordResetTokenEntity prt = tokenOpt.get();
+        prt.setUsed(true);
+        passwordResetTokenRepository.save(prt);
+
+        return ResponseEntity.ok(Collections.singletonMap("message", "Contraseña actualizada exitosamente"));
 
     }
 

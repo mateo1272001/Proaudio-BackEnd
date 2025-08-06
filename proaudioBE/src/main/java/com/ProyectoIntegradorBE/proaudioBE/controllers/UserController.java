@@ -1,9 +1,6 @@
 package com.ProyectoIntegradorBE.proaudioBE.controllers;
 
-import com.ProyectoIntegradorBE.proaudioBE.dtos.User.AuthRegisterRequestDto;
-import com.ProyectoIntegradorBE.proaudioBE.dtos.User.AuthRequestDto;
-import com.ProyectoIntegradorBE.proaudioBE.dtos.User.LoginResponseDto;
-import com.ProyectoIntegradorBE.proaudioBE.dtos.User.UserResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.User.*;
 import com.ProyectoIntegradorBE.proaudioBE.services.CustomUserDetailsService;
 import com.ProyectoIntegradorBE.proaudioBE.services.JwtService;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.UserService;
@@ -12,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -48,15 +44,21 @@ public class UserController {
                         request.getPassword())); //authenticationManager instance from securityConfig
 
         UserResponseDto userResponseDto = userService.findUserByEmail(request.getEmail());
+        String token = jwtService.generateToken(userResponseDto);
 
-        UserDetails user = (UserDetails) auth.getPrincipal(); // already loaded
-
-        String token = jwtService.generateToken(user);
-        //  TODO FIX USERDETAILS USAGE IN OTHER CLASES (JWTSERVICE JWTAUTHFILTER)
         return new LoginResponseDto(userResponseDto.getUserId(), userResponseDto.getEmail(), userResponseDto.getName(),
                 token);
 
     }
 
+    @PostMapping("/forgot/password")
+    public ResponseEntity<?> forgotPassword(@RequestParam String email) {
+        return userService.forgotPassword(email);
+    }
+
+    @PostMapping("/reset/password")
+    public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordDto resetRequest) {
+        return userService.resetPassword(resetRequest);
+    }
 
 }

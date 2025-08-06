@@ -2,6 +2,7 @@ package com.ProyectoIntegradorBE.proaudioBE.services.interfaces;
 
 
 import com.ProyectoIntegradorBE.proaudioBE.dtos.User.AuthRegisterRequestDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.User.ResetPasswordDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.User.UserResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.entities.UserEntity;
 import com.ProyectoIntegradorBE.proaudioBE.enums.BasicEnumStatus;
@@ -16,4 +17,8 @@ public interface UserService {
     Optional<UserEntity> findByEmail(String email, BasicEnumStatus status);
 
     ResponseEntity<?> register(AuthRegisterRequestDto request);
+
+    ResponseEntity<?> forgotPassword(String email);
+
+    ResponseEntity<?> resetPassword(ResetPasswordDto resetRequest);
 }

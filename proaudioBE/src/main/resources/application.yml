@@ -4,8 +4,8 @@ spring:
   servlet:
     multipart:
       max-file-size: 10MB
-    session:
-      timeout: 12h #todo check
+jwt:
+  secret: "a3nR4Jw7VzXp9LkQ2sFgUiZyBcDeHt9NmLp0xQvWsYkR8hFgTzZpN1kV6c3mXoLq"
 
 ---
 
@@ -15,7 +15,6 @@ spring:
       on-profile: dev
   datasource:
     url: jdbc:mysql://localhost:3306/proaudio_channels?useSSL=false&serverTimezone=America/Argentina/Buenos_Aires
-
     username: root
     password: Maiescuel8042.
   jpa:
@@ -29,8 +28,8 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: tu_correo@gmail.com
-    password: tu_contraseña_de_aplicación
+    username: noreply.proaudiochannels@gmail.com
+    password: fsnb qycy vkuc wkkh
     properties:
       mail:
         smtp:
@@ -59,6 +58,17 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: noreply.proaudiochannels@gmail.com
+    password: fsnb qycy vkuc wkkh
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
   server:
     port: 8081
   cron:
@@ -80,6 +90,17 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: noreply.proaudiochannels@gmail.com
+    password: fsnb qycy vkuc wkkh
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
   server:
     port: 80
   cron:
