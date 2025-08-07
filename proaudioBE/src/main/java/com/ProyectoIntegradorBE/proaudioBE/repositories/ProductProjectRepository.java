@@ -1,5 +1,6 @@
 package com.ProyectoIntegradorBE.proaudioBE.repositories;
 
+import com.ProyectoIntegradorBE.proaudioBE.dtos.ProductProject.ProductProjectWithModelResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Project.ProductInProjectResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.entities.ProductProjectEntity;
 import com.ProyectoIntegradorBE.proaudioBE.enums.BasicEnumStatus;
@@ -13,6 +14,7 @@ import java.util.Optional;
 
 @Repository
 public interface ProductProjectRepository extends CrudRepository<ProductProjectEntity, Long> {
+
     List<ProductProjectEntity> findByProjectIdAndStatus(Long projectId, BasicEnumStatus status);
 
     Optional<ProductProjectEntity> findByProductProjectIdAndStatus(Long id, BasicEnumStatus basicEnumStatus);
@@ -40,4 +42,15 @@ public interface ProductProjectRepository extends CrudRepository<ProductProjectE
               AND pp.status = 'ENABLED'
             """, nativeQuery = true)
     List<ProductInProjectResponseDto> findProductProjectDetail(Long projectId);
+
+    @Query(value = """
+            SELECT
+                pp.*, p.model
+            FROM product_project pp
+            INNER JOIN product p ON (pp.product_id = p.product_id)
+            WHERE pp.project_id = :projectId AND pp.product_id = :productId AND pp.status = "ENABLED"
+            """, nativeQuery = true)
+    List<ProductProjectWithModelResponseDto> findByProductIdAndProjectIdAndStatus(Long productId, Long projectId,
+                                                                                      BasicEnumStatus basicEnumStatus);
+
 }
