@@ -4,6 +4,7 @@ import com.ProyectoIntegradorBE.proaudioBE.dtos.Event.EventResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Expense.ExpenseRequestDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Expense.ExpenseResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.ItemResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.PageableDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.PriceReponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.ProductResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.ProductProject.ProductProjectRequestDto;
@@ -15,8 +16,15 @@ import com.ProyectoIntegradorBE.proaudioBE.exceptions.BadRequestException;
 import com.ProyectoIntegradorBE.proaudioBE.mappers.EventMapper;
 import com.ProyectoIntegradorBE.proaudioBE.mappers.ProjectMapper;
 import com.ProyectoIntegradorBE.proaudioBE.repositories.ProjectRepository;
+import com.ProyectoIntegradorBE.proaudioBE.repositories.specifications.ProjectSpecification;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.*;
+import io.micrometer.common.util.StringUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,6 +50,8 @@ public class ProjectServiceImpl implements ProjectService {
     private final ProductProjectService productProjectService;
 
     private final RentPriceService rentPriceService;
+
+    private final UtilService utilService;
 
     private final EventMapper eventMapper;
 
@@ -122,6 +132,11 @@ public class ProjectServiceImpl implements ProjectService {
         entityResponse.setProjectType(request.getProjectType());
         entityResponse.setCostAddition(request.getCostAddition());
 
+        entityResponse.setStartDate(projectResponseDto.getStartDate());
+        entityResponse.setEndDate(projectResponseDto.getEndDate());
+        entityResponse.setClientId(projectResponseDto.getClientId());
+        entityResponse.setEventId(projectResponseDto.getEventId());
+
         //only on CONFIRMED, PLANNED or DISCARDED
         if (request.getStartDate().isAfter(request.getEndDate())) {
             throw new BadRequestException("¡La fecha de fin no puede ser anterior a la fecha de inicio!");
@@ -149,7 +164,7 @@ public class ProjectServiceImpl implements ProjectService {
 
             if (!requestEventId.equals(projectResponseDto.getEventId())) {
                 if (!statusIsUpdatable) {
-                    throw new BadRequestException("El estado solo se puede modificar si el projecto aún no empieza!");
+                    throw new BadRequestException("El evento solo se puede modificar si el projecto aún no empieza!");
                 }
                 EventResponseDto eventResponseDto = eventService.GetEvent(requestEventId);
                 entityResponse.setEventId(eventResponseDto.getEventId());
@@ -157,7 +172,7 @@ public class ProjectServiceImpl implements ProjectService {
 
         } else {
             if (!statusIsUpdatable) {
-                throw new BadRequestException("El estado solo se puede modificar si el projecto aún no empieza!");
+                throw new BadRequestException("El evento solo se puede modificar si el projecto aún no empieza!");
             }
             EventResponseDto eventResponseDto = eventService.CreateEvent(request.getEvent());
             entityResponse.setEventId(eventResponseDto.getEventId());
@@ -175,21 +190,13 @@ public class ProjectServiceImpl implements ProjectService {
 
         ProjectEntity projectEntity = projectRepository.findById(id)
                 .orElseThrow(() -> new BadRequestException("Project con ID no encontrado: " + id));
-        //        EventResponseDto eventResponseDto = eventService.GetEvent(projectEntity.getEventId());
-        //        projectResponseDto.setEvent(eventResponseDto);
-        //
-        //        //        ClientResponseDto clientResponseDto = ...
-        //        //todo [CLIENT] add client to response
-        //
-        //        ProductProjectResponseListDto productProjectResponseListDto =
-        //                productProjectService.getProductProjectByProjectId(id, BasicEnumStatus.ENABLED);
-        //        projectResponseDto.setProducts(
-        //                productProjectService.toProductResponse(productProjectResponseListDto.getProductProjectList()));
-        //
-        //        ExpenseResponseListDto expenseResponseListDto =
-        //                expenseService.GetExpensesByProject(projectEntity.getProjectId());
-        //        projectResponseDto.setExpenses(expenseResponseListDto.getExpenses());
-        return projectMapper.toDto(projectEntity);
+
+        EventResponseDto event = eventService.GetEvent(projectEntity.getEventId());
+
+        ProjectSimpleReponseDto projectSimpleReponseDto = projectMapper.toDto(projectEntity);
+        projectSimpleReponseDto.setEvent(event);
+
+        return projectSimpleReponseDto;
     }
 
     @Override
@@ -200,13 +207,13 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public ProjectStatusesDto getPossibleStatusByProjectId(Long id) {
-        //todo [PROJECT get] calculate next status for project
         ProjectEntity projectEntity = projectRepository.findById(id)
                 .orElseThrow(() -> new BadRequestException(String.format("Proyecto con ID %s no encontrado: ", id)));
 
         List<ProjectStatusEnum> possibleStatus = switch (projectEntity.getStatus()) {
             case PLANNED, DISCARDED -> List.of(ProjectStatusEnum.CONFIRMED);
-            case CONFIRMED, ON_COURSE -> List.of(ProjectStatusEnum.DISCARDED);
+            case CONFIRMED -> List.of(ProjectStatusEnum.DISCARDED, ProjectStatusEnum.PLANNED);
+            case ON_COURSE -> List.of(ProjectStatusEnum.DISCARDED);
             case EXPIRED -> List.of(ProjectStatusEnum.COMPLETED);
             case COMPLETED -> List.of();
         };
@@ -239,6 +246,148 @@ public class ProjectServiceImpl implements ProjectService {
 
             projectRepository.save(projectEntity);
         }
+    }
+
+    @Override
+    public ProjectDetailsResponseDto getProjectDetails(Long id) {
+
+        ProjectSimpleReponseDto projectSimpleReponseDto = getProject(id);
+
+        ProjectDetailsResponseDto projectDetailsResponseDto = new ProjectDetailsResponseDto();
+        projectDetailsResponseDto.setProjectId(projectSimpleReponseDto.getProjectId());
+        projectDetailsResponseDto.setName(projectSimpleReponseDto.getName());
+        projectDetailsResponseDto.setStartDate(projectSimpleReponseDto.getStartDate());
+        projectDetailsResponseDto.setEndDate(projectSimpleReponseDto.getEndDate());
+        projectDetailsResponseDto.setEvent(eventService.GetEvent(projectSimpleReponseDto.getEventId()));
+        //        projectDetailsResponseDto.setClient(); //todo [CLIENT] add when clients are included
+        projectDetailsResponseDto.setStatus(projectSimpleReponseDto.getStatus());
+        projectDetailsResponseDto.setPaymentStatus(projectSimpleReponseDto.getPaymentStatus());
+        projectDetailsResponseDto.setProjectType(projectSimpleReponseDto.getProjectType());
+        projectDetailsResponseDto.setProducts(productProjectService.getProductsInProject(id).getProducts());
+        projectDetailsResponseDto.setExpenses(expenseService.GetExpensesByProject(id).getExpenses());
+        //        projectDetailsResponseDto.setItems(); //todo [PROJECTS] add when items are included to projects
+
+
+        return projectDetailsResponseDto;
+    }
+
+    @Override
+    public ProjectPaymentStatusesDto getPossiblePaymentStatusByProjectId(Long id) {
+
+        ProjectEntity projectEntity = projectRepository.findById(id)
+                .orElseThrow(() -> new BadRequestException(String.format("Proyecto con ID %s no encontrado: ", id)));
+
+        List<PaymentStatusEnum> possibleStatus = switch (projectEntity.getPaymentStatus()) {
+            case BUDGETED -> List.of(PaymentStatusEnum.BILL_CREATED);
+            case BILL_CREATED -> List.of(PaymentStatusEnum.PARTIALLY_PAID, PaymentStatusEnum.PAID);
+            case PARTIALLY_PAID -> List.of(PaymentStatusEnum.PAID);
+            case PAID -> List.of();
+        };
+
+        return new ProjectPaymentStatusesDto(possibleStatus);
+
+    }
+
+    private static Specification<ProjectEntity> getProjectEntitySpecification(String filterPaymentStatus, String name,
+                                                                              Boolean paymentIsFiltered,
+                                                                              Boolean nameIsFiltered,
+                                                                              List<ProjectStatusEnum> statuses) {
+        if (paymentIsFiltered && nameIsFiltered) {
+            return ProjectSpecification.filterBy(statuses, filterPaymentStatus, name);
+        } else {
+            if (paymentIsFiltered) {
+                return ProjectSpecification.filterByStatusAndPaymentStatus(statuses, filterPaymentStatus);
+            }
+            if (nameIsFiltered) {
+                return ProjectSpecification.filterByStatusAndName(statuses, name);
+            }
+            return ProjectSpecification.filterBy(statuses);
+        }
+    }
+
+    @Override
+    public ProjectListResponseDto getProjectList(Integer page, Integer size, String sortBy, String direction,
+                                                 List<String> filterStatus, String filterPaymentStatus, String name) {
+
+        page = (page != null ? page : 0);
+        DirectionEnum dir =
+                Objects.isNull(direction) ? DirectionEnum.DESC : DirectionEnum.valueOf(direction.toUpperCase());
+
+        size = Objects.nonNull(size) ? size : 10;
+
+        ProjectSortByEnum sortByEnum =
+                Objects.isNull(sortBy) ? ProjectSortByEnum.START_DATE : ProjectSortByEnum.valueOf(sortBy.toUpperCase());
+
+        String sortColumn = switch (sortByEnum) {
+            case START_DATE -> "startDate";
+            case END_DATE -> "endDate";
+            case NAME -> "name";
+        };
+
+        List<ProjectStatusEnum> statuses = new ArrayList<>();
+
+        if (Objects.isNull(filterStatus) || filterStatus.isEmpty()) {
+            statuses = Arrays.stream(ProjectStatusEnum.values()).toList();
+        } else {
+            for (String status : filterStatus) {
+                statuses.add(ProjectStatusEnum.valueOf(status.toUpperCase()));
+            }
+        }
+
+        Boolean paymentIsFiltered = !StringUtils.isBlank(filterPaymentStatus);
+        Boolean nameIsFiltered = !StringUtils.isBlank(name);
+
+        Specification<ProjectEntity> spec =
+                getProjectEntitySpecification(filterPaymentStatus, name, paymentIsFiltered, nameIsFiltered, statuses);
+
+        Sort sort = Sort.by(Sort.Direction.fromString(dir.name()), sortColumn);
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Page<ProjectEntity> pages = projectRepository.findAll(spec, pageable);
+
+        List<ProjectRowResponseDto> responseDtos = createRows(pages.getContent());
+
+        PageableDto pagination = utilService.buildPageableDto(pages);
+
+        return new ProjectListResponseDto(responseDtos, pagination);
+    }
+
+    @Override
+    public ProjectStatusesDto getAllStatus() {
+        return new ProjectStatusesDto(Arrays.stream(ProjectStatusEnum.values()).toList());
+    }
+
+    @Override
+    public ProjectPaymentStatusesDto getAllPaymentStatus() {
+        return new ProjectPaymentStatusesDto(Arrays.stream(PaymentStatusEnum.values()).toList());
+    }
+
+    @Override
+    public RunningStatusResponseDto getAllRunningEnum() {
+        return new RunningStatusResponseDto(Arrays.stream(ProjectRunningStatusEnum.values()).toList());
+    }
+
+    private List<ProjectRowResponseDto> createRows(List<ProjectEntity> content) {
+
+        List<ProjectRowResponseDto> responseDtos = new ArrayList<>();
+
+        for (ProjectEntity project : content) {
+            ProjectRowResponseDto projectRowResponseDto = new ProjectRowResponseDto();
+            projectRowResponseDto.setProjectId(project.getProjectId());
+            projectRowResponseDto.setName(project.getName());
+            projectRowResponseDto.setStatus(project.getStatus());
+            projectRowResponseDto.setPaymentStatus(project.getPaymentStatus());
+            projectRowResponseDto.setStartDate(project.getStartDate());
+            projectRowResponseDto.setEndDate(project.getEndDate());
+            projectRowResponseDto.setRunningStatus(
+                    project.getStartDate().isAfter(LocalDateTime.now()) ? ProjectRunningStatusEnum.RUNNING :
+                            project.getStartDate().isAfter(LocalDateTime.now().minusWeeks(1L)) ?
+                                    ProjectRunningStatusEnum.PREPARING : ProjectRunningStatusEnum.NONE);
+            responseDtos.add(projectRowResponseDto);
+        }
+
+        return responseDtos;
+
     }
 
     private ProjectStatusEnum calculateFromStatusExpired(ProjectEntity projectEntity) {

@@ -16,6 +16,7 @@ import com.ProyectoIntegradorBE.proaudioBE.repositories.specifications.ItemSpeci
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ItemService;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.QrService;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.util.InternalException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -189,6 +190,8 @@ public class ItemServiceImpl implements ItemService {
         itemDetailsResponseDto.setLocation(item.getLocation());
         itemDetailsResponseDto.setPriceBought(Objects.nonNull(item.getPriceBought()) ? item.getPriceBought() : null);
         itemDetailsResponseDto.setBoughtAt(item.getBoughtAt());
+        itemDetailsResponseDto.setRange(item.getItemRange());
+        itemDetailsResponseDto.setSerialNumber(item.getSerialNumber());
         //        itemDetailsResponseDto.setActivities()
         return itemDetailsResponseDto;
     }
@@ -200,9 +203,6 @@ public class ItemServiceImpl implements ItemService {
         itemProductResponseDto.setProductId(productDetail.getProductId());
         itemProductResponseDto.setBrand(productDetail.getBrand());
         itemProductResponseDto.setModel(productDetail.getModel());
-        itemProductResponseDto.setPhotos(Objects.nonNull(productDetail.getPhotos()) ? productDetail.getPhotos() : null);
-        itemProductResponseDto.setRange(item.getItemRange());
-        itemProductResponseDto.setSerialNumber(item.getSerialNumber());
 
         return FillItemDetails(item, itemProductResponseDto);
     }
@@ -231,6 +231,18 @@ public class ItemServiceImpl implements ItemService {
         List<ItemEntity> itemEntities = itemRepository.findByProductIdAndStatusIn(productId, GetUsableStatuses());
 
         return itemMapper.toDtoList(itemEntities);
+    }
+
+    @Override
+    public ItemResponseDto regenerateItemQr(Long id) throws Exception {
+
+        ItemEntity itemEntity = itemRepository.findByItemId(id)
+                .orElseThrow(() -> new BadRequestException("Artículo no encontrado con ID " + id));
+
+        ItemResponseDto itemResponseDto = GenerateQrAndResponse(List.of(itemEntity)).stream().findFirst()
+                .orElseThrow(() -> new InternalException("Error regenerating QR code"));
+
+        return itemResponseDto;
     }
 
     private List<ItemStatusEnum> GetUsableStatuses() {

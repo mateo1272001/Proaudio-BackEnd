@@ -1,20 +1,20 @@
 package com.ProyectoIntegradorBE.proaudioBE.dtos.Project;
 
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Event.EventResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Expense.ExpenseResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.enums.PaymentStatusEnum;
 import com.ProyectoIntegradorBE.proaudioBE.enums.ProjectStatusEnum;
 import com.ProyectoIntegradorBE.proaudioBE.enums.ProjectTypeEnum;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import jakarta.annotation.Nullable;
 import lombok.Data;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class ProjectSimpleReponseDto {
+public class ProjectDetailsResponseDto {
 
     private Long projectId;
 
@@ -26,9 +26,9 @@ public class ProjectSimpleReponseDto {
 
     private LocalDateTime endDate;
 
-    private Long eventId;
+    private EventResponseDto event;
 
-    private Long clientId;
+    //    private ClientResponseDto client; todo [CLIENT] add client to response
 
     private ProjectStatusEnum status;
 
@@ -36,10 +36,10 @@ public class ProjectSimpleReponseDto {
 
     private ProjectTypeEnum projectType;
 
-    private BigDecimal costAddition;
+    private List<ProductInProjectResponseDto> products;
 
-    @Nullable
-    private EventResponseDto event;
+    private List<ExpenseResponseDto> expenses;
 
+    //    private ItemsInProjectResponseDto items; todo [PROJECT] add items to response
 
 }
