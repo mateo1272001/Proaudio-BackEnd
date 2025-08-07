@@ -4,7 +4,6 @@ spring:
   servlet:
     multipart:
       max-file-size: 10MB
-
 ---
 
 spring:
@@ -47,9 +46,9 @@ spring:
     activate:
       on-profile: test
   datasource:
-    url: jdbc:mysql://localhost:3306/qrapp_test
-    username: test_user
-    password: test_password
+    url: jdbc:mysql://localhost:3306/proaudio_channels?useSSL=false&serverTimezone=UTC
+    username: root
+    password: Usr.Tst1
   jpa:
     hibernate:
       ddl-auto: none
@@ -58,7 +57,7 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
   server:
-    port: 8081
+    port: 8080
   cron:
     project-status: "0 0 8,20 * * *" #executing at 8am and 8pm everyday
 
