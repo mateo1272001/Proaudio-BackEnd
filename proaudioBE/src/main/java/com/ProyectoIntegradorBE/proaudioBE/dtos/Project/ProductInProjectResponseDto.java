@@ -18,4 +18,6 @@ public interface ProductInProjectResponseDto {
     BigDecimal getRentPrice();
 
     Long getProductProjectId();
+
+    BigDecimal getReplacementValue();
 }

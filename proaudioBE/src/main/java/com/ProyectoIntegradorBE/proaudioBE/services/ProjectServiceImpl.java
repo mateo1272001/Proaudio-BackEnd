@@ -12,6 +12,7 @@ import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.ProductResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.ProductProject.ProductProjectRequestDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.ProductProject.ProductProjectWithModelResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Project.*;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.User.UserResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.entities.ItemProjectEntity;
 import com.ProyectoIntegradorBE.proaudioBE.entities.ProjectEntity;
 import com.ProyectoIntegradorBE.proaudioBE.enums.*;
@@ -63,6 +64,8 @@ public class ProjectServiceImpl implements ProjectService {
     private final RentPriceService rentPriceService;
 
     private final UtilService utilService;
+
+    private final UserService userService;
 
     private final GeneralParameterService generalParameterService;
 
@@ -640,7 +643,9 @@ public class ProjectServiceImpl implements ProjectService {
         BigDecimal totalBudget = totalInProductsInProject.add(totalExpenses).add(totalTransportCost)
                 .multiply(percentageValue);
 
-        return pdfService.generateProjectPdf(projectResponseDto, productsInProject, totalBudget);
+        UserResponseDto userResponseDto = userService.findUserByEmail(AuthUtilsSerivce.getLoggedUserEmail());
+
+        return pdfService.generateProjectPdf(projectResponseDto, productsInProject, totalBudget, userResponseDto);
     }
 
     private List<ProductProjectResponseForProjectDto> setProducts(List<ProjectProductRequestDto> productRequests,
