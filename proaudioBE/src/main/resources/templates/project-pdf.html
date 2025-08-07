@@ -1,171 +1,3 @@
-<!--<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8" />
-    <style>
-        body {
-            font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
-            font-size: 14px;
-            color: #333;
-            padding: 40px;
-            background-color: #f9f9f9;
-        }
-
-        h1 {
-            text-align: center;
-            font-size: 24px;
-            margin-bottom: 30px;
-            color: #2c3e50;
-        }
-
-        .section {
-            margin-bottom: 30px;
-        }
-
-        .info-grid {
-            display: flex;
-            justify-content: space-between;
-            gap: 20px;
-        }
-
-        .info-box {
-            flex: 1;
-            background-color: #fff;
-            border: 1px solid #ddd;
-            padding: 15px 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-
-        .info-box p {
-            margin: 8px 0;
-        }
-
-        .table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-            background-color: #fff;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-
-        .table th, .table td {
-            border: 1px solid #ddd;
-            padding: 10px;
-        }
-
-        .table th {
-            background-color: #f2f4f7;
-            font-weight: 600;
-            color: #333;
-        }
-
-        .table td {
-            background-color: #fff;
-        }
-
-        .totals {
-            margin-top: 15px;
-            text-align: right;
-            font-size: 16px;
-            font-weight: bold;
-            color: #2c3e50;
-        }
-
-        .small-text {
-            font-size: 12px;
-            color: #555;
-            margin-top: 5px;
-        }
-
-        .bold {
-            font-weight: bold;
-        }
-
-        .signature {
-            margin-top: 40px;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .signature div {
-            width: 45%;
-            background-color: #fff;
-            padding: 15px 20px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-
-        .signature p {
-            margin: 8px 0;
-        }
-    </style>
-</head>
-<body>
-<div style="text-align: center; margin-bottom: 20px;">
-    <img th:src="'data:image/png;base64,' + ${logoBase64}" alt="Logo" style="width: 150px;" />
-</div>
-
-<h1>Presupuesto ProAudio Channels - [[${budgetDate}]]</h1>
-
-<div class="section info-grid">
-    <div class="info-box">
-        <p><span class="bold">Razón Social:</span> BARDIER MORAÑA SANTIAGO Y LUJAMBIO JUAN DANIEL</p>
-        <p><span class="bold">Dirección:</span> CHUY 3437 AP 501</p>
-        <p><span class="bold">Teléfono:</span> 098 740585 / 098 672279</p>
-        <p><span class="bold">Email:</span> santi@proaudiochannels.com</p>
-        <p><span class="bold">RUT:</span> 219549720018. / LITERAL E</p>
-    </div>
-    <div class="info-box">
-        <p><span class="bold">DIRIGIDO A:</span> [[${project.clientName}]]</p>
-        <p><span class="bold">EVENTO:</span> [[${project.eventName}]]</p>
-        <p><span class="bold">LUGAR:</span> [[${project.ubication}]]</p>
-        <p><span class="bold">FECHAS:</span> [[${project.eventDateStart}]] | [[${project.eventDateEnd}]]</p>
-        <p><span class="bold">OFERTA VÁLIDA HASTA:</span> [[${project.dateValidUntil}]]</p>
-    </div>
-</div>
-
-<div class="section">
-    <table class="table">
-        <thead>
-        <tr>
-            <th>DESCRIPCIÓN</th>
-            <th>UNIDADES</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="prod : ${project.products}">
-            <td th:text="${prod.modelName}">Micrófono X</td>
-            <td th:text="${prod.amount}">2</td>
-        </tr>
-        </tbody>
-    </table>
-    <p class="totals">TOTAL PRESUPUESTO: [[${project.totalBudget}]] USD</p>
-</div>
-
-<div class="section">
-    <p><span class="bold">Forma de pago:</span> [[${formaPago}]]</p>
-    <p class="small-text">Presupuesto hecho en base a [[${horasTrabajo}]] hs de trabajo.</p>
-    <p class="small-text">Máximo diez días post fecha servicio</p>
-    <p class="small-text">Empresa inscripta en R.U.P.E.</p>
-</div>
-
-<div class="signature">
-    <div>
-        <p><span class="bold">Nombre:</span> [[${project.user}]]</p>
-        <p><span class="bold">Teléfono:</span> [[${project.userPhone}]]</p>
-        <p><span class="bold">Email:</span> [[${project.email}]]</p>
-    </div>
-</div>
-</body>
-</html>-->
-
-
-
-
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
@@ -313,12 +145,14 @@
         <tr>
             <th>DESCRIPCIÓN</th>
             <th>UNIDADES</th>
+            <th>[[${dynamicTitles.replacementValueTitle}]]</th>
         </tr>
         </thead>
         <tbody>
         <tr th:each="prod : ${project.products}">
             <td th:text="${prod.modelName}">Micrófono X</td>
             <td th:text="${prod.amount}">2</td>
+            <td th:text="${prod.replacementValue}">2</td>
         </tr>
         </tbody>
     </table>
