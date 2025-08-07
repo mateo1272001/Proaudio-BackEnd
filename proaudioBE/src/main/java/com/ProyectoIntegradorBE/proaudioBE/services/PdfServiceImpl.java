@@ -2,6 +2,8 @@ package com.ProyectoIntegradorBE.proaudioBE.services;
 
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Project.ProductInProjectResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Project.ProjectSimpleReponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.User.UserResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.enums.ProjectTypeEnum;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.PdfService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.ClassPathResource;
@@ -27,7 +29,8 @@ public class PdfServiceImpl implements PdfService {
 
     @Override
     public byte[] generateProjectPdf(ProjectSimpleReponseDto projectResponseDto,
-                                     List<ProductInProjectResponseDto> productsInProject, BigDecimal totalBudget) {
+                                     List<ProductInProjectResponseDto> productsInProject, BigDecimal totalBudget,
+                                     UserResponseDto userResponseDto) {
 
         //company information
         //todo MAKE INFORMATION DYNAMIC
@@ -60,7 +63,12 @@ public class PdfServiceImpl implements PdfService {
             Map<String, Object> prod = new HashMap<>();
             prod.put("modelName", product.getModel());
             prod.put("amount", product.getAmount());
+            prod.put("replacementValue",
+                    projectResponseDto.getProjectType().equals(ProjectTypeEnum.RENT) ? product.getReplacementValue() :
+                            "");
+
             products.add(prod);
+
         }
         project.put("products", products);
 
@@ -68,15 +76,22 @@ public class PdfServiceImpl implements PdfService {
         project.put("totalBudget", totalBudget);
 
         //user info
-        //todo [USERS] ADD DYNAMIC USER INFORMATION
-        project.put("user", "Juan Pérez");
-        project.put("userPhone", "+598 91 234 567");
-        project.put("email", "juan.perez@proaudio.com.uy");
+        project.put("user", userResponseDto.getName());
+        project.put("userPhone", userResponseDto.getPhone_number());
+        project.put("email", userResponseDto.getEmail());
+
+        //dynamic titles
+        Map<String, Object> dynamicTitles = new HashMap<>();
+        dynamicTitles.put("replacementValueTitle",
+                projectResponseDto.getProjectType().equals(ProjectTypeEnum.RENT) ? "VALOR DE REEMPLAZO" : "");
+
 
         // Cargar el HTML con Thymeleaf
         Context context = new Context();
         context.setVariable("project", project);
         context.setVariable("companyInfo", companyInfo);
+        context.setVariable("dynamicTitles", dynamicTitles);
+
 
         try {
             String logoBase64 = convertirImagenABase64("static/logo-lettering.png");
