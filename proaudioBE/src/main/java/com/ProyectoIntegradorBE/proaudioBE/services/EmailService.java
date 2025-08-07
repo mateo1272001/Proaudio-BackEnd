@@ -9,8 +9,12 @@ import org.springframework.stereotype.Service;
 public class EmailService {
 
     private final JavaMailSender mailSender;
+
     @Value("${spring.mail.username}")
     private String MAIL_ADDRESS;
+
+    @Value("${spring.app-base-url}")
+    private String APP_BASE_URL;
 
     public EmailService(JavaMailSender mailSender) {
         this.mailSender = mailSender;
@@ -18,7 +22,7 @@ public class EmailService {
 
     public void sendPasswordResetEmail(String toEmail, String token) {
         String subject = "Restablecer tu contraseña";
-        String resetLink = "http://localhost:5173/auth/restore/password?token=" + token;
+        String resetLink = APP_BASE_URL + "/auth/restore/password?token=" + token;
         String message = """
                 Hola,
                 

@@ -40,6 +40,7 @@ spring:
     port: 8080
   cron:
     project-status: "0 * * * * *" #executing every minute
+  app-base-url: http://localhost:5173/
 
 ---
 
@@ -73,6 +74,7 @@ spring:
     port: 8081
   cron:
     project-status: "0 0 8,20 * * *" #executing at 8am and 8pm everyday
+  app-base-url: https://proaudiochannels.com.uy:8443/
 
 ---
 
@@ -105,3 +107,4 @@ spring:
     port: 80
   cron:
     project-status: "0 0 8,20 * * *" #executing at 8am and 8pm everyday
+    app-base-url: https://proaudiochannels.com.uy:8443/

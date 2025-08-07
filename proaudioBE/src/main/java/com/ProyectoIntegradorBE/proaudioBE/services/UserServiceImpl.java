@@ -11,6 +11,7 @@ import com.ProyectoIntegradorBE.proaudioBE.mappers.UserMapper;
 import com.ProyectoIntegradorBE.proaudioBE.repositories.PasswordResetTokenRepository;
 import com.ProyectoIntegradorBE.proaudioBE.repositories.UserRepository;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.UserService;
+import io.micrometer.common.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.util.InternalException;
 import org.springframework.http.ResponseEntity;
@@ -62,6 +63,8 @@ public class UserServiceImpl implements UserService {
             throw new BadRequestException("¡El usuario ya existe!");
         }
 
+        validatePassword(request.getPassword());
+
         UserEntity userEntity = new UserEntity();
         userEntity.setEmail(request.getEmail());
         userEntity.setName(request.getName());
@@ -99,16 +102,18 @@ public class UserServiceImpl implements UserService {
     @Override
     public ResponseEntity<?> resetPassword(ResetPasswordDto resetRequest) {
 
-        if (!resetRequest.getNewPassword().equals(resetRequest.getNewPasswordRepeat())) {
-            throw new BadRequestException("¡Las contraseñas son distintas!");
-        }
-
         Optional<PasswordResetTokenEntity> tokenOpt = passwordResetTokenRepository.findByToken(resetRequest.getToken());
 
         if (tokenOpt.isEmpty() || tokenOpt.get().isUsed() ||
                 tokenOpt.get().getExpiryDate().isBefore(LocalDateTime.now())) {
             throw new BadRequestException("Este token no es válido");
         }
+
+        if (!resetRequest.getNewPassword().equals(resetRequest.getNewPasswordRepeat())) {
+            throw new BadRequestException("¡Las contraseñas son distintas!");
+        }
+
+        validatePassword(resetRequest.getNewPassword());
 
         UserEntity userEntity =
                 userRepository.findByUserIdAndStatus(tokenOpt.get().getUserId(), BasicEnumStatus.ENABLED)
@@ -121,6 +126,30 @@ public class UserServiceImpl implements UserService {
         passwordResetTokenRepository.save(prt);
 
         return ResponseEntity.ok(Collections.singletonMap("message", "Contraseña actualizada exitosamente"));
+
+    }
+
+    private void validatePassword(String newPassword) {
+
+        if (StringUtils.isBlank(newPassword)) {
+            throw new BadRequestException("La contraseña está vacía");
+        }
+
+        if (newPassword.trim().length() <= 8) {
+            throw new BadRequestException("La contraseña debe tener más de 8 caracteres");
+        }
+
+        if (newPassword.chars().noneMatch(Character::isDigit)) {
+            throw new BadRequestException("La contraseña debe contener al menos un número");
+        }
+
+        if (newPassword.chars().noneMatch(Character::isUpperCase)) {
+            throw new BadRequestException("La contraseña debe contener al menos una mayúscula");
+        }
+
+        if (newPassword.chars().noneMatch(Character::isLowerCase)) {
+            throw new BadRequestException("La contraseña debe contener al menos una minúscula");
+        }
 
     }
 
