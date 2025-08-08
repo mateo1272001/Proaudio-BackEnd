@@ -1,25 +1,40 @@
 package com.ProyectoIntegradorBE.proaudioBE.services;
 
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Client.ClientListResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Client.ClientRequestDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Client.ClientResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.PageableDto;
 import com.ProyectoIntegradorBE.proaudioBE.entities.ClientEntity;
 import com.ProyectoIntegradorBE.proaudioBE.enums.BasicEnumStatus;
+import com.ProyectoIntegradorBE.proaudioBE.enums.ClientSortByEnum;
+import com.ProyectoIntegradorBE.proaudioBE.enums.DirectionEnum;
 import com.ProyectoIntegradorBE.proaudioBE.exceptions.BadRequestException;
 import com.ProyectoIntegradorBE.proaudioBE.mappers.ClientMapper;
 import com.ProyectoIntegradorBE.proaudioBE.repositories.ClientRepository;
+import com.ProyectoIntegradorBE.proaudioBE.repositories.specifications.ClientSpecification;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ClientService;
 import io.micrometer.common.util.StringUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
 public class ClientServiceImpl implements ClientService {
 
+    private final UtilService utilService;
+
     private final ClientRepository clientRepository;
+
     private final ClientMapper clientMapper;
+
 
     @Override
     public ClientResponseDto getClientById(Long id) {
@@ -94,5 +109,37 @@ public class ClientServiceImpl implements ClientService {
         return clientMapper.toDto(clientEntity);
 
     }
+
+    @Override
+    public ClientListResponseDto getClientList(String sortBy, String direction, Integer page, Integer size,
+                                               String status) {
+
+        DirectionEnum dir =
+                Objects.isNull(direction) ? DirectionEnum.DESC : DirectionEnum.valueOf(direction.toUpperCase());
+        page = Objects.nonNull(page) ? page : 1;
+        size = Objects.nonNull(size) ? size : 10;
+        BasicEnumStatus statusEnum = Objects.nonNull(status) ? BasicEnumStatus.valueOf(status.toUpperCase()) : null;
+
+        ClientSortByEnum sortByEnum =
+                Objects.nonNull(sortBy) ? ClientSortByEnum.valueOf(sortBy.toUpperCase()) : ClientSortByEnum.ID;
+        String sortColumn = switch (sortByEnum) {
+            case NAME -> "name";
+            case PHONE -> "phoneNumber";
+            case ID -> "clientId";
+        };
+
+        Sort sort = Sort.by(Sort.Direction.fromString(dir.name()), sortColumn);
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Specification<ClientEntity> spec = ClientSpecification.filterBy(statusEnum);
+
+        Page<ClientEntity> pages = clientRepository.findAll(spec, pageable);
+        List<ClientResponseDto> dtoList = pages.getContent().stream().map(clientMapper::toDto).toList();
+
+        PageableDto pagination = utilService.buildPageableDto(pages);
+
+        return new ClientListResponseDto(dtoList, pagination);
+    }
+
 
 }

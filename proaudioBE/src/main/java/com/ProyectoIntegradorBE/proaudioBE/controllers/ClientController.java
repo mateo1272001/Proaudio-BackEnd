@@ -1,5 +1,6 @@
 package com.ProyectoIntegradorBE.proaudioBE.controllers;
 
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Client.ClientListResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Client.ClientRequestDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Client.ClientResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ClientService;
@@ -38,6 +39,17 @@ public class ClientController {
     public ClientResponseDto GetClientById(@PathVariable Long id) {
 
         return clientService.getClientById(id);
+
+    }
+
+    @GetMapping("/list")
+    public ClientListResponseDto getClientList(@RequestParam(required = false, defaultValue = "id") String sortBy,
+                                               @RequestParam(required = false) String direction,
+                                               @RequestParam(defaultValue = "0") Integer page,
+                                               @RequestParam(defaultValue = "10") Integer size,
+                                               @RequestParam(required = false) String status) {
+
+        return clientService.getClientList(sortBy, direction, page, size, status);
 
     }
 
