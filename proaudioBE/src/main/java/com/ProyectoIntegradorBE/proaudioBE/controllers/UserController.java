@@ -61,4 +61,9 @@ public class UserController {
         return userService.resetPassword(resetRequest);
     }
 
+    @PostMapping("/change/password")
+    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordDto changePasswordDto) {
+        return userService.changePassword(changePasswordDto);
+    }
+
 }

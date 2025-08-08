@@ -2,6 +2,7 @@ package com.ProyectoIntegradorBE.proaudioBE.services.interfaces;
 
 
 import com.ProyectoIntegradorBE.proaudioBE.dtos.User.AuthRegisterRequestDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.User.ChangePasswordDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.User.ResetPasswordDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.User.UserResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.entities.UserEntity;
@@ -21,4 +22,6 @@ public interface UserService {
     ResponseEntity<?> forgotPassword(String email);
 
     ResponseEntity<?> resetPassword(ResetPasswordDto resetRequest);
+
+    ResponseEntity<?> changePassword(ChangePasswordDto changePasswordDto);
 }
