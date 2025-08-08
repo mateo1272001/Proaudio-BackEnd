@@ -1,5 +1,6 @@
 package com.ProyectoIntegradorBE.proaudioBE.dtos.Client;
 
+import com.ProyectoIntegradorBE.proaudioBE.enums.BasicEnumStatus;
 import lombok.Data;
 
 @Data
@@ -16,5 +17,7 @@ public class ClientResponseDto {
     private String address;
 
     private String details;
+
+    private BasicEnumStatus status;
 
 }
