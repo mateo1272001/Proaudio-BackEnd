@@ -525,69 +525,6 @@ public class ProjectServiceImpl implements ProjectService {
         return costAddition;
     }
 
-    //
-    //    private String convertirImagenABase64(String path) throws IOException {
-    //        ClassPathResource imgFile = new ClassPathResource(path);
-    //        byte[] bytes = StreamUtils.copyToByteArray(imgFile.getInputStream());
-    //        return Base64.getEncoder().encodeToString(bytes);
-    //    }
-    //
-    //    public byte[] generateProjectPdf(Long projectId) {
-    //        //ProjectSimpleReponseDto project = getProject(projectId);
-    //        // Simulamos los datos del proyecto
-    //        Map<String, Object> project = new HashMap<>();
-    //        project.put("clientName", "Empresa XYZ S.A.");
-    //        project.put("eventName", "Lanzamiento de Producto 2025");
-    //        project.put("ubication", "Montevideo, Uruguay");
-    //        project.put("eventDateStart", "10/08/2025");
-    //        project.put("eventDateEnd", "12/08/2025");
-    //        project.put("dateValidUntil", "30/08/2025");
-    //
-    //        // Lista de productos (modelName, amount)
-    //        List<Map<String, Object>> products = new ArrayList<>();
-    //        Map<String, Object> prod1 = new HashMap<>();
-    //        prod1.put("modelName", "Consola de Sonido Behringer X32");
-    //        prod1.put("amount", 2);
-    //        products.add(prod1);
-    //
-    //        Map<String, Object> prod2 = new HashMap<>();
-    //        prod2.put("modelName", "Sistema de Parlantes JBL PRX815");
-    //        prod2.put("amount", 4);
-    //        products.add(prod2);
-    //
-    //        project.put("products", products);
-    //
-    //        project.put("totalBudget", "$4,200 USD");
-    //        project.put("user", "Juan Pérez");
-    //        project.put("userPhone", "+598 91 234 567");
-    //        project.put("email", "juan.perez@proaudio.com.uy");
-    //
-    //
-    //        // Cargar el HTML con Thymeleaf
-    //        Context context = new Context();
-    //        context.setVariable("project", project);
-    //
-    //        try {
-    //            String logoBase64 = convertirImagenABase64("static/logo-lettering.png");
-    //            context.setVariable("logoBase64", logoBase64);
-    //        } catch (IOException e) {
-    //            throw new RuntimeException("Error al cargar imágenes para el PDF", e);
-    //        }
-    //
-    //        String htmlContent = templateEngine.process("project-pdf.html", context);
-    //
-    //        // Convertir HTML a PDF
-    //        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-    //            ITextRenderer renderer = new ITextRenderer();
-    //            renderer.setDocumentFromString(htmlContent);
-    //            renderer.layout();
-    //            renderer.createPDF(outputStream);
-    //            return outputStream.toByteArray();
-    //        } catch (Exception e) {
-    //            throw new RuntimeException("Error al generar PDF del proyecto", e);
-    //        }
-    //    }
-
     private static BigDecimal getExpensesBudget(List<ExpenseResponseDto> expenseResponseDto) {
         BigDecimal totalExpenses = BigDecimal.valueOf(0);
 
@@ -772,31 +709,6 @@ public class ProjectServiceImpl implements ProjectService {
                 ItemProjectStatus.ENABLED, itemProjectResponseDto);
     }
 
-    //    @Override
-    //    @Transactional
-    //    public ItemProjectResponseDto singleItemExit(Long idProject, Long idItem) {
-    //
-    //        ProjectSimpleReponseDto projectSimpleReponseDto = this.getProject(idProject);
-    //        ItemResponseDto itemResponseDto =
-    //                itemService.updateLocation(idItem, LocationEnum.USING, projectSimpleReponseDto);
-    //
-    //        validate(projectSimpleReponseDto, itemResponseDto);
-    //
-    //        //si ya existe solo cambio status. Llamnar a change status y simplificar validaciones
-    //        ItemProjectResponseDto itemProjectResponseDto =
-    //                itemProjectService.createItemProject(itemResponseDto, projectSimpleReponseDto);
-    //
-    //        itemProjectResponseDto.setItemBoughtAt(itemResponseDto.getBoughtAt());
-    //        itemProjectResponseDto.setItemPriceBought(itemResponseDto.getPriceBought());
-    //        itemProjectResponseDto.setItemDescription(itemResponseDto.getDescription());
-    //        itemProjectResponseDto.setItemStatus(itemResponseDto.getStatus());
-    //        itemProjectResponseDto.setItemRange(itemProjectResponseDto.getItemRange());
-    //        itemProjectResponseDto.setItemSerialNumber(itemResponseDto.getSerialNumber());
-    //        itemProjectResponseDto.setProductId(itemResponseDto.getProductId());
-    //        itemProjectResponseDto.setProductModel(itemProjectResponseDto.getProductModel());
-    //
-    //        return itemProjectResponseDto;
-    //    }
     @Override
     @Transactional
     public ItemProjectResponseDto singleItemReturn(Long idProject, Long idItem) {
@@ -827,32 +739,6 @@ public class ProjectServiceImpl implements ProjectService {
 
         return itemProjectResponseDto;
     }
-
-    //    @Override
-    //    public ItemProjectResponseDto itemProjectDelete(Long idProject, Long idItem) {
-    //
-    //        ProjectSimpleReponseDto projectSimpleReponseDto = this.getProject(idProject);
-    //
-    //        ItemResponseDto itemResponseDto = itemService.getItem(idItem);
-    //
-    //        if (!itemResponseDto.getLocation().equals(LocationEnum.IN_DEPOSIT)) {
-    //            throw new BadRequestException("No se puede eliminar. ¡Está siendo utilizado!");
-    //        }
-    //
-    //        ItemProjectResponseDto itemProjectResponseDto =
-    //                itemProjectService.changeStatusItemProject(itemResponseDto, projectSimpleReponseDto,
-    //                        ItemProjectStatus.DISABLED);
-    //
-    //        itemProjectResponseDto.setItemBoughtAt(itemResponseDto.getBoughtAt());
-    //        itemProjectResponseDto.setItemPriceBought(itemResponseDto.getPriceBought());
-    //        itemProjectResponseDto.setItemDescription(itemResponseDto.getDescription());
-    //        itemProjectResponseDto.setItemStatus(itemResponseDto.getStatus());
-    //        itemProjectResponseDto.setProductId(itemResponseDto.getProductId());
-    //        ProductResponseDto productResponseDto = productService.GetProduct(itemResponseDto.getProductId());
-    //        itemProjectResponseDto.setProductModel(productResponseDto.getModel());
-    //
-    //        return itemProjectResponseDto;
-    //    }
 
     private BigDecimal getProductsBudget(ProjectSimpleReponseDto projectResponseDto,
                                          List<ProductInProjectResponseDto> productsInProject) {

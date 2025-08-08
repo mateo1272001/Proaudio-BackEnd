@@ -1,6 +1,7 @@
 package com.ProyectoIntegradorBE.proaudioBE.services;
 
 import com.ProyectoIntegradorBE.proaudioBE.dtos.User.AuthRegisterRequestDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.User.ChangePasswordDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.User.ResetPasswordDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.User.UserResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.entities.PasswordResetTokenEntity;
@@ -127,6 +128,30 @@ public class UserServiceImpl implements UserService {
 
         return ResponseEntity.ok(Collections.singletonMap("message", "Contraseña actualizada exitosamente"));
 
+    }
+
+    @Override
+    public ResponseEntity<?> changePassword(ChangePasswordDto changePasswordDto) {
+
+        String loggedUserEmail = AuthUtilsSerivce.getLoggedUserEmail();
+
+        UserEntity userEntity =
+                userRepository.findByEmail(loggedUserEmail).orElseThrow(() -> new InternalException(""));
+        String currentPass = userEntity.getPassword();
+
+        if (passwordEncoder.matches(changePasswordDto.getNewPassword(), currentPass)) {
+            throw new BadRequestException("¡La contraseña actual es incorrecta!");
+        }
+
+        if (!changePasswordDto.getNewPassword().equals(changePasswordDto.getNewPasswordRepeat())) {
+            throw new BadRequestException("¡Las contraseñas son distintas!");
+        }
+
+        userEntity.setPassword(passwordEncoder.encode(changePasswordDto.getNewPassword()));
+
+        userRepository.save(userEntity);
+
+        return ResponseEntity.ok(Collections.singletonMap("message", "Contraseña actualizada exitosamente"));
     }
 
     private void validatePassword(String newPassword) {
