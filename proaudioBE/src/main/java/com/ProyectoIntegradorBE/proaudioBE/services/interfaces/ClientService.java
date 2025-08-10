@@ -1,8 +1,8 @@
 package com.ProyectoIntegradorBE.proaudioBE.services.interfaces;
 
-import com.ProyectoIntegradorBE.proaudioBE.dtos.Client.ClientListResponseDto;
-import com.ProyectoIntegradorBE.proaudioBE.dtos.Client.ClientRequestDto;
-import com.ProyectoIntegradorBE.proaudioBE.dtos.Client.ClientResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Client.*;
+
+import java.util.List;
 
 public interface ClientService {
 
@@ -15,4 +15,7 @@ public interface ClientService {
     ClientResponseDto deleteClient(Long id);
 
     ClientListResponseDto getClientList(String sortBy, String direction, Integer page, Integer size, String status);
+
+    ClientDetailsResponseDto getClientDetails(ClientResponseDto clientResponseDto,
+                                              List<ProjectParticipatedResponseDto> projectParticipatedResponseDto);
 }

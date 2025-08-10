@@ -1,11 +1,12 @@
 package com.ProyectoIntegradorBE.proaudioBE.controllers;
 
-import com.ProyectoIntegradorBE.proaudioBE.dtos.Client.ClientListResponseDto;
-import com.ProyectoIntegradorBE.proaudioBE.dtos.Client.ClientRequestDto;
-import com.ProyectoIntegradorBE.proaudioBE.dtos.Client.ClientResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Client.*;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ClientService;
+import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ProjectService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -13,6 +14,8 @@ import org.springframework.web.bind.annotation.*;
 public class ClientController {
 
     private final ClientService clientService;
+
+    private final ProjectService projectService;
 
     @PostMapping
     public ClientResponseDto createClient(@RequestBody ClientRequestDto clientRequestDto) {
@@ -36,7 +39,7 @@ public class ClientController {
     }
 
     @GetMapping("/{id}")
-    public ClientResponseDto GetClientById(@PathVariable Long id) {
+    public ClientResponseDto getClientById(@PathVariable Long id) {
 
         return clientService.getClientById(id);
 
@@ -50,6 +53,17 @@ public class ClientController {
                                                @RequestParam(required = false) String status) {
 
         return clientService.getClientList(sortBy, direction, page, size, status);
+
+    }
+
+    @GetMapping("/{id}/details")
+    public ClientDetailsResponseDto getClientDetails(@PathVariable Long id) {
+
+        ClientResponseDto clientResponseDto = clientService.getClientById(id);
+
+        List<ProjectParticipatedResponseDto> projectParticipatedResponseDtos = projectService.getProjectsByClient(id);
+
+        return clientService.getClientDetails(clientResponseDto, projectParticipatedResponseDtos);
 
     }
 

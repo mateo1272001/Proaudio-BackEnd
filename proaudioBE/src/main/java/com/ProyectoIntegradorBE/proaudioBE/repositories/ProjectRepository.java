@@ -1,5 +1,6 @@
 package com.ProyectoIntegradorBE.proaudioBE.repositories;
 
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Client.ProjectParticipatedResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.entities.ProjectEntity;
 import com.ProyectoIntegradorBE.proaudioBE.enums.ProjectStatusEnum;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,4 +14,7 @@ import java.util.List;
 public interface ProjectRepository extends CrudRepository<ProjectEntity, Long>, JpaRepository<ProjectEntity, Long>,
         JpaSpecificationExecutor<ProjectEntity> {
     List<ProjectEntity> findByStatusIn(List<ProjectStatusEnum> planned);
+
+    List<ProjectParticipatedResponseDto> findByClientId(Long id);
+
 }

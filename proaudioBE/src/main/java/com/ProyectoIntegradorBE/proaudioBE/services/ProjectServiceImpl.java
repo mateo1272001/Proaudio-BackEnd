@@ -1,5 +1,6 @@
 package com.ProyectoIntegradorBE.proaudioBE.services;
 
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Client.ProjectParticipatedResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Event.EventResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Expense.ExpenseRequestDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Expense.ExpenseResponseDto;
@@ -738,6 +739,12 @@ public class ProjectServiceImpl implements ProjectService {
         itemProjectResponseDto.setProductModel(productResponseDto.getModel());
 
         return itemProjectResponseDto;
+    }
+
+    @Override
+    public List<ProjectParticipatedResponseDto> getProjectsByClient(Long id) {
+
+        return projectRepository.findByClientId(id);
     }
 
     private BigDecimal getProductsBudget(ProjectSimpleReponseDto projectResponseDto,

@@ -1,8 +1,6 @@
 package com.ProyectoIntegradorBE.proaudioBE.services;
 
-import com.ProyectoIntegradorBE.proaudioBE.dtos.Client.ClientListResponseDto;
-import com.ProyectoIntegradorBE.proaudioBE.dtos.Client.ClientRequestDto;
-import com.ProyectoIntegradorBE.proaudioBE.dtos.Client.ClientResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Client.*;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.PageableDto;
 import com.ProyectoIntegradorBE.proaudioBE.entities.ClientEntity;
 import com.ProyectoIntegradorBE.proaudioBE.enums.BasicEnumStatus;
@@ -139,6 +137,23 @@ public class ClientServiceImpl implements ClientService {
         PageableDto pagination = utilService.buildPageableDto(pages);
 
         return new ClientListResponseDto(dtoList, pagination);
+    }
+
+    @Override
+    public ClientDetailsResponseDto getClientDetails(ClientResponseDto clientResponseDto,
+                                                     List<ProjectParticipatedResponseDto> projectParticipatedResponseDtos) {
+
+        ClientDetailsResponseDto clientDetailsResponseDto = new ClientDetailsResponseDto();
+        clientDetailsResponseDto.setClientId(clientResponseDto.getClientId());
+        clientDetailsResponseDto.setName(clientResponseDto.getName());
+        clientDetailsResponseDto.setPhoneNumber(clientResponseDto.getPhoneNumber());
+        clientDetailsResponseDto.setEmail(clientResponseDto.getEmail());
+        clientDetailsResponseDto.setAddress(clientResponseDto.getAddress());
+        clientDetailsResponseDto.setDetails(clientResponseDto.getDetails());
+        clientDetailsResponseDto.setStatus(clientResponseDto.getStatus());
+        clientDetailsResponseDto.setProjectsParticipated(projectParticipatedResponseDtos);
+
+        return clientDetailsResponseDto;
     }
 
 
