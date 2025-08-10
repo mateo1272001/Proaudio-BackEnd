@@ -14,7 +14,8 @@ public interface ClientService {
 
     ClientResponseDto deleteClient(Long id);
 
-    ClientListResponseDto getClientList(String sortBy, String direction, Integer page, Integer size, String status);
+    ClientListResponseDto getClientList(String sortBy, String direction, Integer page, Integer size, String status,
+                                        String name);
 
     ClientDetailsResponseDto getClientDetails(ClientResponseDto clientResponseDto,
                                               List<ProjectParticipatedResponseDto> projectParticipatedResponseDto);

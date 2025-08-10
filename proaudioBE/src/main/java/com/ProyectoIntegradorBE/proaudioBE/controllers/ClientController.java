@@ -50,9 +50,10 @@ public class ClientController {
                                                @RequestParam(required = false) String direction,
                                                @RequestParam(defaultValue = "0") Integer page,
                                                @RequestParam(defaultValue = "10") Integer size,
-                                               @RequestParam(required = false) String status) {
+                                               @RequestParam(required = false) String status,
+                                               @RequestParam(required = false) String name) {
 
-        return clientService.getClientList(sortBy, direction, page, size, status);
+        return clientService.getClientList(sortBy, direction, page, size, status, name);
 
     }
 

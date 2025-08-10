@@ -108,9 +108,21 @@ public class ClientServiceImpl implements ClientService {
 
     }
 
+    private static Specification<ClientEntity> getClientSpecification(String name, BasicEnumStatus statusEnum) {
+        if (StringUtils.isBlank(name)) {
+
+            return ClientSpecification.filterBy(statusEnum);
+
+        } else {
+
+            return ClientSpecification.filterByStatusAndName(statusEnum, name);
+
+        }
+    }
+
     @Override
     public ClientListResponseDto getClientList(String sortBy, String direction, Integer page, Integer size,
-                                               String status) {
+                                               String status, String name) {
 
         DirectionEnum dir =
                 Objects.isNull(direction) ? DirectionEnum.DESC : DirectionEnum.valueOf(direction.toUpperCase());
@@ -129,7 +141,7 @@ public class ClientServiceImpl implements ClientService {
         Sort sort = Sort.by(Sort.Direction.fromString(dir.name()), sortColumn);
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        Specification<ClientEntity> spec = ClientSpecification.filterBy(statusEnum);
+        Specification<ClientEntity> spec = getClientSpecification(name, statusEnum);
 
         Page<ClientEntity> pages = clientRepository.findAll(spec, pageable);
         List<ClientResponseDto> dtoList = pages.getContent().stream().map(clientMapper::toDto).toList();
