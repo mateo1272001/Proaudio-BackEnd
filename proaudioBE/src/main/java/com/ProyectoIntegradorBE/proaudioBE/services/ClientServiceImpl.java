@@ -37,7 +37,7 @@ public class ClientServiceImpl implements ClientService {
     @Override
     public ClientResponseDto getClientById(Long id) {
 
-        ClientEntity clientEntity = clientRepository.findByClientIdAndStatus(id, BasicEnumStatus.ENABLED)
+        ClientEntity clientEntity = clientRepository.findByClientId(id)
                 .orElseThrow(() -> new BadRequestException("¡No existe un cliente activo con ese id!"));
 
         return clientMapper.toDto(clientEntity);

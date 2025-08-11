@@ -15,4 +15,6 @@ public interface ClientRepository extends CrudRepository<ClientEntity, Long>, Jp
 
     Optional<ClientEntity> findByClientIdAndStatus(Long id, BasicEnumStatus basicEnumStatus);
 
+    Optional<ClientEntity> findByClientId(Long id);
+
 }
