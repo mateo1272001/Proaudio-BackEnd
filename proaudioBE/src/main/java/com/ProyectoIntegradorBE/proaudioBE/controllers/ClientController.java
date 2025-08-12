@@ -34,7 +34,9 @@ public class ClientController {
     @DeleteMapping("{id}")
     public ClientResponseDto updateClient(@PathVariable Long id) {
 
-        return clientService.deleteClient(id);
+        List<ProjectParticipatedResponseDto> projects = projectService.getProjectsByClient(id);
+
+        return clientService.deleteClient(id, projects);
 
     }
 

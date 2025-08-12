@@ -12,7 +12,7 @@ public interface ClientService {
 
     ClientResponseDto updateClient(Long id, ClientRequestDto clientRequestDto);
 
-    ClientResponseDto deleteClient(Long id);
+    ClientResponseDto deleteClient(Long id, List<ProjectParticipatedResponseDto> projects);
 
     ClientListResponseDto getClientList(String sortBy, String direction, Integer page, Integer size, String status,
                                         String name);

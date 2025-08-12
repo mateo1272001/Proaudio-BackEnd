@@ -23,6 +23,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Objects;
 
+import static com.ProyectoIntegradorBE.proaudioBE.services.ProjectServiceImpl.CLIENT_CURRENTLY_PRESENT;
+
 @Service
 @RequiredArgsConstructor
 public class ClientServiceImpl implements ClientService {
@@ -38,7 +40,7 @@ public class ClientServiceImpl implements ClientService {
     public ClientResponseDto getClientById(Long id) {
 
         ClientEntity clientEntity = clientRepository.findByClientId(id)
-                .orElseThrow(() -> new BadRequestException("¡No existe un cliente activo con ese id!"));
+                .orElseThrow(() -> new BadRequestException("¡No existe un cliente con ese id!"));
 
         return clientMapper.toDto(clientEntity);
 
@@ -93,12 +95,17 @@ public class ClientServiceImpl implements ClientService {
     }
 
     @Override
-    public ClientResponseDto deleteClient(Long id) {
+    public ClientResponseDto deleteClient(Long id, List<ProjectParticipatedResponseDto> projects) {
 
         ClientEntity clientEntity = clientRepository.findByClientIdAndStatus(id, BasicEnumStatus.ENABLED)
                 .orElseThrow(() -> new BadRequestException("¡No se encontró un cliente activo con ese id!"));
 
-        //todo add validation of project presence
+        List<ProjectParticipatedResponseDto> impedingProjects =
+                projects.stream().filter(p -> CLIENT_CURRENTLY_PRESENT.contains(p.getStatus())).toList();
+
+        if (!impedingProjects.isEmpty()) {
+            throw new BadRequestException("Este cliente está participando en un proyecto!");
+        }
 
         clientEntity.setStatus(BasicEnumStatus.DISABLED);
 

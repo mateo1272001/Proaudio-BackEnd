@@ -1,5 +1,6 @@
 package com.ProyectoIntegradorBE.proaudioBE.services;
 
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Client.ClientResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Client.ProjectParticipatedResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Event.EventResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Expense.ExpenseRequestDto;
@@ -33,7 +34,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.thymeleaf.TemplateEngine;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -47,8 +47,6 @@ import java.util.Objects;
 @Service
 @RequiredArgsConstructor
 public class ProjectServiceImpl implements ProjectService {
-
-    private final TemplateEngine templateEngine;
 
     private final EventService eventService;
 
@@ -72,27 +70,33 @@ public class ProjectServiceImpl implements ProjectService {
 
     private final PdfService pdfService;
 
+    public static final List<ProjectStatusEnum> EXIT_POSSIBLE_STATUS =
+            List.of(ProjectStatusEnum.ON_COURSE, ProjectStatusEnum.CONFIRMED);
+
     private final ProjectMapper projectMapper;
+
+    public static final List<ProjectStatusEnum> CLIENT_CURRENTLY_PRESENT =
+            List.of(ProjectStatusEnum.PLANNED, ProjectStatusEnum.CONFIRMED, ProjectStatusEnum.ON_COURSE);
 
     public static final List<ProjectStatusEnum> PROJECT_STARTED_STATUS =
             List.of(ProjectStatusEnum.ON_COURSE, ProjectStatusEnum.EXPIRED, ProjectStatusEnum.COMPLETED);
 
-    private final ProjectRepository projectRepository;
-
     private final List<ProjectStatusEnum> UPDATE_STATUSES =
             List.of(ProjectStatusEnum.PLANNED, ProjectStatusEnum.CONFIRMED, ProjectStatusEnum.DISCARDED);
 
+    private final ClientService clientService;
+
+    private final ProjectRepository projectRepository;
+
     private final String KM_PARAMETER = "km_cost";
-    public static final List<ProjectStatusEnum> PROJECT_NOT_STARTED_STATUS =
-            List.of(ProjectStatusEnum.PLANNED, ProjectStatusEnum.CONFIRMED, ProjectStatusEnum.DISCARDED);
-    public static final List<ProjectStatusEnum> EXIT_POSSIBLE_STATUS =
-            List.of(ProjectStatusEnum.ON_COURSE, ProjectStatusEnum.CONFIRMED);
+
     private final ItemProjectMapper itemProjectMapper;
 
     private static ProjectResponseDto makeProjectResponseDto(ProjectRequestDto request, ProjectEntity projectEntity,
                                                              EventResponseDto eventResponseDto,
                                                              List<ProductProjectResponseForProjectDto> products,
-                                                             List<ExpenseResponseDto> expenses) {
+                                                             List<ExpenseResponseDto> expenses,
+                                                             ClientResponseDto clientResponseDto) {
         ProjectResponseDto projectResponseDto = new ProjectResponseDto();
         projectResponseDto.setProjectId(projectEntity.getProjectId());
         projectResponseDto.setName(projectEntity.getName());
@@ -100,7 +104,7 @@ public class ProjectServiceImpl implements ProjectService {
         projectResponseDto.setStartDate(projectEntity.getStartDate());
         projectResponseDto.setEndDate(projectEntity.getEndDate());
         projectResponseDto.setEvent(eventResponseDto);
-        projectResponseDto.setClient(null); //todo [CLIENT] add client
+        projectResponseDto.setClient(clientResponseDto);
         projectResponseDto.setStatus(projectEntity.getStatus());
         projectResponseDto.setPaymentStatus(projectEntity.getPaymentStatus());
         projectResponseDto.setProjectType(projectEntity.getProjectType());
@@ -117,7 +121,9 @@ public class ProjectServiceImpl implements ProjectService {
 
         EventResponseDto eventResponseDto = getOrCreateEvent(request);
 
-        ProjectEntity projectEntity = setProjectEntity(request, eventResponseDto);
+        ClientResponseDto clientResponseDto = getOrCreateClient(request);
+
+        ProjectEntity projectEntity = setProjectEntity(request, eventResponseDto, clientResponseDto);
 
         projectEntity = projectRepository.save(projectEntity);
 
@@ -131,7 +137,25 @@ public class ProjectServiceImpl implements ProjectService {
             expenses = setExpenses(request.getExpenses(), projectEntity.getProjectId());
         }
 
-        return makeProjectResponseDto(request, projectEntity, eventResponseDto, products, expenses);
+        return makeProjectResponseDto(request, projectEntity, eventResponseDto, products, expenses, clientResponseDto);
+    }
+
+    private ClientResponseDto getOrCreateClient(ProjectRequestDto request) {
+
+        if (Objects.nonNull(request.getClient().getClientId())) {
+
+            ClientResponseDto clientResponseDto = clientService.getClientById(request.getClient().getClientId());
+
+            if (clientResponseDto.getStatus().equals(BasicEnumStatus.DISABLED)) {
+                throw new BadRequestException("¡Este cliente no está activo!");
+            }
+
+            return clientResponseDto;
+
+        } else {
+            return clientService.createClient(request.getClient());
+        }
+
     }
 
     private EventResponseDto getOrCreateEvent(ProjectRequestDto request) {
@@ -184,8 +208,8 @@ public class ProjectServiceImpl implements ProjectService {
             entityResponse.setEndDate(request.getEndDate());
         }
 
+
         if (Objects.nonNull(request.getEvent().getEventId())) {
-            entityResponse.setEventId(projectResponseDto.getEventId());
             Long requestEventId = request.getEvent().getEventId();
 
             if (!requestEventId.equals(projectResponseDto.getEventId())) {
@@ -204,7 +228,25 @@ public class ProjectServiceImpl implements ProjectService {
             entityResponse.setEventId(eventResponseDto.getEventId());
         }
 
-        entityResponse.setClientId(projectResponseDto.getClientId()); //todo [CLIENT] add client update
+
+        if (Objects.nonNull(request.getClient().getClientId())) {
+            Long requestClientId = request.getClient().getClientId();
+
+            if (!requestClientId.equals(projectResponseDto.getClientId())) {
+                if (!statusIsUpdatable) {
+                    throw new BadRequestException("El cliente solo se puede modificar si el projecto aún no empieza!");
+                }
+                ClientResponseDto clientResponseDto = clientService.getClientById(requestClientId);
+                entityResponse.setClientId(clientResponseDto.getClientId());
+            }
+
+        } else {
+            if (!statusIsUpdatable) {
+                throw new BadRequestException("El evento solo se puede modificar si el projecto aún no empieza!");
+            }
+            ClientResponseDto clientResponseDto = clientService.createClient(request.getClient());
+            entityResponse.setClientId(clientResponseDto.getClientId());
+        }
 
         projectRepository.save(entityResponse);
 
@@ -436,7 +478,8 @@ public class ProjectServiceImpl implements ProjectService {
         }
     }
 
-    private ProjectEntity setProjectEntity(ProjectRequestDto request, EventResponseDto eventResponseDto) {
+    private ProjectEntity setProjectEntity(ProjectRequestDto request, EventResponseDto eventResponseDto,
+                                           ClientResponseDto clientResponseDto) {
 
         if (request.getStartDate().isAfter(request.getEndDate())) {
             throw new BadRequestException("¡La fecha de fin no puede ser anterior a la fecha de inicio!");
@@ -448,8 +491,7 @@ public class ProjectServiceImpl implements ProjectService {
         projectEntity.setStartDate(request.getStartDate());
         projectEntity.setEndDate(request.getEndDate());
         projectEntity.setEventId(eventResponseDto.getEventId());
-        projectEntity.setClientId(1L);
-        //  todo [CLIENT] add client to projects
+        projectEntity.setClientId(clientResponseDto.getClientId());
         projectEntity.setStatus(Objects.nonNull(request.getStatus()) ? request.getStatus() : ProjectStatusEnum.PLANNED);
 
         projectEntity.setPaymentStatus(
@@ -548,7 +590,7 @@ public class ProjectServiceImpl implements ProjectService {
         projectDetailsResponseDto.setStartDate(projectSimpleReponseDto.getStartDate());
         projectDetailsResponseDto.setEndDate(projectSimpleReponseDto.getEndDate());
         projectDetailsResponseDto.setEvent(eventService.GetEvent(projectSimpleReponseDto.getEventId()));
-        //        projectDetailsResponseDto.setClient(); //todo [CLIENT] add when clients are included
+        projectDetailsResponseDto.setClient(clientService.getClientById(projectSimpleReponseDto.getClientId()));
         projectDetailsResponseDto.setStatus(projectSimpleReponseDto.getStatus());
         projectDetailsResponseDto.setPaymentStatus(projectSimpleReponseDto.getPaymentStatus());
         projectDetailsResponseDto.setProjectType(projectSimpleReponseDto.getProjectType());
