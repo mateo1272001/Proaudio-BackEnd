@@ -625,7 +625,10 @@ public class ProjectServiceImpl implements ProjectService {
 
         UserResponseDto userResponseDto = userService.findUserByEmail(AuthUtilsSerivce.getLoggedUserEmail());
 
-        return pdfService.generateProjectPdf(projectResponseDto, productsInProject, totalBudget, userResponseDto);
+        ClientResponseDto clientResponseDto = clientService.getClientById(projectResponseDto.getClientId());
+
+        return pdfService.generateProjectPdf(projectResponseDto, productsInProject, totalBudget, userResponseDto,
+                clientResponseDto);
     }
 
     private List<ProductProjectResponseForProjectDto> setProducts(List<ProjectProductRequestDto> productRequests,

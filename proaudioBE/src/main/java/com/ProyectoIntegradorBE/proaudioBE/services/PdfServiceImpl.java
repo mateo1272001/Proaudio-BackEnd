@@ -1,5 +1,6 @@
 package com.ProyectoIntegradorBE.proaudioBE.services;
 
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Client.ClientResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Project.ProductInProjectResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Project.ProjectSimpleReponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.User.UserResponseDto;
@@ -30,7 +31,7 @@ public class PdfServiceImpl implements PdfService {
     @Override
     public byte[] generateProjectPdf(ProjectSimpleReponseDto projectResponseDto,
                                      List<ProductInProjectResponseDto> productsInProject, BigDecimal totalBudget,
-                                     UserResponseDto userResponseDto) {
+                                     UserResponseDto userResponseDto, ClientResponseDto clientResponseDto) {
 
         //company information
         //todo MAKE INFORMATION DYNAMIC
@@ -43,7 +44,7 @@ public class PdfServiceImpl implements PdfService {
 
         //project data
         Map<String, Object> project = new HashMap<>();
-        project.put("clientName", "Empresa XYZ S.A.");
+        project.put("clientName", clientResponseDto.getName());
         project.put("eventName", projectResponseDto.getEvent().getName());
         project.put("ubication", projectResponseDto.getEvent().getAddress());
         project.put("paymentMethod", "TRANSFERENCIA");
