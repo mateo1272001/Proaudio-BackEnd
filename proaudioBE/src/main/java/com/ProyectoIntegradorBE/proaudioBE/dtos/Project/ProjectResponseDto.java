@@ -1,7 +1,7 @@
 package com.ProyectoIntegradorBE.proaudioBE.dtos.Project;
 
 
-import com.ProyectoIntegradorBE.proaudioBE.dtos.Client.ClientRequestDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Client.ClientResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Event.EventResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Expense.ExpenseResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.ItemResponseDto;
@@ -32,7 +32,7 @@ public class ProjectResponseDto {
 
     private EventResponseDto event;
 
-    private ClientRequestDto client;
+    private ClientResponseDto client;
 
     private ProjectStatusEnum status;
 

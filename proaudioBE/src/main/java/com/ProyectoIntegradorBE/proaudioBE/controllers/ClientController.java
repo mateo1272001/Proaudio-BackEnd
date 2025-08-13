@@ -1,23 +1,73 @@
 package com.ProyectoIntegradorBE.proaudioBE.controllers;
 
-import com.ProyectoIntegradorBE.proaudioBE.dtos.Client.ClientResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Client.*;
+import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ClientService;
+import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ProjectService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import com.ProyectoIntegradorBE.proaudioBE.services.ClientServiceImpl;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/client")
 public class ClientController {
 
-    private final ClientServiceImpl clientServiceImpl;
+    private final ClientService clientService;
+
+    private final ProjectService projectService;
+
+    @PostMapping
+    public ClientResponseDto createClient(@RequestBody ClientRequestDto clientRequestDto) {
+
+        return clientService.createClient(clientRequestDto);
+
+    }
+
+    @PutMapping("{id}")
+    public ClientResponseDto updateClient(@PathVariable Long id, @RequestBody ClientRequestDto clientRequestDto) {
+
+        return clientService.updateClient(id, clientRequestDto);
+
+    }
+
+    @DeleteMapping("{id}")
+    public ClientResponseDto updateClient(@PathVariable Long id) {
+
+        List<ProjectParticipatedResponseDto> projects = projectService.getProjectsByClient(id);
+
+        return clientService.deleteClient(id, projects);
+
+    }
 
     @GetMapping("/{id}")
-    public ClientResponseDto GetClientById(@PathVariable Long id) throws Exception {
-        return clientServiceImpl.getClientById(id);
+    public ClientResponseDto getClientById(@PathVariable Long id) {
+
+        return clientService.getClientById(id);
+
+    }
+
+    @GetMapping("/list")
+    public ClientListResponseDto getClientList(@RequestParam(required = false, defaultValue = "id") String sortBy,
+                                               @RequestParam(required = false) String direction,
+                                               @RequestParam(defaultValue = "0") Integer page,
+                                               @RequestParam(defaultValue = "10") Integer size,
+                                               @RequestParam(required = false) String status,
+                                               @RequestParam(required = false) String name) {
+
+        return clientService.getClientList(sortBy, direction, page, size, status, name);
+
+    }
+
+    @GetMapping("/{id}/details")
+    public ClientDetailsResponseDto getClientDetails(@PathVariable Long id) {
+
+        ClientResponseDto clientResponseDto = clientService.getClientById(id);
+
+        List<ProjectParticipatedResponseDto> projectParticipatedResponseDtos = projectService.getProjectsByClient(id);
+
+        return clientService.getClientDetails(clientResponseDto, projectParticipatedResponseDtos);
+
     }
 
 }

@@ -1,25 +1,20 @@
 package com.ProyectoIntegradorBE.proaudioBE.dtos.Client;
 
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.PageableDto;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import jakarta.annotation.Nullable;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
+import java.util.List;
+
+@AllArgsConstructor
 @Data
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class ClientRequestDto {
+public class ClientListResponseDto {
 
-    @Nullable
-    private Long clientId;
+    private List<ClientResponseDto> clients;
 
-    private String name;
-
-    private String phoneNumber;
-
-    private String email;
-
-    private String address;
-
-    private String details;
+    private PageableDto pageable;
 
 }

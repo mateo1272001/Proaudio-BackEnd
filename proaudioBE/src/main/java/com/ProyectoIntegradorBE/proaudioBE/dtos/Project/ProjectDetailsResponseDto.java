@@ -1,5 +1,6 @@
 package com.ProyectoIntegradorBE.proaudioBE.dtos.Project;
 
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Client.ClientResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Event.EventResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Expense.ExpenseResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.ItemProject.ItemProjectResponseIntDto;
@@ -30,7 +31,7 @@ public class ProjectDetailsResponseDto {
 
     private EventResponseDto event;
 
-    //    private ClientResponseDto client; todo [CLIENT] add client to response
+    private ClientResponseDto client;
 
     private ProjectStatusEnum status;
 

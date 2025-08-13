@@ -13,7 +13,7 @@ import java.util.Collections;
 
 @RequiredArgsConstructor
 @Service
-public class CustomUserDetailsService implements UserDetailsService {
+public class CustomUserDetailsService implements UserDetailsService { //TODO DELETE
 
     private final UserRepository userRepository;
 
