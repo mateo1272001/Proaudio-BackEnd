@@ -9,6 +9,7 @@ import lombok.Data;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class EventRequestDto {
 
+    @Nullable
     private Long eventId;
 
     private String name;

@@ -208,8 +208,20 @@ public class ProjectServiceImpl implements ProjectService {
             entityResponse.setEndDate(request.getEndDate());
         }
 
+        //Event validation
+        if (Objects.isNull(request.getEvent().getEventId())) {
 
-        if (Objects.nonNull(request.getEvent().getEventId())) {
+            if (Objects.isNull(request.getEvent())) {
+                throw new BadRequestException("¡El proyecto debe tener un evento!");
+            }
+            if (!statusIsUpdatable) {
+                throw new BadRequestException("¡El evento solo se puede modificar si el projecto aún no empieza!");
+            }
+
+            EventResponseDto eventResponseDto = eventService.CreateEvent(request.getEvent());
+            entityResponse.setEventId(eventResponseDto.getEventId());
+
+        } else {
             Long requestEventId = request.getEvent().getEventId();
 
             if (!requestEventId.equals(projectResponseDto.getEventId())) {
@@ -219,13 +231,51 @@ public class ProjectServiceImpl implements ProjectService {
                 EventResponseDto eventResponseDto = eventService.GetEvent(requestEventId);
                 entityResponse.setEventId(eventResponseDto.getEventId());
             }
+        }
+        //        if (Objects.nonNull(request.getEvent().getEventId())) {
+        //            Long requestEventId = request.getEvent().getEventId();
+        //
+        //            if (!requestEventId.equals(projectResponseDto.getEventId())) {
+        //                if (!statusIsUpdatable) {
+        //                    throw new BadRequestException("El evento solo se puede modificar si el projecto aún no empieza!");
+        //                }
+        //                EventResponseDto eventResponseDto = eventService.GetEvent(requestEventId);
+        //                entityResponse.setEventId(eventResponseDto.getEventId());
+        //            }
+        //
+        //        } else {
+        //            if (!statusIsUpdatable) {
+        //                throw new BadRequestException("El evento solo se puede modificar si el projecto aún no empieza!");
+        //            }
+        //            EventResponseDto eventResponseDto = eventService.CreateEvent(request.getEvent());
+        //            entityResponse.setEventId(eventResponseDto.getEventId());
+        //        }
 
-        } else {
+        if (Objects.nonNull(request.getClient().getClientId())) {
+
+            if (Objects.isNull(request.getClient())) {
+                throw new BadRequestException("¡El proyecto debe tener un cliente!");
+            }
             if (!statusIsUpdatable) {
                 throw new BadRequestException("El evento solo se puede modificar si el projecto aún no empieza!");
             }
-            EventResponseDto eventResponseDto = eventService.CreateEvent(request.getEvent());
-            entityResponse.setEventId(eventResponseDto.getEventId());
+
+            ClientResponseDto clientResponseDto = clientService.createClient(request.getClient());
+            entityResponse.setClientId(clientResponseDto.getClientId());
+
+        } else {
+            Long requestClientId = request.getClient().getClientId();
+
+            if (!requestClientId.equals(projectResponseDto.getClientId())) {
+                if (!statusIsUpdatable) {
+                    throw new BadRequestException("El cliente solo se puede modificar si el projecto aún no empieza!");
+                }
+                ClientResponseDto clientResponseDto = clientService.getClientById(requestClientId);
+                if (clientResponseDto.getStatus().equals(BasicEnumStatus.DISABLED)) {
+                    throw new BadRequestException("¡Este cliente no está disponible!");
+                }
+                entityResponse.setClientId(clientResponseDto.getClientId());
+            }
         }
 
 
