@@ -237,6 +237,9 @@ public class ProjectServiceImpl implements ProjectService {
                     throw new BadRequestException("El cliente solo se puede modificar si el projecto aún no empieza!");
                 }
                 ClientResponseDto clientResponseDto = clientService.getClientById(requestClientId);
+                if (clientResponseDto.getStatus().equals(BasicEnumStatus.DISABLED)) {
+                    throw new BadRequestException("¡Este cliente no está disponible!");
+                }
                 entityResponse.setClientId(clientResponseDto.getClientId());
             }
 
@@ -260,11 +263,26 @@ public class ProjectServiceImpl implements ProjectService {
                 .orElseThrow(() -> new BadRequestException("Project con ID no encontrado: " + id));
 
         EventResponseDto event = eventService.GetEvent(projectEntity.getEventId());
+        ClientResponseDto client = getClientById(projectEntity);
 
         ProjectSimpleReponseDto projectSimpleReponseDto = projectMapper.toDto(projectEntity);
         projectSimpleReponseDto.setEvent(event);
+        projectSimpleReponseDto.setClient(client);
 
         return projectSimpleReponseDto;
+    }
+
+    private ClientResponseDto getClientById(ProjectEntity projectEntity) {
+
+        try {
+
+            return clientService.getClientById(projectEntity.getClientId());
+
+        } catch (BadRequestException ex) {
+
+            return null;
+
+        }
     }
 
     @Override
