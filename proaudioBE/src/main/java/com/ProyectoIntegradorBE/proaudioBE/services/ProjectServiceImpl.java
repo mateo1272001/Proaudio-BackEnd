@@ -251,7 +251,7 @@ public class ProjectServiceImpl implements ProjectService {
         //            entityResponse.setEventId(eventResponseDto.getEventId());
         //        }
 
-        if (Objects.nonNull(request.getClient().getClientId())) {
+        if (Objects.isNull(request.getClient().getClientId())) {
 
             if (Objects.isNull(request.getClient())) {
                 throw new BadRequestException("¡El proyecto debe tener un cliente!");
