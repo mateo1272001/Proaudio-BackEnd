@@ -209,11 +209,12 @@ public class ProjectServiceImpl implements ProjectService {
         }
 
         //Event validation
+        if (Objects.isNull(request.getEvent())) {
+            throw new BadRequestException("¡El proyecto debe tener un evento!");
+        }
+
         if (Objects.isNull(request.getEvent().getEventId())) {
 
-            if (Objects.isNull(request.getEvent())) {
-                throw new BadRequestException("¡El proyecto debe tener un evento!");
-            }
             if (!statusIsUpdatable) {
                 throw new BadRequestException("¡El evento solo se puede modificar si el projecto aún no empieza!");
             }
@@ -232,30 +233,14 @@ public class ProjectServiceImpl implements ProjectService {
                 entityResponse.setEventId(eventResponseDto.getEventId());
             }
         }
-        //        if (Objects.nonNull(request.getEvent().getEventId())) {
-        //            Long requestEventId = request.getEvent().getEventId();
-        //
-        //            if (!requestEventId.equals(projectResponseDto.getEventId())) {
-        //                if (!statusIsUpdatable) {
-        //                    throw new BadRequestException("El evento solo se puede modificar si el projecto aún no empieza!");
-        //                }
-        //                EventResponseDto eventResponseDto = eventService.GetEvent(requestEventId);
-        //                entityResponse.setEventId(eventResponseDto.getEventId());
-        //            }
-        //
-        //        } else {
-        //            if (!statusIsUpdatable) {
-        //                throw new BadRequestException("El evento solo se puede modificar si el projecto aún no empieza!");
-        //            }
-        //            EventResponseDto eventResponseDto = eventService.CreateEvent(request.getEvent());
-        //            entityResponse.setEventId(eventResponseDto.getEventId());
-        //        }
+
+        //client validation
+        if (Objects.isNull(request.getClient())) {
+            throw new BadRequestException("¡El proyecto debe tener un cliente!");
+        }
 
         if (Objects.isNull(request.getClient().getClientId())) {
 
-            if (Objects.isNull(request.getClient())) {
-                throw new BadRequestException("¡El proyecto debe tener un cliente!");
-            }
             if (!statusIsUpdatable) {
                 throw new BadRequestException("El evento solo se puede modificar si el projecto aún no empieza!");
             }
@@ -276,29 +261,6 @@ public class ProjectServiceImpl implements ProjectService {
                 }
                 entityResponse.setClientId(clientResponseDto.getClientId());
             }
-        }
-
-
-        if (Objects.nonNull(request.getClient().getClientId())) {
-            Long requestClientId = request.getClient().getClientId();
-
-            if (!requestClientId.equals(projectResponseDto.getClientId())) {
-                if (!statusIsUpdatable) {
-                    throw new BadRequestException("El cliente solo se puede modificar si el projecto aún no empieza!");
-                }
-                ClientResponseDto clientResponseDto = clientService.getClientById(requestClientId);
-                if (clientResponseDto.getStatus().equals(BasicEnumStatus.DISABLED)) {
-                    throw new BadRequestException("¡Este cliente no está disponible!");
-                }
-                entityResponse.setClientId(clientResponseDto.getClientId());
-            }
-
-        } else {
-            if (!statusIsUpdatable) {
-                throw new BadRequestException("El evento solo se puede modificar si el projecto aún no empieza!");
-            }
-            ClientResponseDto clientResponseDto = clientService.createClient(request.getClient());
-            entityResponse.setClientId(clientResponseDto.getClientId());
         }
 
         projectRepository.save(entityResponse);
