@@ -9,6 +9,7 @@ import com.ProyectoIntegradorBE.proaudioBE.entities.UserEntity;
 import com.ProyectoIntegradorBE.proaudioBE.enums.BasicEnumStatus;
 import org.springframework.http.ResponseEntity;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface UserService {
@@ -24,4 +25,8 @@ public interface UserService {
     ResponseEntity<?> resetPassword(ResetPasswordDto resetRequest);
 
     ResponseEntity<?> changePassword(ChangePasswordDto changePasswordDto);
+
+    List<UserResponseDto> findActiveUsers();
+
+    UserEntity getLoggedUser();
 }

@@ -57,12 +57,7 @@ public class ItemProjectServiceImpl implements ItemProjectService {
                                                     List<ProductProjectWithModelResponseDto> productProjectWithModelResponseDtos) {
 
         ItemProjectEntity itemProjectEntity = new ItemProjectEntity();
-        //        Optional<ItemProjectEntity> itemProjectOpt =
-        //                itemProjectRepository.findByItemIdAndProjectId(itemResponseDto.getItemId(),
-        //                        projectSimpleReponseDto.getProjectId());
-        //        if (itemProjectOpt.isPresent()) {
-        //            itemProjectEntity = checkIfDeletionIsSuggested(projectSimpleReponseDto, itemProjectOpt);
-        //        }
+
         checkIfItemLimitIsSurpassed(itemResponseDto, projectId, productProjectWithModelResponseDtos, null);
 
         itemProjectEntity.setItemId(itemResponseDto.getItemId());
@@ -94,7 +89,7 @@ public class ItemProjectServiceImpl implements ItemProjectService {
         }
 
         if (itemProjectEntityList.size() >= amountOfProducts) {
-            throw new BadRequestException("¡Ya se alcanzó la cantidad de artículos necesarios!");
+            throw new BadRequestException("¡Ya se alcanzó la cantidad de artículos necesarios de este producto!");
         }
     }
 
@@ -103,10 +98,7 @@ public class ItemProjectServiceImpl implements ItemProjectService {
                                                           ProjectSimpleReponseDto projectSimpleReponseDto,
                                                           ItemProjectStatus itemProjectStatus,
                                                           ItemProjectResponseDto itemProjectResponseDto) {
-        //        ItemProjectEntity itemProjectEntity =
-        //                itemProjectRepository.findByItemIdAndProjectIdAndStatusIn(itemResponseDto.getItemId(),
-        //                                projectSimpleReponseDto.getProjectId(), List.of(ItemProjectStatus.ENABLED))
-        //                        .orElseThrow(() -> new BadRequestException("¡Este artículo no se encuentra en este proyecto!"));
+
         ItemProjectEntity itemProjectEntity = new ItemProjectEntity();
         itemProjectEntity.setItemProjectId(itemProjectResponseDto.getItemProjectId());
         itemProjectEntity.setItemId(itemResponseDto.getItemId());
