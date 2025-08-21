@@ -4,6 +4,7 @@ import com.ProyectoIntegradorBE.proaudioBE.entities.ItemEntity;
 import com.ProyectoIntegradorBE.proaudioBE.enums.ItemStatusEnum;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
@@ -19,4 +20,12 @@ public interface ItemRepository extends CrudRepository<ItemEntity, Long>, JpaRep
     List<ItemEntity> findByProductIdAndStatusIn(Long productId, List<ItemStatusEnum> itemStatusEnums);
 
     Optional<ItemEntity> findByItemId(Long id);
+
+    @Query(value = """
+            SELECT i.*
+            FROM item i
+            INNER JOIN item_project ip ON (i.item_id = ip.item_id)
+            WHERE ip.project_id = :projectId AND ip.status = :itemProjectStatus AND i.status IN (:itemStatuses)
+            """, nativeQuery = true)
+    List<ItemEntity> findByProjectIdAndStatus(Long projectId, String itemProjectStatus, List<String> itemStatuses);
 }

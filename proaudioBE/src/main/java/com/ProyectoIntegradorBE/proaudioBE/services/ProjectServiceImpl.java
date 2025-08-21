@@ -1,11 +1,14 @@
 package com.ProyectoIntegradorBE.proaudioBE.services;
 
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Client.ClientResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Client.ProjectParticipatedResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Event.EventResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Expense.ExpenseRequestDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Expense.ExpenseResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.GeneralParmeters.GeneralParameterResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.ItemResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.ItemProject.ItemProjectResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Notifications.NotificationRequestDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.PageableDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.PriceReponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.ProductResponseDto;
@@ -13,7 +16,9 @@ import com.ProyectoIntegradorBE.proaudioBE.dtos.ProductProject.ProductProjectReq
 import com.ProyectoIntegradorBE.proaudioBE.dtos.ProductProject.ProductProjectWithModelResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Project.*;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.User.UserResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.entities.ItemEntity;
 import com.ProyectoIntegradorBE.proaudioBE.entities.ItemProjectEntity;
+import com.ProyectoIntegradorBE.proaudioBE.entities.NotificationEntity;
 import com.ProyectoIntegradorBE.proaudioBE.entities.ProjectEntity;
 import com.ProyectoIntegradorBE.proaudioBE.enums.*;
 import com.ProyectoIntegradorBE.proaudioBE.exceptions.BadRequestException;
@@ -32,7 +37,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.thymeleaf.TemplateEngine;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -43,11 +47,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+import static com.ProyectoIntegradorBE.proaudioBE.Utils.AppConstants.*;
+
 @Service
 @RequiredArgsConstructor
 public class ProjectServiceImpl implements ProjectService {
-
-    private final TemplateEngine templateEngine;
 
     private final EventService eventService;
 
@@ -71,27 +75,24 @@ public class ProjectServiceImpl implements ProjectService {
 
     private final PdfService pdfService;
 
-    private final ProjectMapper projectMapper;
+    private final ClientService clientService;
 
-    public static final List<ProjectStatusEnum> PROJECT_STARTED_STATUS =
-            List.of(ProjectStatusEnum.ON_COURSE, ProjectStatusEnum.EXPIRED, ProjectStatusEnum.COMPLETED);
+    private final NotificationService notificationService;
+
 
     private final ProjectRepository projectRepository;
 
-    private final List<ProjectStatusEnum> UPDATE_STATUSES =
-            List.of(ProjectStatusEnum.PLANNED, ProjectStatusEnum.CONFIRMED, ProjectStatusEnum.DISCARDED);
 
-    private final String KM_PARAMETER = "km_cost";
-    public static final List<ProjectStatusEnum> PROJECT_NOT_STARTED_STATUS =
-            List.of(ProjectStatusEnum.PLANNED, ProjectStatusEnum.CONFIRMED, ProjectStatusEnum.DISCARDED);
-    public static final List<ProjectStatusEnum> EXIT_POSSIBLE_STATUS =
-            List.of(ProjectStatusEnum.ON_COURSE, ProjectStatusEnum.CONFIRMED);
+    private final ProjectMapper projectMapper;
+
     private final ItemProjectMapper itemProjectMapper;
+
 
     private static ProjectResponseDto makeProjectResponseDto(ProjectRequestDto request, ProjectEntity projectEntity,
                                                              EventResponseDto eventResponseDto,
                                                              List<ProductProjectResponseForProjectDto> products,
-                                                             List<ExpenseResponseDto> expenses) {
+                                                             List<ExpenseResponseDto> expenses,
+                                                             ClientResponseDto clientResponseDto) {
         ProjectResponseDto projectResponseDto = new ProjectResponseDto();
         projectResponseDto.setProjectId(projectEntity.getProjectId());
         projectResponseDto.setName(projectEntity.getName());
@@ -99,7 +100,7 @@ public class ProjectServiceImpl implements ProjectService {
         projectResponseDto.setStartDate(projectEntity.getStartDate());
         projectResponseDto.setEndDate(projectEntity.getEndDate());
         projectResponseDto.setEvent(eventResponseDto);
-        projectResponseDto.setClient(null); //todo [CLIENT] add client
+        projectResponseDto.setClient(clientResponseDto);
         projectResponseDto.setStatus(projectEntity.getStatus());
         projectResponseDto.setPaymentStatus(projectEntity.getPaymentStatus());
         projectResponseDto.setProjectType(projectEntity.getProjectType());
@@ -116,7 +117,9 @@ public class ProjectServiceImpl implements ProjectService {
 
         EventResponseDto eventResponseDto = getOrCreateEvent(request);
 
-        ProjectEntity projectEntity = setProjectEntity(request, eventResponseDto);
+        ClientResponseDto clientResponseDto = getOrCreateClient(request);
+
+        ProjectEntity projectEntity = setProjectEntity(request, eventResponseDto, clientResponseDto);
 
         projectEntity = projectRepository.save(projectEntity);
 
@@ -130,7 +133,25 @@ public class ProjectServiceImpl implements ProjectService {
             expenses = setExpenses(request.getExpenses(), projectEntity.getProjectId());
         }
 
-        return makeProjectResponseDto(request, projectEntity, eventResponseDto, products, expenses);
+        return makeProjectResponseDto(request, projectEntity, eventResponseDto, products, expenses, clientResponseDto);
+    }
+
+    private ClientResponseDto getOrCreateClient(ProjectRequestDto request) {
+
+        if (Objects.nonNull(request.getClient().getClientId())) {
+
+            ClientResponseDto clientResponseDto = clientService.getClientById(request.getClient().getClientId());
+
+            if (clientResponseDto.getStatus().equals(BasicEnumStatus.DISABLED)) {
+                throw new BadRequestException("¡Este cliente no está activo!");
+            }
+
+            return clientResponseDto;
+
+        } else {
+            return clientService.createClient(request.getClient());
+        }
+
     }
 
     private EventResponseDto getOrCreateEvent(ProjectRequestDto request) {
@@ -144,7 +165,7 @@ public class ProjectServiceImpl implements ProjectService {
         ProjectSimpleReponseDto projectResponseDto = getProject(id);
 
         ProjectStatusEnum statusEnum = projectResponseDto.getStatus();
-        boolean statusIsUpdatable = UPDATE_STATUSES.contains(statusEnum);
+        boolean statusIsUpdatable = MANUALLY_UPDATETABLE_STATUSES.contains(statusEnum);
 
         ProjectEntity entityResponse = new ProjectEntity();
 
@@ -183,8 +204,21 @@ public class ProjectServiceImpl implements ProjectService {
             entityResponse.setEndDate(request.getEndDate());
         }
 
-        if (Objects.nonNull(request.getEvent().getEventId())) {
-            entityResponse.setEventId(projectResponseDto.getEventId());
+        //Event validation
+        if (Objects.isNull(request.getEvent())) {
+            throw new BadRequestException("¡El proyecto debe tener un evento!");
+        }
+
+        if (Objects.isNull(request.getEvent().getEventId())) {
+
+            if (!statusIsUpdatable) {
+                throw new BadRequestException("¡El evento solo se puede modificar si el projecto aún no empieza!");
+            }
+
+            EventResponseDto eventResponseDto = eventService.CreateEvent(request.getEvent());
+            entityResponse.setEventId(eventResponseDto.getEventId());
+
+        } else {
             Long requestEventId = request.getEvent().getEventId();
 
             if (!requestEventId.equals(projectResponseDto.getEventId())) {
@@ -194,18 +228,40 @@ public class ProjectServiceImpl implements ProjectService {
                 EventResponseDto eventResponseDto = eventService.GetEvent(requestEventId);
                 entityResponse.setEventId(eventResponseDto.getEventId());
             }
+        }
 
-        } else {
+        //client validation
+        if (Objects.isNull(request.getClient())) {
+            throw new BadRequestException("¡El proyecto debe tener un cliente!");
+        }
+
+        if (Objects.isNull(request.getClient().getClientId())) {
+
             if (!statusIsUpdatable) {
                 throw new BadRequestException("El evento solo se puede modificar si el projecto aún no empieza!");
             }
-            EventResponseDto eventResponseDto = eventService.CreateEvent(request.getEvent());
-            entityResponse.setEventId(eventResponseDto.getEventId());
+
+            ClientResponseDto clientResponseDto = clientService.createClient(request.getClient());
+            entityResponse.setClientId(clientResponseDto.getClientId());
+
+        } else {
+            Long requestClientId = request.getClient().getClientId();
+
+            if (!requestClientId.equals(projectResponseDto.getClientId())) {
+                if (!statusIsUpdatable) {
+                    throw new BadRequestException("El cliente solo se puede modificar si el projecto aún no empieza!");
+                }
+                ClientResponseDto clientResponseDto = clientService.getClientById(requestClientId);
+                if (clientResponseDto.getStatus().equals(BasicEnumStatus.DISABLED)) {
+                    throw new BadRequestException("¡Este cliente no está disponible!");
+                }
+                entityResponse.setClientId(clientResponseDto.getClientId());
+            }
         }
 
-        entityResponse.setClientId(projectResponseDto.getClientId()); //todo [CLIENT] add client update
+        ProjectEntity projectEntity = projectRepository.save(entityResponse);
 
-        projectRepository.save(entityResponse);
+        solvePaymentNeededNotification(projectEntity);
 
         return projectMapper.toDto(entityResponse);
     }
@@ -217,11 +273,26 @@ public class ProjectServiceImpl implements ProjectService {
                 .orElseThrow(() -> new BadRequestException("Project con ID no encontrado: " + id));
 
         EventResponseDto event = eventService.GetEvent(projectEntity.getEventId());
+        ClientResponseDto client = getClientById(projectEntity);
 
         ProjectSimpleReponseDto projectSimpleReponseDto = projectMapper.toDto(projectEntity);
         projectSimpleReponseDto.setEvent(event);
+        projectSimpleReponseDto.setClient(client);
 
         return projectSimpleReponseDto;
+    }
+
+    private ClientResponseDto getClientById(ProjectEntity projectEntity) {
+
+        try {
+
+            return clientService.getClientById(projectEntity.getClientId());
+
+        } catch (BadRequestException ex) {
+
+            return null;
+
+        }
     }
 
     @Override
@@ -399,21 +470,40 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     private ProjectStatusEnum calculateFromStatusExpired(ProjectEntity projectEntity) {
-        if (projectEntity.getStartDate().isAfter(LocalDateTime.now())) {
-            return ProjectStatusEnum.COMPLETED;
+        if (allItemsReturned(projectEntity.getProjectId())) {
+
+            return actionsOnSettingStatusCompleted(projectEntity);
+
         } else {
             return ProjectStatusEnum.EXPIRED;
         }
     }
 
+    private ProjectStatusEnum actionsOnSettingStatusCompleted(ProjectEntity projectEntity) {
+        sendPaymentNeededNotification(projectEntity);
+        sendProjectNotificationCompleted(projectEntity);
+
+        return ProjectStatusEnum.COMPLETED;
+    }
+
 
     private ProjectStatusEnum calculateFromStatusOnCourse(ProjectEntity projectEntity) {
         if (LocalDateTime.now().isAfter(projectEntity.getEndDate())) {
-            if (true == true) { //todo [PROJECT] add validation for returned items
-                return ProjectStatusEnum.EXPIRED;
+
+            if (allItemsReturned(projectEntity.getProjectId())) {
+
+                return actionsOnSettingStatusCompleted(projectEntity);
+
             } else {
-                return ProjectStatusEnum.COMPLETED;
+
+                sendPaymentNeededNotification(projectEntity);
+                sendProjectNotification(PROJECT_EXPIRED_TITLE, PROJECT_EXPIRED_BODY.formatted(projectEntity.getName()),
+                        false, null, NotificationTypeEnum.PROJECT, projectEntity.getProjectId(),
+                        RETURN_ITEMS_NOTIFICATION_ACTION);
+
+                return ProjectStatusEnum.EXPIRED;
             }
+
         } else {
             return ProjectStatusEnum.ON_COURSE;
         }
@@ -421,7 +511,13 @@ public class ProjectServiceImpl implements ProjectService {
 
     private ProjectStatusEnum calculateFromStatusConfirmed(ProjectEntity projectEntity) {
         if (LocalDateTime.now().isAfter(projectEntity.getStartDate())) {
+
+            sendProjectNotification(PROJECT_STARTED_TITLE, PROJECT_STARTED_BODY.formatted(projectEntity.getName()),
+                    false, null, NotificationTypeEnum.PROJECT, projectEntity.getProjectId(),
+                    SEND_ITEMS_NOTIFICATION_ACTION);
+
             return ProjectStatusEnum.ON_COURSE;
+
         } else {
             return ProjectStatusEnum.CONFIRMED;
         }
@@ -429,13 +525,19 @@ public class ProjectServiceImpl implements ProjectService {
 
     private ProjectStatusEnum calculateFromStatusPlanned(ProjectEntity projectEntity) {
         if (LocalDateTime.now().isAfter(projectEntity.getStartDate())) {
+
+            sendProjectNotification(PROJECT_DISCARDED_TITLE, PROJECT_DISCARDED_BODY.formatted(projectEntity.getName()),
+                    true, null, NotificationTypeEnum.PROJECT, projectEntity.getProjectId(),
+                    NOT_REQUIRED_NOTIFICATION_ACTION);
+
             return ProjectStatusEnum.DISCARDED;
         } else {
             return ProjectStatusEnum.PLANNED;
         }
     }
 
-    private ProjectEntity setProjectEntity(ProjectRequestDto request, EventResponseDto eventResponseDto) {
+    private ProjectEntity setProjectEntity(ProjectRequestDto request, EventResponseDto eventResponseDto,
+                                           ClientResponseDto clientResponseDto) {
 
         if (request.getStartDate().isAfter(request.getEndDate())) {
             throw new BadRequestException("¡La fecha de fin no puede ser anterior a la fecha de inicio!");
@@ -447,8 +549,7 @@ public class ProjectServiceImpl implements ProjectService {
         projectEntity.setStartDate(request.getStartDate());
         projectEntity.setEndDate(request.getEndDate());
         projectEntity.setEventId(eventResponseDto.getEventId());
-        projectEntity.setClientId(1L);
-        //  todo [CLIENT] add client to projects
+        projectEntity.setClientId(clientResponseDto.getClientId());
         projectEntity.setStatus(Objects.nonNull(request.getStatus()) ? request.getStatus() : ProjectStatusEnum.PLANNED);
 
         projectEntity.setPaymentStatus(
@@ -547,7 +648,7 @@ public class ProjectServiceImpl implements ProjectService {
         projectDetailsResponseDto.setStartDate(projectSimpleReponseDto.getStartDate());
         projectDetailsResponseDto.setEndDate(projectSimpleReponseDto.getEndDate());
         projectDetailsResponseDto.setEvent(eventService.GetEvent(projectSimpleReponseDto.getEventId()));
-        //        projectDetailsResponseDto.setClient(); //todo [CLIENT] add when clients are included
+        projectDetailsResponseDto.setClient(clientService.getClientById(projectSimpleReponseDto.getClientId()));
         projectDetailsResponseDto.setStatus(projectSimpleReponseDto.getStatus());
         projectDetailsResponseDto.setPaymentStatus(projectSimpleReponseDto.getPaymentStatus());
         projectDetailsResponseDto.setProjectType(projectSimpleReponseDto.getProjectType());
@@ -582,7 +683,10 @@ public class ProjectServiceImpl implements ProjectService {
 
         UserResponseDto userResponseDto = userService.findUserByEmail(AuthUtilsSerivce.getLoggedUserEmail());
 
-        return pdfService.generateProjectPdf(projectResponseDto, productsInProject, totalBudget, userResponseDto);
+        ClientResponseDto clientResponseDto = clientService.getClientById(projectResponseDto.getClientId());
+
+        return pdfService.generateProjectPdf(projectResponseDto, productsInProject, totalBudget, userResponseDto,
+                clientResponseDto);
     }
 
     private List<ProductProjectResponseForProjectDto> setProducts(List<ProjectProductRequestDto> productRequests,
@@ -633,6 +737,8 @@ public class ProjectServiceImpl implements ProjectService {
         itemProjectResponseDto.setItemSerialNumber(itemResponseDto.getSerialNumber());
         itemProjectResponseDto.setProductId(itemResponseDto.getProductId());
         itemProjectResponseDto.setProductModel(itemProjectResponseDto.getProductModel());
+
+        solveSendNotification(idProject);
 
         return itemProjectResponseDto;
     }
@@ -737,7 +843,15 @@ public class ProjectServiceImpl implements ProjectService {
         ProductResponseDto productResponseDto = productService.GetProduct(itemResponseDto.getProductId());
         itemProjectResponseDto.setProductModel(productResponseDto.getModel());
 
+        solveReturnNotification(idProject);
+
         return itemProjectResponseDto;
+    }
+
+    @Override
+    public List<ProjectParticipatedResponseDto> getProjectsByClient(Long id) {
+
+        return projectRepository.findByClientId(id);
     }
 
     private BigDecimal getProductsBudget(ProjectSimpleReponseDto projectResponseDto,
@@ -774,4 +888,99 @@ public class ProjectServiceImpl implements ProjectService {
 
         return costPerKm.multiply(BigDecimal.valueOf(distance));
     }
+
+    private boolean allItemsReturned(Long projectId) {
+
+        List<ItemEntity> itemEntities = itemService.getByItemProject(projectId);
+
+        return itemEntities.stream().allMatch(i -> i.getLocation().equals(LocationEnum.IN_DEPOSIT));
+    }
+
+    private boolean allItemsExited(Long projectId) {
+
+        List<ItemEntity> itemEntities = itemService.getByItemProject(projectId);
+
+        List<ProductInProjectResponseDto> productsInProject =
+                productProjectService.getProductsInProject(projectId).getProducts();
+
+        Integer amountOfProducts = 0;
+
+        for (ProductInProjectResponseDto pp : productsInProject) {
+            amountOfProducts += pp.getAmount();
+        }
+
+        boolean itemsOutOfDeposit =
+                itemEntities.stream().noneMatch(i -> i.getLocation().equals(LocationEnum.IN_DEPOSIT));
+
+        return amountOfProducts.equals(itemEntities.size()) && itemsOutOfDeposit;
+    }
+
+    //notification methods -----------------------------------------------------------------
+
+    private void sendProjectNotification(String title, String body, Boolean isSolved, LocalDateTime expiresAt,
+                                         NotificationTypeEnum type, Long entityId, String action) {
+
+        NotificationRequestDto notificationRequestDto =
+                new NotificationRequestDto(title, body, isSolved, expiresAt, type, entityId, action);
+
+        List<UserResponseDto> users = userService.findActiveUsers();
+
+        notificationService.createNotificationAndLinkUsers(notificationRequestDto, users);
+    }
+
+    private List<NotificationEntity> getProjectNotificationsByIdAndAction(Long idProject, String action,
+                                                                          Boolean isSolved) {
+        return notificationService.findNotificationByActionAndEntity(NotificationTypeEnum.PROJECT, idProject, action,
+                isSolved);
+    }
+
+    private void sendPaymentNeededNotification(ProjectEntity projectEntity) {
+        if (!projectEntity.getPaymentStatus().equals(PaymentStatusEnum.PAID)) {
+            sendProjectNotification(PAYMENT_NEEDED_TITLE, PAYMENT_NEEDED_BODY.formatted(projectEntity.getName()), false,
+                    projectEntity.getEndDate(), NotificationTypeEnum.PROJECT, projectEntity.getProjectId(),
+                    PAY_PROJECT_NOTIFICATION_ACTION);
+        }
+    }
+
+    private void sendProjectNotificationCompleted(ProjectEntity projectEntity) {
+        sendProjectNotification(PROJECT_ENDED_TITLE, PROJECT_ENDED_CORRECTLY_BODY.formatted(projectEntity.getName()),
+                true, null, NotificationTypeEnum.PROJECT, projectEntity.getProjectId(),
+                NOT_REQUIRED_NOTIFICATION_ACTION);
+    }
+
+    private void solvePaymentNeededNotification(ProjectEntity projectEntity) {
+        List<NotificationEntity> notifications =
+                getProjectNotificationsByIdAndAction(projectEntity.getProjectId(), PAY_PROJECT_NOTIFICATION_ACTION,
+                        false);
+
+        if (!notifications.isEmpty() && projectEntity.getPaymentStatus().equals(PaymentStatusEnum.PAID)) {
+            notifications.forEach(n -> n.setIsSolved(true));
+            notificationService.update(notifications);
+        }
+    }
+
+    private void solveReturnNotification(Long idProject) {
+
+        List<NotificationEntity> notifications =
+                getProjectNotificationsByIdAndAction(idProject, RETURN_ITEMS_NOTIFICATION_ACTION, false);
+
+        if (!notifications.isEmpty() && allItemsReturned(idProject)) {
+            notifications.forEach(n -> n.setIsSolved(true));
+            notificationService.update(notifications);
+        }
+
+    }
+
+    private void solveSendNotification(Long idProject) {
+
+        List<NotificationEntity> notifications =
+                getProjectNotificationsByIdAndAction(idProject, SEND_ITEMS_NOTIFICATION_ACTION, false);
+
+        if (!notifications.isEmpty() && allItemsExited(idProject)) {
+            notifications.forEach(n -> n.setIsSolved(true));
+            notificationService.update(notifications);
+        }
+
+    }
+
 }

@@ -1,5 +1,6 @@
 package com.ProyectoIntegradorBE.proaudioBE.entities;
 
+import com.ProyectoIntegradorBE.proaudioBE.enums.BasicEnumStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -25,5 +26,9 @@ public class ClientEntity {
     private String address;
 
     private String details;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private BasicEnumStatus status;
 
 }

@@ -1,5 +1,6 @@
 package com.ProyectoIntegradorBE.proaudioBE.dtos.Project;
 
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Client.ClientResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Event.EventResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.enums.PaymentStatusEnum;
 import com.ProyectoIntegradorBE.proaudioBE.enums.ProjectStatusEnum;
@@ -40,6 +41,9 @@ public class ProjectSimpleReponseDto {
 
     @Nullable
     private EventResponseDto event;
+
+    @Nullable
+    private ClientResponseDto client;
 
 
 }
