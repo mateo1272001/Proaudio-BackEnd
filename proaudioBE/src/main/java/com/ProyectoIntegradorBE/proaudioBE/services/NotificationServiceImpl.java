@@ -40,6 +40,8 @@ public class NotificationServiceImpl implements NotificationService {
 
     private final UserService userService;
 
+    private final TypeDataService typeDataService;
+
     private final NotificationRepository notificationRepository;
 
     private final NotificationUserRepository notificationUserRepository;
@@ -207,6 +209,25 @@ public class NotificationServiceImpl implements NotificationService {
 
     }
 
+    private static NotificationDetailsResponseDto getNotificationDetailsResponseDto(
+            NotificationEntity notificationEntity, NotificationUserEntity notificationUserEntity,
+            ActionResponseDto actionResponseDto, List<TypeDataDto> typeData) {
+        NotificationDetailsResponseDto notificationDetailsResponseDto = new NotificationDetailsResponseDto();
+        notificationDetailsResponseDto.setNotificationId(notificationEntity.getNotificationId());
+        notificationDetailsResponseDto.setTitle(notificationEntity.getTitle());
+        notificationDetailsResponseDto.setDescription(notificationEntity.getDescription());
+        notificationDetailsResponseDto.setIsSolved(notificationEntity.getIsSolved());
+        notificationDetailsResponseDto.setIsSeen(notificationUserEntity.getIsRead());
+        notificationDetailsResponseDto.setCreatedAt(notificationEntity.getCreatedAt());
+        notificationDetailsResponseDto.setExpiresAt(notificationEntity.getExpiresAt());
+        notificationDetailsResponseDto.setType(notificationEntity.getType());
+        notificationDetailsResponseDto.setEntityId(notificationEntity.getEntityId());
+        notificationDetailsResponseDto.setAction(actionResponseDto);
+        notificationDetailsResponseDto.setTypeData(typeData);
+
+        return notificationDetailsResponseDto;
+    }
+
     @Override
     public NotificationDetailsResponseDto getNotificationDetails(Long id) {
 
@@ -222,19 +243,10 @@ public class NotificationServiceImpl implements NotificationService {
 
         ActionResponseDto actionResponseDto = actionService.getAction(notificationEntity.getActionId());
 
-        NotificationDetailsResponseDto notificationDetailsResponseDto = new NotificationDetailsResponseDto();
-        notificationDetailsResponseDto.setNotificationId(notificationEntity.getNotificationId());
-        notificationDetailsResponseDto.setTitle(notificationEntity.getTitle());
-        notificationDetailsResponseDto.setIsSolved(notificationEntity.getIsSolved());
-        notificationDetailsResponseDto.setIsSeen(notificationUserEntity.getIsRead());
-        notificationDetailsResponseDto.setCreatedAt(notificationEntity.getCreatedAt());
-        notificationDetailsResponseDto.setExpiresAt(notificationEntity.getExpiresAt());
-        notificationDetailsResponseDto.setType(notificationEntity.getType());
-        notificationDetailsResponseDto.setEntityId(notificationEntity.getEntityId());
-        notificationDetailsResponseDto.setAction(actionResponseDto);
-        //        notificationDetailsResponseDto.setTypeData();
+        List<TypeDataDto> typeData = typeDataService.build(notificationEntity);
 
-        return notificationDetailsResponseDto;
+        return getNotificationDetailsResponseDto(notificationEntity, notificationUserEntity, actionResponseDto,
+                typeData);
     }
 
 }
