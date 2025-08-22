@@ -61,8 +61,7 @@ public class ProductRepositoryCustomImpl implements ProductRepositoryCustom {
         boolean hasNext = pageNumber + 1 < totalPages;
         boolean hasPrevious = pageNumber > 0;
 
-        PageableDto pageable = PageableDto.builder()
-                .pageNumber(pageNumber + 1)
+        PageableDto pageable = PageableDto.builder().pageNumber(pageNumber)
                 .pageSize(pageSize)
                 .totalPages(totalPages)
                 .totalElements(totalElements)

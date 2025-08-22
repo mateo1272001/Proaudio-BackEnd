@@ -94,6 +94,10 @@ public class TagServiceImpl implements TagService {
 
     }
 
+    private void checkIfTagIsChildOfSelected(Long tagId, Long selectedId) {
+
+    }
+
     @Override
     public TagResponseDto deleteTag(Long id) throws BadRequestException {
 

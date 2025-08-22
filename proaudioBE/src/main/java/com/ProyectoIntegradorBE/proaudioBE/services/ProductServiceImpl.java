@@ -86,6 +86,10 @@ public class ProductServiceImpl implements ProductService {
     }
 
     private List<ProductTagResponseDto> CreateProductTags(ProductRequestDto productRequestDto, ProductEntity product) {
+        //
+        //        for (ProductTagRequestDto productTagRequestDto : productRequestDto.getTags()) {
+        //
+        //        }
 
         List<Long> tagIds = productRequestDto.getTags().stream().map(ProductTagRequestDto::getTagId).toList();
 

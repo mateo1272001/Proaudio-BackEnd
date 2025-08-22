@@ -93,7 +93,7 @@ public class ProductTagServiceImpl implements ProductTagService {
                                                          List<ProductTagRequestDto> productTags, Long productId)
             throws BadRequestException {
 
-        List<ProductTagResponseDto> tagResponseDtos = productTags.stream().map(tagRequest -> {
+        List<ProductTagResponseDto> response = productTags.stream().map(tagRequest -> {
             TagResponseDto tag = tags.stream()
                     .filter(t -> t.getTagId().equals(tagRequest.getTagId()))
                     .findFirst()
@@ -109,7 +109,7 @@ public class ProductTagServiceImpl implements ProductTagService {
         List<ProductTagEntity> productTagEntities = convertToEntities(productTags, productId, BasicEnumStatus.ENABLED);
         productTagRepository.saveAll(productTagEntities);
 
-        return tagResponseDtos;
+        return response;
     }
 
     private List<ProductTagEntity> convertToEntities(List<ProductTagRequestDto> dtoList, Long productId,
