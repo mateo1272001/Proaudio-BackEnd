@@ -20,8 +20,9 @@ public interface ProductService {
 
     ProductResponseDto GetProduct(Long productId);
 
-    ProductListResponseDto getFilteredProducts(List<Long> tags, String sortBy, String direction,
-                                               LocalDate startDate, LocalDate endDate, Integer page, Integer size) throws BadRequestException;
+    ProductListResponseDto getFilteredProducts(List<Long> tags, String sortBy, String direction, LocalDate startDate,
+                                               LocalDate endDate, Integer page, Integer size, String title)
+            throws BadRequestException;
 
     ProductDetailResponseDto GetProductDetails(Long id);
 

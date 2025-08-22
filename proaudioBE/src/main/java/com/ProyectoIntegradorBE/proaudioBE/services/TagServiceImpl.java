@@ -14,6 +14,7 @@ import com.ProyectoIntegradorBE.proaudioBE.repositories.TagRepository;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.TagService;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.util.InternalException;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -21,13 +22,18 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import static com.ProyectoIntegradorBE.proaudioBE.Utils.AppConstants.BRAND_TAG_KEY;
+
 @Service
 @RequiredArgsConstructor
 public class TagServiceImpl implements TagService {
 
     private final TagRepository tagRepository;
+
     private final TagMapper tagMapper;
+
     private final TagModuleMapper tagModuleMapper;
+
     private final ProductTagServiceImpl productTagService;
 
     @Override
@@ -94,7 +100,20 @@ public class TagServiceImpl implements TagService {
 
     }
 
-    private void checkIfTagIsChildOfSelected(Long tagId, Long selectedId) {
+    public Boolean checkIfTagIsChildOfSelected(Long tagId, Long selectedId) {
+
+        TagEntity currentTag = tagRepository.findById(tagId).orElseThrow(() -> new InternalException(
+                "Error interno chequeando si %s es hijo de %s".formatted(tagId, selectedId)));
+
+        if (Objects.isNull(currentTag.getFatherId())) {
+            return false;
+        }
+
+        if (currentTag.getFatherId().equals(selectedId)) {
+            return true;
+        }
+
+        return checkIfTagIsChildOfSelected(currentTag.getFatherId(), selectedId);
 
     }
 
@@ -195,6 +214,13 @@ public class TagServiceImpl implements TagService {
     public TagTypesResponseDto findTagTypes() {
 
         return new TagTypesResponseDto(Arrays.stream(TagTypeEnum.values()).toList());
+
+    }
+
+    public TagEntity findBrandRoot() {
+
+        return tagRepository.findByNameAndStatus(BRAND_TAG_KEY, BasicEnumStatus.ENABLED)
+                .orElseThrow(() -> new BadRequestException("No existe esta marca"));
 
     }
 }

@@ -1,6 +1,5 @@
 package com.ProyectoIntegradorBE.proaudioBE.repositories;
 
-import com.ProyectoIntegradorBE.proaudioBE.dtos.Tag.TagResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.entities.TagEntity;
 import com.ProyectoIntegradorBE.proaudioBE.enums.BasicEnumStatus;
 import org.springframework.data.jpa.repository.Query;
@@ -31,4 +30,6 @@ public interface TagRepository extends CrudRepository<TagEntity, Long> {
             "LIMIT 1;",
             nativeQuery = true)
     List<TagEntity> findByProductIdAndFatherId(Long productId, Long fatherId);
+
+    Optional<TagEntity> findByNameAndStatus(String brandTagKey, BasicEnumStatus basicEnumStatus);
 }

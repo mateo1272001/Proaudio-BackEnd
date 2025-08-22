@@ -46,8 +46,6 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductMapper productMapper;
 
-    private static final Long BRAND_TAG_FATHER = 1L;
-
     @Override
     @Transactional
     public ProductResponseDto createProduct(ProductRequestDto productRequestDto, MultipartFile[] files)
@@ -86,12 +84,27 @@ public class ProductServiceImpl implements ProductService {
     }
 
     private List<ProductTagResponseDto> CreateProductTags(ProductRequestDto productRequestDto, ProductEntity product) {
-        //
-        //        for (ProductTagRequestDto productTagRequestDto : productRequestDto.getTags()) {
-        //
-        //        }
 
-        List<Long> tagIds = productRequestDto.getTags().stream().map(ProductTagRequestDto::getTagId).toList();
+        List<Long> tagIds = new ArrayList<>();
+
+        Long brandTagId = tagService.findBrandRoot().getTagId();
+        boolean hasBrandSelected = false;
+
+        for (ProductTagRequestDto productTagRequestDto : productRequestDto.getTags()) {
+
+            Long productTagId = productTagRequestDto.getTagId();
+
+            tagIds.add(productTagId);
+
+            if (tagService.checkIfTagIsChildOfSelected(productTagId, brandTagId)) {
+                hasBrandSelected = true;
+            }
+        }
+
+        if (!hasBrandSelected) {
+            throw new BadRequestException("¡El producto debe tener una marca!");
+        }
+
 
         List<TagResponseDto> tagsFromRequest = tagService.findByTagIdIn(tagIds);
 
@@ -102,7 +115,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public ProductResponseDto UpdateProduct(ProductRequestDto productRequestDto, Long productId)
-            throws BadRequestException, BadRequestException {
+            throws BadRequestException {
 
         ProductEntity productEntity = productRepository.findById(productId)
                 .orElseThrow(() -> new BadRequestException("Product ID no encontrado: " + productId));
@@ -164,8 +177,8 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductListResponseDto getFilteredProducts(List<Long> tags, String sortBy, String direction,
-                                                      LocalDate startDate, LocalDate endDate,
-                                                      Integer page, Integer size) throws BadRequestException {
+                                                      LocalDate startDate, LocalDate endDate, Integer page,
+                                                      Integer size, String title) throws BadRequestException {
 
         ProductSortByEnum productSortByEnum;
         DirectionEnum directionEnum;
@@ -180,8 +193,10 @@ public class ProductServiceImpl implements ProductService {
             throw new BadRequestException("¡Valor de sort o direction incorrecto!");
         }
 
+        Long brandId = tagService.findBrandRoot().getTagId();
+
         return productRepository.findAllWithFilters(tags, productSortByEnum, directionEnum, startDate, endDate, page,
-                size);
+                size, title, brandId);
 
     }
 
@@ -198,7 +213,7 @@ public class ProductServiceImpl implements ProductService {
         response.setReplacementValue(product.getReplacementValue());
         response.setStatus(product.getStatus());
         try {
-            response.setBrand(tagService.findByProductIdAndFatherId(id, BRAND_TAG_FATHER).getName());
+            response.setBrand(tagService.findBrandRoot().getName());
         } catch (TagNotFoundException ex) {
             response.setBrand("");
         }
