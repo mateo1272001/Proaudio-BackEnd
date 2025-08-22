@@ -23,7 +23,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Objects;
 
-import static com.ProyectoIntegradorBE.proaudioBE.services.ProjectServiceImpl.CLIENT_CURRENTLY_PRESENT;
+import static com.ProyectoIntegradorBE.proaudioBE.Utils.AppConstants.CLIENT_CURRENTLY_PRESENT;
 
 @Service
 @RequiredArgsConstructor

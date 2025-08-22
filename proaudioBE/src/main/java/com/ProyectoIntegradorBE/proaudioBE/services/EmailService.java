@@ -1,9 +1,14 @@
 package com.ProyectoIntegradorBE.proaudioBE.services;
 
+import com.ProyectoIntegradorBE.proaudioBE.dtos.User.UserResponseDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class EmailService {
@@ -49,5 +54,28 @@ public class EmailService {
         message.setText(text);
         message.setFrom(MAIL_ADDRESS);
         mailSender.send(message);
+    }
+
+    @Async
+    public void sendSimpleEmailToMultipleDestinations(List<UserResponseDto> users, String subject, String text) {
+
+        for (UserResponseDto user : users) {
+
+            sendSimpleEmail(user.getEmail(), subject, text);
+
+        }
+
+    }
+
+    public void sendMultipleEmailsToUsers(Map<String, String> userMails, String title) {
+
+        userMails.forEach((mail, body) -> {
+
+            System.out.println("Enviando mail diario a: " + mail + " -> " + body);
+
+            sendSimpleEmail(mail, title, body);
+
+        });
+
     }
 }

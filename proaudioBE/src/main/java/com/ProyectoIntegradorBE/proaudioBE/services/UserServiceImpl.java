@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -154,6 +155,14 @@ public class UserServiceImpl implements UserService {
         return ResponseEntity.ok(Collections.singletonMap("message", "Contraseña actualizada exitosamente"));
     }
 
+    @Override
+    public List<UserResponseDto> findActiveUsers() {
+
+        List<UserEntity> userEntities = userRepository.findByStatus(BasicEnumStatus.ENABLED);
+
+        return userMapper.toListDto(userEntities);
+    }
+
     private void validatePassword(String newPassword) {
 
         if (StringUtils.isBlank(newPassword)) {
@@ -176,6 +185,12 @@ public class UserServiceImpl implements UserService {
             throw new BadRequestException("La contraseña debe contener al menos una minúscula");
         }
 
+    }
+
+    @Override
+    public UserEntity getLoggedUser() {
+        return userRepository.findByEmail(AuthUtilsSerivce.getLoggedUserEmail())
+                .orElseThrow(() -> new InternalException(""));
     }
 
 }

@@ -28,6 +28,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+import static com.ProyectoIntegradorBE.proaudioBE.Utils.AppConstants.ITEM_AVAILABLE_STATUS;
+
 @Service
 @RequiredArgsConstructor
 public class ItemServiceImpl implements ItemService {
@@ -275,6 +277,13 @@ public class ItemServiceImpl implements ItemService {
         itemEntity = itemRepository.save(itemEntity);
 
         return itemMapper.toDto(itemEntity);
+    }
+
+    @Override
+    public List<ItemEntity> getByItemProject(Long projectId) {
+
+        return itemRepository.findByProjectIdAndStatus(projectId, BasicEnumStatus.ENABLED.name(),
+                ITEM_AVAILABLE_STATUS.stream().map(Enum::name).toList());
     }
 
     private List<ItemStatusEnum> GetUsableStatuses() {
