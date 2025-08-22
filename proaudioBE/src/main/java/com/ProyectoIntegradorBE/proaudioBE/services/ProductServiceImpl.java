@@ -176,11 +176,8 @@ public class ProductServiceImpl implements ProductService {
             throw new BadRequestException("¡Valor de sort o direction incorrecto!");
         }
 
-        ProductListResponseDto productListResponseDto =
-                productRepository.findAllWithFilters(tags, productSortByEnum, directionEnum, startDate, endDate, page,
-                        size);
-
-        return productListResponseDto;
+        return productRepository.findAllWithFilters(tags, productSortByEnum, directionEnum, startDate, endDate, page,
+                size);
 
     }
 

@@ -30,7 +30,7 @@ public class ProductRepositoryCustomImpl implements ProductRepositoryCustom {
     ) {
         boolean hasTags = tagIds != null && !tagIds.isEmpty();
 
-        int pageNumber = (page != null ? page : 1) - 1;
+        int pageNumber = page != null ? page : 1;
         int pageSize = size != null ? size : 10;
         int offset = pageNumber * pageSize;
 
