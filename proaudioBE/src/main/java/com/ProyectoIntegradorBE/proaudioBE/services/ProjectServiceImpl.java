@@ -815,19 +815,26 @@ public class ProjectServiceImpl implements ProjectService {
                 ItemProjectStatus.ENABLED, itemProjectResponseDto);
     }
 
-    @Override
     @Transactional
-    public ItemProjectResponseDto singleItemReturn(Long idProject, Long idItem) {
+    @Override
+    public ItemProjectResponseDto singleItemReturnWithProjectId(Long idProject, Long idItem) {
 
         ItemProjectResponseDto itemProjectResponseDto =
                 itemProjectService.getItemProjectByProjectIdAndItemId(idProject, idItem);
 
+        return singleItemReturn(itemProjectResponseDto);
+    }
+
+    @Override
+    @Transactional
+    public ItemProjectResponseDto singleItemReturn(ItemProjectResponseDto itemProjectResponseDto) {
+        
         if (Objects.isNull(itemProjectResponseDto) ||
                 itemProjectResponseDto.getStatus().equals(ItemProjectStatus.DISABLED)) {
             throw new BadRequestException("¡El artículo no está en el proyecto!");
         }
 
-        ItemResponseDto itemResponseDto = itemService.getItem(idItem);
+        ItemResponseDto itemResponseDto = itemService.getItem(itemProjectResponseDto.getItemId());
 
         if (itemResponseDto.getLocation().equals(LocationEnum.IN_DEPOSIT)) {
             throw new BadRequestException("¡El artículo ya está en el depósito!");
@@ -843,7 +850,7 @@ public class ProjectServiceImpl implements ProjectService {
         ProductResponseDto productResponseDto = productService.GetProduct(itemResponseDto.getProductId());
         itemProjectResponseDto.setProductModel(productResponseDto.getModel());
 
-        solveReturnNotification(idProject);
+        solveReturnNotification(itemProjectResponseDto.getProjectId());
 
         return itemProjectResponseDto;
     }

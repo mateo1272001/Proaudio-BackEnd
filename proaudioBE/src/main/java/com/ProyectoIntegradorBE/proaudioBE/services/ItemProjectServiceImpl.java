@@ -94,6 +94,15 @@ public class ItemProjectServiceImpl implements ItemProjectService {
     }
 
     @Override
+    public ItemProjectResponseDto getLastItemProjectByItemId(Long idItem) {
+
+        ItemProjectEntity itemProjectEntity = itemProjectRepository.findLastProjectOfItem(idItem)
+                .orElseThrow(() -> new BadRequestException("¡El artículo no estuvo en ningún proyecto!"));
+
+        return itemProjectMapper.toDto(itemProjectEntity);
+    }
+
+    @Override
     public ItemProjectResponseDto changeStatusItemProject(ItemResponseDto itemResponseDto,
                                                           ProjectSimpleReponseDto projectSimpleReponseDto,
                                                           ItemProjectStatus itemProjectStatus,

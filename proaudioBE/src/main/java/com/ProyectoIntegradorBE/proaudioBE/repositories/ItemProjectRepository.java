@@ -49,4 +49,13 @@ public interface ItemProjectRepository extends CrudRepository<ItemProjectEntity,
     List<ItemProjectResponseIntDto> findAllItemsInProject(Long projectId, String status);
 
     ItemProjectEntity findByItemIdAndProjectId(Long itemId, Long projectId);
+
+    @Query(value = """
+            SELECT *
+            FROM item_project ip
+            WHERE ip.item_id = :idItem
+            ORDER BY 1 DESC
+            LIMIT 1
+            """, nativeQuery = true)
+    Optional<ItemProjectEntity> findLastProjectOfItem(Long idItem);
 }

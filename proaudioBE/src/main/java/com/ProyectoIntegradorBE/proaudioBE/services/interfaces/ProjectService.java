@@ -4,6 +4,7 @@ import com.ProyectoIntegradorBE.proaudioBE.dtos.Client.ProjectParticipatedRespon
 import com.ProyectoIntegradorBE.proaudioBE.dtos.ItemProject.ItemProjectResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Project.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -40,7 +41,10 @@ public interface ProjectService {
 
     ItemProjectResponseDto singleItemExit(Long idProject, Long idItem);
 
-    ItemProjectResponseDto singleItemReturn(Long idProject, Long idItem);
+    @Transactional
+    ItemProjectResponseDto singleItemReturnWithProjectId(Long idProject, Long idItem);
+
+    ItemProjectResponseDto singleItemReturn(ItemProjectResponseDto itemProjectResponseDto);
 
     List<ProjectParticipatedResponseDto> getProjectsByClient(Long id);
 

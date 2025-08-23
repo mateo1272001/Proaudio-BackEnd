@@ -28,4 +28,5 @@ public interface ItemProjectService {
                                      List<ProductProjectWithModelResponseDto> productProjectWithModelResponseDtos,
                                      ItemProjectEntity itemProjectEntity);
 
+    ItemProjectResponseDto getLastItemProjectByItemId(Long idItem);
 }
