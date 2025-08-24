@@ -103,8 +103,8 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public EventResponseListDto GetAllEvents(String sortBy, String direction, Integer page, Integer size,
-                                             String status) {
+    public EventResponseListDto GetAllEvents(String sortBy, String direction, Integer page, Integer size, String status,
+                                             String name) {
 
         DirectionEnum dir =
                 Objects.isNull(direction) ? DirectionEnum.DESC : DirectionEnum.valueOf(direction.toUpperCase());
@@ -123,7 +123,7 @@ public class EventServiceImpl implements EventService {
         Sort sort = Sort.by(Sort.Direction.fromString(dir.name()), sortColumn);
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        Specification<EventEntity> spec = EventSpecification.filterBy(statusEnum);
+        Specification<EventEntity> spec = EventSpecification.filterBy(statusEnum, name);
 
         Page<EventEntity> pages = eventRepository.findAll(spec, pageable);
 

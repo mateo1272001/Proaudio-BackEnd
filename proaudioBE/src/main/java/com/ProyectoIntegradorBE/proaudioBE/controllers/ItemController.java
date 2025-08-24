@@ -69,8 +69,6 @@ public class ItemController {
         productService.GetProduct(id);
 
         return projectService.getItemListFrom(id, status, sortBy, direction, page, size);
-        //        return itemService.getItemList(id, status, sortBy, direction, page, size);
-
     }
 
     @GetMapping("{id}/detail")
