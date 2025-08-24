@@ -828,7 +828,7 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     @Transactional
     public ItemProjectResponseDto singleItemReturn(ItemProjectResponseDto itemProjectResponseDto) {
-        
+
         if (Objects.isNull(itemProjectResponseDto) ||
                 itemProjectResponseDto.getStatus().equals(ItemProjectStatus.DISABLED)) {
             throw new BadRequestException("¡El artículo no está en el proyecto!");
@@ -847,6 +847,7 @@ public class ProjectServiceImpl implements ProjectService {
         itemProjectResponseDto.setItemDescription(itemResponseDto.getDescription());
         itemProjectResponseDto.setItemStatus(itemResponseDto.getStatus());
         itemProjectResponseDto.setProductId(itemResponseDto.getProductId());
+        itemProjectResponseDto.setItemLocation(itemResponseDto.getLocation());
         ProductResponseDto productResponseDto = productService.GetProduct(itemResponseDto.getProductId());
         itemProjectResponseDto.setProductModel(productResponseDto.getModel());
 
