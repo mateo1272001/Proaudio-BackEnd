@@ -220,7 +220,7 @@ public class TagServiceImpl implements TagService {
     public TagEntity findBrandRoot() {
 
         return tagRepository.findByNameAndStatus(BRAND_TAG_KEY, BasicEnumStatus.ENABLED)
-                .orElseThrow(() -> new BadRequestException("No existe esta marca"));
+                .orElseThrow(() -> new InternalException("¡No etiqueta base MARCA!"));
 
     }
 }

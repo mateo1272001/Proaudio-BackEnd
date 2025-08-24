@@ -13,12 +13,12 @@ import com.ProyectoIntegradorBE.proaudioBE.enums.ProductSortByEnum;
 import com.ProyectoIntegradorBE.proaudioBE.enums.ProductStatus;
 import com.ProyectoIntegradorBE.proaudioBE.exceptions.BadRequestException;
 import com.ProyectoIntegradorBE.proaudioBE.exceptions.ImagesNotFoundException;
-import com.ProyectoIntegradorBE.proaudioBE.exceptions.TagNotFoundException;
 import com.ProyectoIntegradorBE.proaudioBE.mappers.ProductMapper;
 import com.ProyectoIntegradorBE.proaudioBE.repositories.ProductRepository;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ItemService;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ProductService;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.util.InternalException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -212,16 +212,13 @@ public class ProductServiceImpl implements ProductService {
         response.setComments(product.getComments());
         response.setReplacementValue(product.getReplacementValue());
         response.setStatus(product.getStatus());
+
         try {
-            response.setBrand(tagService.findBrandRoot().getName());
-        } catch (TagNotFoundException ex) {
-            response.setBrand("");
-        }
-        try{
             response.setPhotos(photoService.findPhotosByProductId(id));
         } catch (ImagesNotFoundException ex) {
             response.setPhotos(new ArrayList<>());
         }
+
         response.setPrices(rentPriceService.findRentPriceByProductId(id));
         //        response.setActivities();  //todo [ACTIVITIES] add activities when developing this functionalities
         //        response.setProductBalance(); //todo [PROJECT] add balance when projects are added
@@ -231,6 +228,17 @@ public class ProductServiceImpl implements ProductService {
                 .stream()
                 .map(ProductTagResponseDto::getTagId)
                 .toList());
+
+        try {
+            TagEntity brandRoot = tagService.findBrandRoot();
+
+            Optional<TagResponseDto> brand =
+                    tags.stream().filter(t -> t.getFatherId().equals(brandRoot.getTagId())).findFirst();
+            brand.ifPresent(tagResponseDto -> response.setBrand(tagResponseDto.getName()));
+
+        } catch (InternalException ex) {
+            response.setBrand(null);
+        }
 
         response.setDescriptionTags(new ArrayList<>());
         response.setDependencyTags(new ArrayList<>());
