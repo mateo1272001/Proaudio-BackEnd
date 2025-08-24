@@ -17,6 +17,7 @@ import org.xhtmlrenderer.pdf.ITextRenderer;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -34,7 +35,6 @@ public class PdfServiceImpl implements PdfService {
                                      UserResponseDto userResponseDto, ClientResponseDto clientResponseDto) {
 
         //company information
-        //todo MAKE INFORMATION DYNAMIC
         Map<String, Object> companyInfo = new HashMap<>();
         companyInfo.put("name", "BARDIER MORAÑA SANTIAGO Y LUJAMBIO JUAN DANIEL");
         companyInfo.put("address", "CHUY 3437 AP 501");
@@ -74,7 +74,7 @@ public class PdfServiceImpl implements PdfService {
         project.put("products", products);
 
         //total budget
-        project.put("totalBudget", totalBudget);
+        project.put("totalBudget", totalBudget.setScale(2, RoundingMode.HALF_UP));
 
         //user info
         project.put("user", userResponseDto.getName());
