@@ -40,7 +40,7 @@ spring:
     port: 8080
   cron:
     project-status: "0 */3 * * * *" #executing every 3 minutes
-    daily-notifications: "0 */5 * * * *" #executing every 3 minutes
+    daily-notifications: "0 0 * * * *" #executing every 3 minutes
   app-base-url: http://localhost:5173
 
 ---

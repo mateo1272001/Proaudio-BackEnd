@@ -39,9 +39,6 @@ public class EmailService {
                 Este enlace expirará en 30 minutos.
                 
                 Si no solicitaste esto, simplemente ignorá este mensaje.
-                
-                Saludos,
-                Marcos y Mate. Unos tipazos.
                 """.formatted(resetLink);
 
         sendSimpleEmail(toEmail, subject, message);
