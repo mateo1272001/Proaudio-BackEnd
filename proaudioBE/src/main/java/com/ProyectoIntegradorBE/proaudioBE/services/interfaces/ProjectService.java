@@ -1,6 +1,7 @@
 package com.ProyectoIntegradorBE.proaudioBE.services.interfaces;
 
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Client.ProjectParticipatedResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.ItemSectionResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.ItemProject.ItemProjectResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Project.*;
 import org.springframework.stereotype.Service;
@@ -47,6 +48,9 @@ public interface ProjectService {
     ItemProjectResponseDto singleItemReturn(ItemProjectResponseDto itemProjectResponseDto);
 
     List<ProjectParticipatedResponseDto> getProjectsByClient(Long id);
+
+    ItemSectionResponseDto getItemListFrom(Long productId, String status, String sortBy, String direction, Integer page,
+                                           Integer size);
 
     //    ItemProjectResponseDto itemProjectDelete(Long idProject, Long idItem);
 }

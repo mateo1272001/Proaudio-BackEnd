@@ -7,7 +7,10 @@ import com.ProyectoIntegradorBE.proaudioBE.dtos.Expense.ExpenseRequestDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Expense.ExpenseResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.GeneralParmeters.GeneralParameterResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.ItemResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.ItemRowDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.ItemSectionResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.ItemProject.ItemProjectResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.ItemProject.NextProjectInfoDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Notifications.NotificationRequestDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.PageableDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.PriceReponseDto;
@@ -42,10 +45,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 import static com.ProyectoIntegradorBE.proaudioBE.Utils.AppConstants.*;
 
@@ -989,6 +989,43 @@ public class ProjectServiceImpl implements ProjectService {
             notificationService.update(notifications);
         }
 
+    }
+
+    @Override
+    public ItemSectionResponseDto getItemListFrom(Long productId, String status, String sortBy, String direction,
+                                                  Integer page, Integer size) {
+
+        ItemSectionResponseDto itemSectionResponseDto =
+                itemService.getItemList(productId, status, sortBy, direction, page, size);
+
+        return addProjectInfoToItemList(itemSectionResponseDto);
+
+    }
+
+    private ItemSectionResponseDto addProjectInfoToItemList(ItemSectionResponseDto itemSectionResponseDto) {
+
+        List<NextProjectInfoDto> nextProjectInfoDto =
+                itemProjectService.getNextProjectInfoFromItems(itemSectionResponseDto);
+
+        for (ItemRowDto item : itemSectionResponseDto.getItems()) {
+
+            Optional<NextProjectInfoDto> foundNextProject =
+                    nextProjectInfoDto.stream().filter(np -> np.getItemId().equals(item.getItemId())).findFirst();
+
+            if (foundNextProject.isPresent()) {
+
+                NextProjectInfoDto dto = foundNextProject.get();
+
+                System.out.println("DTO encontrado: itemId = " + dto.getItemId() + ", name = " + dto.getProjectName() +
+                        ", startDate = " + dto.getProjectStartDate());
+
+                item.setNextProjectName(foundNextProject.get().getProjectName());
+                item.setNextProject(foundNextProject.get().getProjectStartDate());
+            }
+
+        }
+
+        return itemSectionResponseDto;
     }
 
 }

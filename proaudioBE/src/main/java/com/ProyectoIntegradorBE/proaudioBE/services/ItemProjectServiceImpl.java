@@ -1,9 +1,12 @@
 package com.ProyectoIntegradorBE.proaudioBE.services;
 
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.ItemResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.ItemRowDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.ItemSectionResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.ItemProject.ItemProjectResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.ItemProject.ItemProjectResponseIntDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.ItemProject.ItemProjectResponseListDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.ItemProject.NextProjectInfoDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.ProductProject.ProductProjectWithModelResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Project.ProjectSimpleReponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.entities.ItemProjectEntity;
@@ -100,6 +103,14 @@ public class ItemProjectServiceImpl implements ItemProjectService {
                 .orElseThrow(() -> new BadRequestException("¡El artículo no estuvo en ningún proyecto!"));
 
         return itemProjectMapper.toDto(itemProjectEntity);
+    }
+
+    @Override
+    public List<NextProjectInfoDto> getNextProjectInfoFromItems(ItemSectionResponseDto itemSectionResponseDto) {
+
+        return itemProjectRepository.findNextProjectInfoFromItems(
+                itemSectionResponseDto.getItems().stream().map(ItemRowDto::getItemId).toList());
+
     }
 
     @Override

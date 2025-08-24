@@ -1,6 +1,7 @@
 package com.ProyectoIntegradorBE.proaudioBE.repositories;
 
 import com.ProyectoIntegradorBE.proaudioBE.dtos.ItemProject.ItemProjectResponseIntDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.ItemProject.NextProjectInfoDto;
 import com.ProyectoIntegradorBE.proaudioBE.entities.ItemProjectEntity;
 import com.ProyectoIntegradorBE.proaudioBE.enums.ItemProjectStatus;
 import org.springframework.data.jpa.repository.Query;
@@ -58,4 +59,23 @@ public interface ItemProjectRepository extends CrudRepository<ItemProjectEntity,
             LIMIT 1
             """, nativeQuery = true)
     Optional<ItemProjectEntity> findLastProjectOfItem(Long idItem);
+
+    @Query(value = """
+            SELECT
+                  ip.item_id AS itemId,
+                  p.project_id AS projectId,
+                  p.name AS projectName,
+                  p.start_date AS projectStartDate
+            FROM item_project ip
+            JOIN project p ON ip.project_id = p.project_id
+            JOIN (
+                SELECT ip2.item_id, MIN(p2.start_date) AS min_start
+                FROM item_project ip2
+                JOIN project p2 ON ip2.project_id = p2.project_id
+                WHERE ip2.item_id IN (:itemIds)
+                AND p2.end_date > NOW()
+                GROUP BY ip2.item_id
+            ) AS min_projects ON ip.item_id = min_projects.item_id AND p.start_date = min_projects.min_start
+            """, nativeQuery = true)
+    List<NextProjectInfoDto> findNextProjectInfoFromItems(List<Long> itemIds);
 }
