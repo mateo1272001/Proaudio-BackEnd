@@ -1021,6 +1021,7 @@ public class ProjectServiceImpl implements ProjectService {
 
                 item.setNextProjectName(foundNextProject.get().getProjectName());
                 item.setNextProject(foundNextProject.get().getProjectStartDate());
+                item.setNextProjectId(foundNextProject.get().getProjectId());
             }
 
         }

@@ -6,11 +6,13 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @AllArgsConstructor
+@NoArgsConstructor
 @Data
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class ItemRowDto {
@@ -29,7 +31,6 @@ public class ItemRowDto {
 
     private LocalDateTime nextProject;
 
-    public ItemRowDto() {
-    }
+    private Long nextProjectId;
 
 }

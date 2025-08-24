@@ -67,6 +67,7 @@ public class ProductProjectServiceImpl implements ProductProjectService {
     }
 
     private ProductInProjectResponseDtoImpl getProductInProjectResponseDto(ProductProjectEntity productProjectEntity) {
+
         ProductEntity productEntity = productRepository.findById(productProjectEntity.getProductId())
                 .orElseThrow(() -> new BadRequestException("¡Este producto no está asociado al proyecto espeficiado!"));
 
@@ -76,7 +77,7 @@ public class ProductProjectServiceImpl implements ProductProjectService {
         productInProjectResponseDto.setModel(productEntity.getModel());
         productInProjectResponseDto.setComments(productEntity.getComments());
         productInProjectResponseDto.setAmount(productProjectEntity.getAmount());
-        productInProjectResponseDto.setRentPrice(productProjectEntity.getRentPriceId());
+        productInProjectResponseDto.setRentPriceId(productProjectEntity.getRentPriceId());
 
         return productInProjectResponseDto;
     }
