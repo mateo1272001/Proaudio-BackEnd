@@ -71,9 +71,6 @@ public class EventServiceImpl implements EventService {
         if (Objects.nonNull(eventRequestDto.getDescription())) {
             eventEntity.setDescription(eventRequestDto.getDescription());
         }
-        if (Objects.nonNull(eventRequestDto.getStatus())) {
-            eventEntity.setStatus(BasicEnumStatus.valueOf(eventRequestDto.getStatus()));
-        }
 
         eventEntity = eventRepository.save(eventEntity);
 
