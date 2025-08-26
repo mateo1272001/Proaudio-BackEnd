@@ -446,6 +446,32 @@ public class ProjectServiceImpl implements ProjectService {
         return new RunningStatusResponseDto(Arrays.stream(ProjectRunningStatusEnum.values()).toList());
     }
 
+    private static ProjectRunningStatusEnum getRunningStatus(ProjectEntity project) {
+
+        LocalDateTime startDate = project.getStartDate();
+        LocalDateTime endDate = project.getEndDate();
+        LocalDateTime now = LocalDateTime.now();
+
+        if (project.getStatus().equals(ProjectStatusEnum.DISCARDED)) {
+            return ProjectRunningStatusEnum.DISCARDED;
+        }
+
+        if (now.isAfter(startDate) && now.isBefore(endDate)) {
+            return ProjectRunningStatusEnum.RUNNING;
+        }
+
+        if (now.isAfter(endDate)) {
+            return ProjectRunningStatusEnum.FINISHED;
+        }
+
+        if (now.isBefore(startDate) && now.isAfter(startDate.minusWeeks(1))) {
+            return ProjectRunningStatusEnum.PREPARING;
+        }
+
+        return ProjectRunningStatusEnum.NONE;
+
+    }
+
     private List<ProjectRowResponseDto> createRows(List<ProjectEntity> content) {
 
         List<ProjectRowResponseDto> responseDtos = new ArrayList<>();
@@ -458,10 +484,7 @@ public class ProjectServiceImpl implements ProjectService {
             projectRowResponseDto.setPaymentStatus(project.getPaymentStatus());
             projectRowResponseDto.setStartDate(project.getStartDate());
             projectRowResponseDto.setEndDate(project.getEndDate());
-            projectRowResponseDto.setRunningStatus(
-                    project.getStartDate().isAfter(LocalDateTime.now()) ? ProjectRunningStatusEnum.RUNNING :
-                            project.getStartDate().isAfter(LocalDateTime.now().minusWeeks(1L)) ?
-                                    ProjectRunningStatusEnum.PREPARING : ProjectRunningStatusEnum.NONE);
+            projectRowResponseDto.setRunningStatus(getRunningStatus(project));
             responseDtos.add(projectRowResponseDto);
         }
 
