@@ -10,6 +10,7 @@ import com.ProyectoIntegradorBE.proaudioBE.exceptions.BadRequestException;
 import com.ProyectoIntegradorBE.proaudioBE.mappers.ItemMapper;
 import com.ProyectoIntegradorBE.proaudioBE.repositories.ItemRepository;
 import com.ProyectoIntegradorBE.proaudioBE.repositories.specifications.ItemSpecification;
+import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ItemProjectService;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ItemService;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.QrService;
 import lombok.RequiredArgsConstructor;
@@ -36,11 +37,14 @@ public class ItemServiceImpl implements ItemService {
 
     private final QrService qrService;
 
+    private final UtilService utilService;
+
+    private final ItemProjectService itemProjectService;
+
     private final ItemRepository itemRepository;
 
     private final ItemMapper itemMapper;
 
-    private final UtilService utilService;
 
     public static final List<ProjectStatusEnum> PROJECT_STARTED_STATUS =
             List.of(ProjectStatusEnum.ON_COURSE, ProjectStatusEnum.EXPIRED, ProjectStatusEnum.COMPLETED);
@@ -128,20 +132,19 @@ public class ItemServiceImpl implements ItemService {
 
     }
 
-    @Override
-    public ItemResponseDto deleteItem(Long itemId) {
+    private static ItemDetailsResponseDto FillItemDetails(ItemResponseDto item,
+                                                          ItemProductResponseDto itemProductResponseDto) {
+        ItemDetailsResponseDto itemDetailsResponseDto = new ItemDetailsResponseDto();
+        itemDetailsResponseDto.setProduct(itemProductResponseDto);
+        itemDetailsResponseDto.setDescription(Objects.nonNull(item.getDescription()) ? item.getDescription() : null);
+        itemDetailsResponseDto.setStatus(item.getStatus());
+        itemDetailsResponseDto.setLocation(item.getLocation());
+        itemDetailsResponseDto.setPriceBought(Objects.nonNull(item.getPriceBought()) ? item.getPriceBought() : null);
+        itemDetailsResponseDto.setBoughtAt(item.getBoughtAt());
+        itemDetailsResponseDto.setRange(item.getItemRange());
+        itemDetailsResponseDto.setSerialNumber(item.getSerialNumber());
 
-        ItemEntity itemEntity =
-                itemRepository.findById(itemId).orElseThrow(() -> new BadRequestException("¡El producto no existe!"));
-
-        //todo (PROJECTS) add project participation validation
-
-        itemEntity.setStatus(ItemStatusEnum.DELETED);
-        itemEntity.setUpdatedAt(LocalDateTime.now());
-
-        itemEntity = itemRepository.save(itemEntity);
-
-        return itemMapper.toDto(itemEntity);
+        return itemDetailsResponseDto;
     }
 
     @Override
@@ -184,19 +187,32 @@ public class ItemServiceImpl implements ItemService {
 
     }
 
-    private static ItemDetailsResponseDto FillItemDetails(ItemResponseDto item,
-                                                          ItemProductResponseDto itemProductResponseDto) {
-        ItemDetailsResponseDto itemDetailsResponseDto = new ItemDetailsResponseDto();
-        itemDetailsResponseDto.setProduct(itemProductResponseDto);
-        itemDetailsResponseDto.setDescription(Objects.nonNull(item.getDescription()) ? item.getDescription() : null);
-        itemDetailsResponseDto.setStatus(item.getStatus());
-        itemDetailsResponseDto.setLocation(item.getLocation());
-        itemDetailsResponseDto.setPriceBought(Objects.nonNull(item.getPriceBought()) ? item.getPriceBought() : null);
-        itemDetailsResponseDto.setBoughtAt(item.getBoughtAt());
-        itemDetailsResponseDto.setRange(item.getItemRange());
-        itemDetailsResponseDto.setSerialNumber(item.getSerialNumber());
-        //        itemDetailsResponseDto.setActivities()
-        return itemDetailsResponseDto;
+    @Override
+    public ItemResponseDto deleteItem(Long itemId) {
+
+        ItemEntity itemEntity =
+                itemRepository.findById(itemId).orElseThrow(() -> new BadRequestException("¡El producto no existe!"));
+
+        if (itemEntity.getStatus().equals(ItemStatusEnum.DELETED) ||
+                itemEntity.getStatus().equals(ItemStatusEnum.OUT_OF_USAGE)) {
+            throw new BadRequestException("¡El artículo fue borrado!");
+        }
+
+        if (!itemProjectService.checkNextProjectForItem(itemId).isEmpty()) {
+            throw new BadRequestException(
+                    "¡Para eliminarlo o retirar su uso, primero sacalo de sus próximos proyectos!");
+        }
+
+        if (itemEntity.getStatus().equals(ItemStatusEnum.CREATED)) {
+            itemEntity.setStatus(ItemStatusEnum.DELETED);
+        } else {
+            itemEntity.setStatus(ItemStatusEnum.OUT_OF_USAGE);
+        }
+        itemEntity.setUpdatedAt(LocalDateTime.now());
+
+        itemEntity = itemRepository.save(itemEntity);
+
+        return itemMapper.toDto(itemEntity);
     }
 
     @Override
@@ -251,20 +267,6 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public ItemResponseDto updateLocation(LocationEnum locationEnum, ItemResponseDto itemResponseDto) {
 
-        //        ItemEntity itemEntity = itemRepository.findById(itemId)
-        //                .orElseThrow(() -> new BadRequestException("Artículo no encontrado con ID " + itemId));
-        //
-        //        boolean projectStarted = PROJECT_STARTED_STATUS.contains(projectSimpleReponseDto.getStatus());
-        //
-        //        if (projectStarted) {
-        //            if (locationEnum.equals(itemEntity.getLocation())) {
-        //                throw new BadRequestException("El artículo ya está en este lugar");
-        //            }
-        //
-        //            if (locationEnum.equals(LocationEnum.USING) && !itemEntity.getLocation().equals(LocationEnum.IN_DEPOSIT)) {
-        //                throw new BadRequestException("El artículo debe ser devuelto primero");
-        //            }
-        //        }
         ItemEntity itemEntity = itemMapper.toEntity(itemResponseDto);
 
         if (locationEnum.equals(LocationEnum.USING) && itemEntity.getStatus().equals(ItemStatusEnum.CREATED)) {

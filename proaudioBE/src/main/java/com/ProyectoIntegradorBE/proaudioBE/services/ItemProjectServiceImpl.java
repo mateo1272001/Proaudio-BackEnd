@@ -10,12 +10,13 @@ import com.ProyectoIntegradorBE.proaudioBE.dtos.ItemProject.NextProjectInfoDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.ProductProject.ProductProjectWithModelResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Project.ProjectSimpleReponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.entities.ItemProjectEntity;
+import com.ProyectoIntegradorBE.proaudioBE.entities.ProjectEntity;
 import com.ProyectoIntegradorBE.proaudioBE.enums.ItemProjectStatus;
 import com.ProyectoIntegradorBE.proaudioBE.exceptions.BadRequestException;
 import com.ProyectoIntegradorBE.proaudioBE.mappers.ItemProjectMapper;
+import com.ProyectoIntegradorBE.proaudioBE.mappers.ProjectMapper;
 import com.ProyectoIntegradorBE.proaudioBE.repositories.ItemProjectRepository;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ItemProjectService;
-import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ProductProjectService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -30,11 +31,11 @@ import static com.ProyectoIntegradorBE.proaudioBE.services.ItemServiceImpl.PROJE
 @RequiredArgsConstructor
 public class ItemProjectServiceImpl implements ItemProjectService {
 
-    private final ProductProjectService productProjectService;
-
     private final ItemProjectRepository itemProjectRepository;
 
     private final ItemProjectMapper itemProjectMapper;
+
+    private final ProjectMapper projectMapper;
 
     private static ItemProjectEntity checkIfDeletionIsSuggested(ProjectSimpleReponseDto projectSimpleReponseDto,
                                                                 Optional<ItemProjectEntity> itemProjectOpt) {
@@ -111,6 +112,14 @@ public class ItemProjectServiceImpl implements ItemProjectService {
         return itemProjectRepository.findNextProjectInfoFromItems(
                 itemSectionResponseDto.getItems().stream().map(ItemRowDto::getItemId).toList());
 
+    }
+
+    @Override
+    public List<ProjectSimpleReponseDto> checkNextProjectForItem(Long itemId) {
+
+        List<ProjectEntity> projectEntities = itemProjectRepository.findNextPlannedProjectsForItem(itemId);
+
+        return projectMapper.toDtoList(projectEntities);
     }
 
     @Override

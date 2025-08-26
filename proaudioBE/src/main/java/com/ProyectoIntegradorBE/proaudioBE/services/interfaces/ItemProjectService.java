@@ -33,4 +33,6 @@ public interface ItemProjectService {
     ItemProjectResponseDto getLastItemProjectByItemId(Long idItem);
 
     List<NextProjectInfoDto> getNextProjectInfoFromItems(ItemSectionResponseDto itemSectionResponseDto);
+
+    List<ProjectSimpleReponseDto> checkNextProjectForItem(Long itemId);
 }
