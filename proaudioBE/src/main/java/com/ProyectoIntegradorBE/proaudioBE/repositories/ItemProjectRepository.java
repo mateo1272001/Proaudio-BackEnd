@@ -85,7 +85,7 @@ public interface ItemProjectRepository extends CrudRepository<ItemProjectEntity,
             SELECT p.*
             FROM item_project ip
             INNER JOIN project p ON (p.project_id = ip.project_id AND p.status in ('PLANNED', 'CONFIRMED'))
-            WHERE ip.item_id = :itemId
+            WHERE ip.item_id = :itemId AND ip.status = 'ENABLED'
             """, nativeQuery = true)
     List<ProjectEntity> findNextPlannedProjectsForItem(Long itemId);
 }

@@ -58,6 +58,13 @@ public class ItemController {
 
     }
 
+    @GetMapping("/possible/status/{id}")
+    private ItemStatusResponseDto getItemStatuses(@PathVariable Long id) {
+
+        return itemService.getPossibleItemStatuses(id);
+
+    }
+
     @GetMapping("/product/{id}")
     private ItemSectionResponseDto GetItemList(@PathVariable Long id,
                                                @RequestParam(required = false, defaultValue = "id") String sortBy,

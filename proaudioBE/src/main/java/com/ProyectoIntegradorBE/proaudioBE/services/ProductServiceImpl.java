@@ -12,10 +12,10 @@ import com.ProyectoIntegradorBE.proaudioBE.enums.DirectionEnum;
 import com.ProyectoIntegradorBE.proaudioBE.enums.ProductSortByEnum;
 import com.ProyectoIntegradorBE.proaudioBE.enums.ProductStatus;
 import com.ProyectoIntegradorBE.proaudioBE.exceptions.BadRequestException;
-import com.ProyectoIntegradorBE.proaudioBE.exceptions.ImagesNotFoundException;
 import com.ProyectoIntegradorBE.proaudioBE.mappers.ProductMapper;
 import com.ProyectoIntegradorBE.proaudioBE.repositories.ProductRepository;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ItemService;
+import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ProductProjectService;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.util.InternalException;
@@ -41,6 +41,8 @@ public class ProductServiceImpl implements ProductService {
     private final TagServiceImpl tagService;
 
     private final ItemService itemService;
+
+    private final ProductProjectService productProjectService;
 
     private final ProductRepository productRepository;
 
@@ -157,6 +159,11 @@ public class ProductServiceImpl implements ProductService {
             throw new BadRequestException("No se puede borrar un producto con artículos asociados");
         }
 
+        if (!productProjectService.getNextProjectsForProduct(productEntity.getProductId()).isEmpty()) {
+            throw new BadRequestException(
+                    "¡No se puede borrar este producto porque está asignado a proyectos activos!");
+        }
+
         productEntity.setStatus(ProductStatus.ELIMINATED);
         productRepository.save(productEntity);
 
@@ -215,7 +222,7 @@ public class ProductServiceImpl implements ProductService {
 
         try {
             response.setPhotos(photoService.findPhotosByProductId(id));
-        } catch (ImagesNotFoundException ex) {
+        } catch (Exception ex) {
             response.setPhotos(new ArrayList<>());
         }
 

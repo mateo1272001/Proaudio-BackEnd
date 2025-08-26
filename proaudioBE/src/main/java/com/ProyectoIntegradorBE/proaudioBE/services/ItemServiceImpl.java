@@ -195,7 +195,7 @@ public class ItemServiceImpl implements ItemService {
 
         if (itemEntity.getStatus().equals(ItemStatusEnum.DELETED) ||
                 itemEntity.getStatus().equals(ItemStatusEnum.OUT_OF_USAGE)) {
-            throw new BadRequestException("¡El artículo fue borrado!");
+            throw new BadRequestException("¡El artículo está borrado fue borrado!");
         }
 
         if (!itemProjectService.checkNextProjectForItem(itemId).isEmpty()) {
@@ -235,6 +235,25 @@ public class ItemServiceImpl implements ItemService {
     public ItemStatusResponseDto getItemStatuses() {
         return new ItemStatusResponseDto(Arrays.stream(ItemStatusEnum.values()).toList());
     }
+
+
+    @Override
+    public ItemStatusResponseDto getPossibleItemStatuses(Long id) {
+
+        ItemResponseDto itemResponseDto = getItem(id);
+
+        List<ItemStatusEnum> response = switch (itemResponseDto.getStatus()) {
+            case CREATED -> List.of(ItemStatusEnum.DELETED);
+            case DELETED -> List.of(ItemStatusEnum.CREATED);
+            case GOOD -> List.of(ItemStatusEnum.WITH_DETAILS, ItemStatusEnum.OUT_OF_USAGE);
+            case WITH_DETAILS -> List.of(ItemStatusEnum.GOOD, ItemStatusEnum.OUT_OF_USAGE);
+            case OUT_OF_USAGE -> List.of(ItemStatusEnum.WITH_DETAILS, ItemStatusEnum.GOOD);
+
+        };
+
+        return new ItemStatusResponseDto(response);
+    }
+
 
     @Override
     public List<ItemResponseDto> getByProductIds(List<Long> productIds) {
