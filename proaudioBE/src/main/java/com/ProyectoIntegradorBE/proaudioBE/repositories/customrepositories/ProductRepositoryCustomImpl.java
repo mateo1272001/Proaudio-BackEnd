@@ -107,7 +107,7 @@ public class ProductRepositoryCustomImpl implements ProductRepositoryCustom {
                 LEFT JOIN
                 	(SELECT t_brand.name,pt_brand.product_id
                 	FROM product_tag pt_brand
-                    	INNER JOIN tag t_brand ON (pt_brand.tag_id = t_brand.tag_id AND t_brand.father_id = %s)
+                        	INNER JOIN tag t_brand ON (pt_brand.tag_id = t_brand.tag_id AND t_brand.father_id = %s AND pt_brand.type = 'DESCRIPTIVE')
                 	WHERE pt_brand.status = 'ENABLED')
                     AS brands ON brands.product_id = filtered.id %s
                 GROUP BY filtered.id,brands.name
@@ -141,7 +141,7 @@ public class ProductRepositoryCustomImpl implements ProductRepositoryCustom {
                     LEFT JOIN
                     	(SELECT t_brand.name,pt_brand.product_id
                     	FROM product_tag pt_brand
-                    	INNER JOIN tag t_brand ON (pt_brand.tag_id = t_brand.tag_id AND t_brand.father_id = %s)
+                    	INNER JOIN tag t_brand ON (pt_brand.tag_id = t_brand.tag_id AND t_brand.father_id = %s AND pt_brand.type = 'DESCRIPTIVE')
                     	WHERE pt_brand.status = 'ENABLED') AS brands
                     ON brands.product_id = p.product_id
                     WHERE p.status = "ACTIVE"%s

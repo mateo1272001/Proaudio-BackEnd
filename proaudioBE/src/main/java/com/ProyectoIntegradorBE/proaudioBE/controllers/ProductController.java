@@ -23,7 +23,6 @@ public class ProductController {
             @RequestPart("productRequestDto") ProductRequestDto productRequestDto,
             @RequestPart(value = "file", required = false) MultipartFile[] files) {
 
-        //TODO (TAG) add mandatory brand tag validation
         return productService.createProduct(productRequestDto, files);
 
     }

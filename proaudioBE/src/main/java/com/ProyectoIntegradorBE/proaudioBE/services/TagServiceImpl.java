@@ -39,6 +39,14 @@ public class TagServiceImpl implements TagService {
     @Override
     public TagResponseDto createTag(TagRequestDto tagRequestDto) {
 
+        if (tagRequestDto.getName().equalsIgnoreCase(BRAND_TAG_KEY) &&
+                tagRepository.findByNameAndStatus(BRAND_TAG_KEY, BasicEnumStatus.ENABLED).isPresent()) {
+
+            throw new BadRequestException("¡No se puede agregar otra etiqueta de nombre 'Marca'");
+
+        }
+
+
         if(Objects.nonNull(tagRequestDto.getFatherId())){
             Long fatherId = tagRequestDto.getFatherId();
             tagRepository.findById(fatherId).orElseThrow(() -> new ClientNotFoundException(fatherId));
@@ -54,6 +62,10 @@ public class TagServiceImpl implements TagService {
     public TagResponseDto updateTag(Long id, TagRequestDto tagRequestDto) throws BadRequestException {
 
         TagEntity tag = tagRepository.findById(id).orElseThrow(() -> new ClientNotFoundException(id));
+
+        if (tag.getName().equalsIgnoreCase(BRAND_TAG_KEY)) {
+            throw new BadRequestException("¡No se puede editar esta etiqueta!");
+        }
 
         ValidateUpdate(tagRequestDto, tag);
         if(tag.getStatus().equals(BasicEnumStatus.ENABLED)
