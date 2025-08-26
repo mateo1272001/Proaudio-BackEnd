@@ -49,6 +49,10 @@ public class ProductProjectServiceImpl implements ProductProjectService {
     public ProductInProjectResponseDtoImpl createProductProject(ProductProjectRequestDto productProjectRequestDto,
                                                           List<ItemResponseDto> itemsOfProduct) {
 
+        if (productProjectRequestDto.getAmount() <= 0) {
+            throw new BadRequestException("¡Debes asignar un valor positivo a la cantidad de productos!");
+        }
+
         List<ProductProjectEntity> ppFromProject =
                 productProjectRepository.findByProjectIdAndProductIdAndStatus(productProjectRequestDto.getProjectId(),
                         productProjectRequestDto.getProductId(), BasicEnumStatus.ENABLED);

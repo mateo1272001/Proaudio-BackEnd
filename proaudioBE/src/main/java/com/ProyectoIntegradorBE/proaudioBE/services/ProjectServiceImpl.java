@@ -645,6 +645,7 @@ public class ProjectServiceImpl implements ProjectService {
         ProjectDetailsResponseDto projectDetailsResponseDto = new ProjectDetailsResponseDto();
         projectDetailsResponseDto.setProjectId(projectSimpleReponseDto.getProjectId());
         projectDetailsResponseDto.setName(projectSimpleReponseDto.getName());
+        projectDetailsResponseDto.setDescription(projectSimpleReponseDto.getDescription());
         projectDetailsResponseDto.setStartDate(projectSimpleReponseDto.getStartDate());
         projectDetailsResponseDto.setEndDate(projectSimpleReponseDto.getEndDate());
         projectDetailsResponseDto.setEvent(eventService.GetEvent(projectSimpleReponseDto.getEventId()));

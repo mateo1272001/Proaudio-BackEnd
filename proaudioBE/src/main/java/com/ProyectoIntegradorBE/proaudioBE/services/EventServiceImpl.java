@@ -34,15 +34,25 @@ public class EventServiceImpl implements EventService {
 
     private final UtilService utilService;
 
+    private static void nullValidations(EventRequestDto eventRequestDto) {
+        if (Objects.isNull(eventRequestDto.getName())) {
+            throw new BadRequestException("¡El evento debe tener nombre!");
+        }
+        if (Objects.isNull(eventRequestDto.getDistance())) {
+            throw new BadRequestException("¡El evento debe tener distancia!");
+        }
+        if (Objects.isNull(eventRequestDto.getAddress())) {
+            throw new BadRequestException("¡El evento debe tener por una dirección!");
+        }
+    }
+
     @Override
     public EventResponseDto CreateEvent(EventRequestDto eventRequestDto) {
 
         EventEntity eventEntity = new EventEntity();
-        if (Objects.isNull(eventRequestDto.getName()) || Objects.isNull(eventRequestDto.getDistance())) {
-            throw new BadRequestException("¡El evento debe tener por lo menos nombre y distancia!");
-        }
+        nullValidations(eventRequestDto);
         eventEntity.setName(eventRequestDto.getName());
-        eventEntity.setAddress(Objects.nonNull(eventRequestDto.getAddress()) ? eventRequestDto.getAddress() : null);
+        eventEntity.setAddress(eventRequestDto.getAddress());
         eventEntity.setDistance(eventRequestDto.getDistance());
         eventEntity.setDescription(
                 Objects.nonNull(eventRequestDto.getDescription()) ? eventRequestDto.getDescription() : null);
@@ -59,15 +69,12 @@ public class EventServiceImpl implements EventService {
         EventEntity eventEntity =
                 eventRepository.findById(id).orElseThrow(() -> new BadRequestException("¡Evento no encontrado!"));
 
-        if (Objects.nonNull(eventRequestDto.getName())) {
-            eventEntity.setName(eventRequestDto.getName());
-        }
-        if (Objects.nonNull(eventRequestDto.getDistance())) {
-            eventEntity.setDistance(eventRequestDto.getDistance());
-        }
-        if (Objects.nonNull(eventRequestDto.getAddress())) {
-            eventEntity.setAddress(eventRequestDto.getAddress());
-        }
+        nullValidations(eventRequestDto);
+
+        eventEntity.setName(eventRequestDto.getName());
+        eventEntity.setDistance(eventRequestDto.getDistance());
+        eventEntity.setAddress(eventRequestDto.getAddress());
+
         if (Objects.nonNull(eventRequestDto.getDescription())) {
             eventEntity.setDescription(eventRequestDto.getDescription());
         }
@@ -82,6 +89,10 @@ public class EventServiceImpl implements EventService {
 
         EventEntity eventEntity =
                 eventRepository.findById(id).orElseThrow(() -> new BadRequestException("¡Evento no encontrado!"));
+
+        if (eventEntity.getStatus().equals(BasicEnumStatus.DISABLED)) {
+            throw new BadRequestException("¡El evento ya fue eliminado!");
+        }
 
         eventEntity.setStatus(BasicEnumStatus.DISABLED);
 
