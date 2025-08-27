@@ -122,18 +122,16 @@ public class ProductServiceImpl implements ProductService {
         ProductEntity productEntity = productRepository.findById(productId)
                 .orElseThrow(() -> new BadRequestException("Product ID no encontrado: " + productId));
 
-        ProductEntity product = new ProductEntity();
-        product.setProductId(productEntity.getProductId());
-        product.setModel(productRequestDto.getModel());
-        product.setComments(Objects.nonNull(productRequestDto.getComments()) ? productRequestDto.getComments() : null);
-        product.setReplacementValue(Objects.nonNull(productRequestDto.getReplacementValue())
+        productEntity.setModel(productRequestDto.getModel());
+        productEntity.setComments(
+                Objects.nonNull(productRequestDto.getComments()) ? productRequestDto.getComments() : null);
+        productEntity.setReplacementValue(Objects.nonNull(productRequestDto.getReplacementValue())
                 ? productRequestDto.getReplacementValue() : null);
-        product.setStatus(productRequestDto.getStatus());
-        product.setCreatedAt(productEntity.getCreatedAt());
-        product.setUpdatedAt(LocalDateTime.now());
-        product = productRepository.save(product);
+        productEntity.setUpdatedAt(LocalDateTime.now());
 
-        ProductResponseDto productResponseDto = productMapper.toDto(product);
+        productEntity = productRepository.save(productEntity);
+
+        ProductResponseDto productResponseDto = productMapper.toDto(productEntity);
         productResponseDto.setPrices(rentPriceService.findRentPriceByProductId(productId));
         productResponseDto.setTags(findTagsByProductId(productId));
 
