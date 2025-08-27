@@ -820,6 +820,10 @@ public class ProjectServiceImpl implements ProjectService {
                                                            ProjectSimpleReponseDto projectSimpleReponseDto,
                                                            ItemProjectResponseDto itemProjectResponseDto) {
 
+        if (!ITEM_AVAILABLE_STATUS.contains(itemResponseDto.getStatus())) {
+            throw new BadRequestException("¡Este artículo está fuera de servicio!");
+        }
+
         itemService.updateLocation(LocationEnum.USING, itemResponseDto);
 
         List<ProductProjectWithModelResponseDto> productProjectWithModelResponseDtos =
