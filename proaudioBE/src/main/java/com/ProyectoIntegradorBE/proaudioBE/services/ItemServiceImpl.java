@@ -23,6 +23,8 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -58,11 +60,6 @@ public class ItemServiceImpl implements ItemService {
 
         for (ItemRequestDto item : items.getItems()) {
 
-            if (item.getAmountBought() != item.getSerialNumbers().size()) {
-                throw new BadRequestException(
-                        "La cantidad de numeros de serie debe ser igual a los productos comprados");
-            }
-
             List<ItemEntity> itemEntities = createItemBlock(item);
             entityList.addAll(itemEntities);
 
@@ -90,16 +87,43 @@ public class ItemServiceImpl implements ItemService {
 
     private List<ItemEntity> createItemBlock(ItemRequestDto item) {
 
-        item.setAmountBought(Objects.isNull(item.getAmountBought()) ? 1 : item.getAmountBought());
+        if (Objects.isNull(item.getAmountBought()) || item.getAmountBought() <= 0) {
+            throw new BadRequestException("Se debe comprar por lo menos un artículo");
+        }
+
+        if (item.getAmountBought() != item.getSerialNumbers().size()) {
+            throw new BadRequestException("La cantidad de numeros de serie debe ser igual a los productos comprados");
+        }
+
+        if (Objects.isNull(item.getPriceBought()) || item.getPriceBought().compareTo(BigDecimal.ZERO) < 0) {
+            throw new BadRequestException("¡Se debe asignar un valor de compra positivo!");
+        }
+
+        if (Objects.isNull(item.getBoughtAt()) || item.getBoughtAt().plusDays(1).isAfter(LocalDate.now())) {
+            throw new BadRequestException("Debe tener una fecha de compra no futura");
+        }
+
+        if (!itemRepository.findRepeatedSerialNumbers(item.getProductId(),
+                List.of(ItemStatusEnum.CREATED, ItemStatusEnum.GOOD, ItemStatusEnum.WITH_DETAILS),
+                item.getSerialNumbers()).isEmpty()) {
+            throw new BadRequestException("Hay números de serie ya reguistrados");
+        }
 
         List<ItemEntity> itemEntities = new ArrayList<>();
 
         for (int i = 0; i < item.getAmountBought(); i++) {
+
+            int itemPosition = i;
+            if (itemEntities.stream()
+                    .anyMatch(ie -> ie.getSerialNumber().equals(item.getSerialNumbers().get(itemPosition)))) {
+                throw new BadRequestException("¡Hay números de serie repetidos en la petición!");
+            }
+
             ItemEntity itemEntity = new ItemEntity();
             itemEntity.setProductId(item.getProductId());
             itemEntity.setDescription(Objects.nonNull(item.getDescription()) ? item.getDescription() : null);
-            itemEntity.setPriceBought(Objects.nonNull(item.getPriceBought()) ? item.getPriceBought() : null);
-            itemEntity.setBoughtAt(Objects.nonNull(item.getBoughtAt()) ? item.getBoughtAt() : null);
+            itemEntity.setPriceBought(item.getPriceBought());
+            itemEntity.setBoughtAt(item.getBoughtAt());
             itemEntity.setLocation(LocationEnum.IN_DEPOSIT);
             itemEntity.setStatus(ItemStatusEnum.CREATED);
             itemEntity.setUpdatedAt(LocalDateTime.now());
