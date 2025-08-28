@@ -219,7 +219,7 @@ public class ItemServiceImpl implements ItemService {
 
         if (itemEntity.getStatus().equals(ItemStatusEnum.DELETED) ||
                 itemEntity.getStatus().equals(ItemStatusEnum.OUT_OF_USAGE)) {
-            throw new BadRequestException("¡El artículo está borrado fue borrado!");
+            throw new BadRequestException("¡El artículo ya está eliminado!");
         }
 
         if (!itemProjectService.checkNextProjectForItem(itemId).isEmpty()) {
