@@ -86,19 +86,19 @@ public class RentPriceServiceImpl implements RentPriceService {
 
         RentPriceEntity rentPriceEntity =
                 rentPriceRepository.findByRentPriceIdAndStatus(rentPriceId, BasicEnumStatus.ENABLED).orElseThrow(
-                        () -> new BadRequestException(
-                                String.format("Rent Price con ID %s no encontrado: ", rentPriceId)));
+                        () -> new BadRequestException("¡Precio no encontrado!"));
 
         return rentPriceMapper.toDto(rentPriceEntity);
     }
 
+    
     @Override
     public PriceReponseDto DeletePrice(Long id) throws BadRequestException {
 
         Optional<RentPriceEntity> rentPriceEntityOpt = rentPriceRepository.findByRentPriceIdAndStatus(id, BasicEnumStatus.ENABLED);
 
         if(rentPriceEntityOpt.isEmpty()) {
-            throw new BadRequestException(String.format("Rent Price con ID %s no encontrado: ", id));
+            throw new BadRequestException("¡Precio no encontrado!");
         }
 
         rentPriceEntityOpt.get().setStatus(BasicEnumStatus.DISABLED);
