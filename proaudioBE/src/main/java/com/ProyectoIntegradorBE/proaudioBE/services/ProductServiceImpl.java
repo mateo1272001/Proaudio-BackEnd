@@ -18,7 +18,6 @@ import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ItemService;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ProductProjectService;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ProductService;
 import lombok.RequiredArgsConstructor;
-import org.apache.logging.log4j.util.InternalException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -110,8 +109,8 @@ public class ProductServiceImpl implements ProductService {
 
         List<TagResponseDto> tagsFromRequest = tagService.findByTagIdIn(tagIds);
 
-        return productTagService.CreateProductTags(tagsFromRequest, productRequestDto.getTags(),
-                product.getProductId());
+        return productTagService.CreateProductTags(tagsFromRequest, productRequestDto.getTags(), product.getProductId(),
+                brandTagId);
     }
 
     @Override
@@ -225,8 +224,6 @@ public class ProductServiceImpl implements ProductService {
         }
 
         response.setPrices(rentPriceService.findRentPriceByProductId(id));
-        //        response.setActivities();  //todo [ACTIVITIES] add activities when developing this functionalities
-        //        response.setProductBalance(); //todo [PROJECT] add balance when projects are added
         List<ProductTagResponseDto> productTagResponseDtos = findTagsByProductId(id);
 
         List<TagResponseDto> tags =  tagService.findByTagIdIn(productTagResponseDtos
@@ -234,16 +231,7 @@ public class ProductServiceImpl implements ProductService {
                 .map(ProductTagResponseDto::getTagId)
                 .toList());
 
-        try {
-            TagEntity brandRoot = tagService.findBrandRoot();
-
-            Optional<TagResponseDto> brand =
-                    tags.stream().filter(t -> t.getFatherId().equals(brandRoot.getTagId())).findFirst();
-            brand.ifPresent(tagResponseDto -> response.setBrand(tagResponseDto.getName()));
-
-        } catch (InternalException ex) {
-            response.setBrand(null);
-        }
+        response.setBrand(setBrand(tags, response));
 
         response.setDescriptionTags(new ArrayList<>());
         response.setDependencyTags(new ArrayList<>());
@@ -264,6 +252,26 @@ public class ProductServiceImpl implements ProductService {
         }
 
         return response;
+    }
+
+    private String setBrand(List<TagResponseDto> tags, ProductDetailResponseDto response) {
+        try {
+            TagEntity brandRoot = tagService.findBrandRoot();
+
+            Optional<TagResponseDto> brand =
+                    tags.stream().filter(t -> t.getFatherId().equals(brandRoot.getTagId())).findFirst();
+
+            brand.ifPresent(tagResponseDto -> response.setBrand(tagResponseDto.getName()));
+
+            if (brand.isPresent()) {
+                return brand.get().getName();
+            }
+
+        } catch (Exception ex) {
+            return null;
+        }
+
+        return null;
     }
 
     @Override
@@ -312,7 +320,9 @@ public class ProductServiceImpl implements ProductService {
             throw new BadRequestException("¡La etiqueta no existe!");
         }
 
-        return productTagService.createProductTag(productTagRequestDto, tagEntityOpt.get());
+        TagEntity brandTag = tagService.findBrandRoot();
+
+        return productTagService.createProductTag(productTagRequestDto, tagEntityOpt.get(), brandTag);
 
     }
 

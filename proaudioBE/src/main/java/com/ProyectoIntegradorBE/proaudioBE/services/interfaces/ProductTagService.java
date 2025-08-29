@@ -12,9 +12,10 @@ public interface ProductTagService {
 
 
     List<ProductTagResponseDto> CreateProductTags(List<TagResponseDto> tags, List<ProductTagRequestDto> productTags,
-                                                  Long productId) throws BadRequestException;
+                                                  Long productId, Long brandTagId) throws BadRequestException;
 
-    ProductTagResponseDto createProductTag(ProductTagRequestDto productTagRequestDto, TagEntity tagEntity);
+    ProductTagResponseDto createProductTag(ProductTagRequestDto productTagRequestDto, TagEntity tagEntity,
+                                           TagEntity brandTag);
 
     ProductTagResponseDto deleteProductTag(Long tagId, Long productId, String type);
 }

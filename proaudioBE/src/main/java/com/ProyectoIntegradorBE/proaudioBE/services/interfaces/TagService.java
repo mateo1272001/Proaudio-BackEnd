@@ -4,6 +4,7 @@ import com.ProyectoIntegradorBE.proaudioBE.dtos.Tag.AllTagsModuleListDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Tag.TagRequestDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Tag.TagResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Tag.TagResponseListDto;
+import com.ProyectoIntegradorBE.proaudioBE.entities.TagEntity;
 import jakarta.validation.Valid;
 import org.apache.coyote.BadRequestException;
 
@@ -18,4 +19,6 @@ public interface TagService {
     AllTagsModuleListDto findAllStructured();
 
     TagResponseListDto findAllSimple();
+
+    TagEntity findBrandRoot();
 }
