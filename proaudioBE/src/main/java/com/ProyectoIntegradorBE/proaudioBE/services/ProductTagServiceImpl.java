@@ -28,13 +28,14 @@ public class ProductTagServiceImpl implements ProductTagService {
 
     private final ProductTagMapper productTagMapper;
 
-    //    private final TagServiceImpl tagService;
-
-    public ProductTagResponseDto createProductTag(ProductTagRequestDto productTagRequestDto, TagEntity tagEntity) {
+    public ProductTagResponseDto createProductTag(ProductTagRequestDto productTagRequestDto, TagEntity tagEntity,
+                                                  TagEntity brandTag) {
 
         if(Objects.isNull(productTagRequestDto.getTagId())) {
             throw new BadRequestException("¡Debe tener una etiqueta asociada!");
         }
+
+        brandTagsValidations(productTagRequestDto, tagEntity, brandTag);
 
         Optional<ProductTagEntity> productTagOpt =
                 productTagRepository.findByProductIdAndTagIdAndType(productTagRequestDto.getProductId(),
@@ -68,6 +69,63 @@ public class ProductTagServiceImpl implements ProductTagService {
 
     }
 
+    private void brandTagsValidations(ProductTagRequestDto productTagRequestDto, TagEntity tagEntity,
+                                      TagEntity brandTag) {
+
+        if (productTagRequestDto.getTagId().equals(brandTag.getTagId())) {
+            throw new BadRequestException(
+                    "¡No se puede asignar la etiqueta %s! ¡Elige otra!".formatted(brandTag.getName()));
+        }
+
+        if (productTagRequestDto.getType().equals(TagTypeEnum.DESCRIPTIVE) &&
+                tagEntity.getFatherId().equals(brandTag.getTagId())) {
+            List<TagEntity> tagsOfBrand =
+                    productTagRepository.findByProductIdAndFatherId(productTagRequestDto.getProductId(),
+                            brandTag.getTagId());
+
+            if (!tagsOfBrand.isEmpty()) {
+                throw new BadRequestException("Este producto ya tiene una etiqueta de tipo 'Marca'");
+            }
+        }
+    }
+
+    public List<ProductTagResponseDto> CreateProductTags(List<TagResponseDto> tags,
+                                                         List<ProductTagRequestDto> productTags, Long productId,
+                                                         Long brandTagId) throws BadRequestException {
+
+        //TODO UNIFY CREATE PRODUCTTAGS AND VALIDATE SIBLING TAGS CREATION
+        List<TagResponseDto> childsOfBrand = new ArrayList<>();
+
+        List<ProductTagResponseDto> response = productTags.stream().map(tagRequest -> {
+            TagResponseDto tag = tags.stream().filter(t -> t.getTagId().equals(tagRequest.getTagId())).findFirst()
+                    .orElseThrow(() -> new BadRequestException("Tag ID no válido: " + tagRequest.getTagId()));
+
+            if (tag.getTagId().equals(brandTagId)) {
+                throw new BadRequestException(
+                        "¡No se puede asignar la etiqueta %s! ¡Elige otra!".formatted(tag.getName()));
+            }
+
+            if (tag.getFatherId().equals(brandTagId)) {
+                childsOfBrand.add(tag);
+                if (childsOfBrand.size() > 1) {
+                    throw new BadRequestException("¡Debe haber solo una marca asignada!");
+                }
+            }
+
+            ProductTagResponseDto dto = new ProductTagResponseDto();
+            dto.setTagId(tag.getTagId());
+            dto.setType(tagRequest.getType());
+            dto.setName(tag.getName());
+            return dto;
+        }).toList();
+
+
+        List<ProductTagEntity> productTagEntities = convertToEntities(productTags, productId, BasicEnumStatus.ENABLED);
+        productTagRepository.saveAll(productTagEntities);
+
+        return response;
+    }
+
     @Override
     public ProductTagResponseDto deleteProductTag(Long tagId, Long productId, String type) {
 
@@ -87,29 +145,6 @@ public class ProductTagServiceImpl implements ProductTagService {
         productTagRepository.save(productTagEntity);
 
         return productTagMapper.toDto(productTagEntity);
-    }
-
-    public List<ProductTagResponseDto> CreateProductTags(List<TagResponseDto> tags,
-                                                         List<ProductTagRequestDto> productTags, Long productId)
-            throws BadRequestException {
-
-        List<ProductTagResponseDto> response = productTags.stream().map(tagRequest -> {
-            TagResponseDto tag = tags.stream()
-                    .filter(t -> t.getTagId().equals(tagRequest.getTagId()))
-                    .findFirst()
-                    .orElseThrow(() -> new BadRequestException("Tag ID no válido: " + tagRequest.getTagId()));
-
-            ProductTagResponseDto dto = new ProductTagResponseDto();
-            dto.setTagId(tag.getTagId());
-            dto.setType(tagRequest.getType());
-            dto.setName(tag.getName());
-            return dto;
-        }).toList();
-
-        List<ProductTagEntity> productTagEntities = convertToEntities(productTags, productId, BasicEnumStatus.ENABLED);
-        productTagRepository.saveAll(productTagEntities);
-
-        return response;
     }
 
     private List<ProductTagEntity> convertToEntities(List<ProductTagRequestDto> dtoList, Long productId,

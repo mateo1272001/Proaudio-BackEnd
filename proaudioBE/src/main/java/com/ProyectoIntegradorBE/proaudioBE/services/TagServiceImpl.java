@@ -7,7 +7,6 @@ import com.ProyectoIntegradorBE.proaudioBE.enums.BasicEnumStatus;
 import com.ProyectoIntegradorBE.proaudioBE.enums.TagTypeEnum;
 import com.ProyectoIntegradorBE.proaudioBE.exceptions.BadRequestException;
 import com.ProyectoIntegradorBE.proaudioBE.exceptions.ClientNotFoundException;
-import com.ProyectoIntegradorBE.proaudioBE.exceptions.TagNotFoundException;
 import com.ProyectoIntegradorBE.proaudioBE.mappers.TagMapper;
 import com.ProyectoIntegradorBE.proaudioBE.mappers.TagModuleMapper;
 import com.ProyectoIntegradorBE.proaudioBE.repositories.TagRepository;
@@ -214,14 +213,14 @@ public class TagServiceImpl implements TagService {
         return tagRepository.findById(tagId);
 
     }
-
-    public TagResponseDto findByProductIdAndFatherId(Long productId, Long fatherId) {
-
-        TagEntity tagEntity = tagRepository.findByProductIdAndFatherId(productId, fatherId).stream().findFirst()
-                .orElseThrow(() -> new TagNotFoundException(productId));
-
-        return tagMapper.toDto(tagEntity);
-    }
+    //
+    //    @Override
+    //    public TagResponseDto findByProductIdAndFatherId(Long productId, Long fatherId) {
+    //
+    //        List<TagEntity> tagEntity = tagRepository.findByProductIdAndFatherId(productId, fatherId);
+    //
+    //        return tagMapper.toDto(tagEntity);
+    //    }
 
     public TagTypesResponseDto findTagTypes() {
 
@@ -229,6 +228,7 @@ public class TagServiceImpl implements TagService {
 
     }
 
+    @Override
     public TagEntity findBrandRoot() {
 
         return tagRepository.findByNameAndStatus(BRAND_TAG_KEY, BasicEnumStatus.ENABLED)

@@ -55,7 +55,7 @@ public class PdfServiceImpl implements PdfService {
         project.put("eventDateStart", startDate.format(formatter));
         project.put("eventDateEnd", endDate.format(formatter));
         project.put("dateValidUntil", endDate.plusDays(10).format(formatter));
-        project.put("hoursWorked", ChronoUnit.HOURS.between(startDate, endDate));
+        project.put("daysWorked", ChronoUnit.DAYS.between(startDate, endDate));
 
 
         //product list
