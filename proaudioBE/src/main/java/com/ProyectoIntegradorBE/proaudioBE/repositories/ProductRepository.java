@@ -29,7 +29,7 @@ public interface ProductRepository extends CrudRepository<ProductEntity, Long>, 
             	    OR ((:start is NULL OR p.end_date >= :start) AND (:end is NULL OR p.end_date <= :end))
             	GROUP BY pd.product_id, pd.model
             ) AS products
-            LEFT JOIN product_tag pt ON (products.product_id = pt.product_id)
+            LEFT JOIN product_tag pt ON (products.product_id = pt.product_id AND pt.type = 'DESCRIPTIVE' AND pt.status = 'ENABLED')
             INNER JOIN tag t ON (t.tag_id = pt.tag_id)
             WHERE t.father_id = 1
             ORDER BY products.amount
