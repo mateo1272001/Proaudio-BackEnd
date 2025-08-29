@@ -6,11 +6,14 @@ import com.ProyectoIntegradorBE.proaudioBE.dtos.ProductProject.ProductProjectWit
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Project.ProductInProjectResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Project.ProductInProjectResponseDtoImpl;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Project.ProductsInProjectResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Project.ProjectSimpleReponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.entities.ProductEntity;
 import com.ProyectoIntegradorBE.proaudioBE.entities.ProductProjectEntity;
+import com.ProyectoIntegradorBE.proaudioBE.entities.ProjectEntity;
 import com.ProyectoIntegradorBE.proaudioBE.enums.BasicEnumStatus;
 import com.ProyectoIntegradorBE.proaudioBE.exceptions.BadRequestException;
 import com.ProyectoIntegradorBE.proaudioBE.mappers.ProductProjectMapper;
+import com.ProyectoIntegradorBE.proaudioBE.mappers.ProjectMapper;
 import com.ProyectoIntegradorBE.proaudioBE.repositories.ProductProjectRepository;
 import com.ProyectoIntegradorBE.proaudioBE.repositories.ProductRepository;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ProductProjectService;
@@ -29,6 +32,8 @@ public class ProductProjectServiceImpl implements ProductProjectService {
     private final ProductRepository productRepository;
 
     private final ProductProjectMapper productProjectMapper;
+
+    private final ProjectMapper projectMapper;
 
 
     private static ProductProjectEntity makeProductProjectEntity(ProductProjectRequestDto productProjectRequestDto) {
@@ -49,6 +54,10 @@ public class ProductProjectServiceImpl implements ProductProjectService {
     public ProductInProjectResponseDtoImpl createProductProject(ProductProjectRequestDto productProjectRequestDto,
                                                           List<ItemResponseDto> itemsOfProduct) {
 
+        if (productProjectRequestDto.getAmount() <= 0) {
+            throw new BadRequestException("¡Debes asignar un valor positivo a la cantidad de productos!");
+        }
+
         List<ProductProjectEntity> ppFromProject =
                 productProjectRepository.findByProjectIdAndProductIdAndStatus(productProjectRequestDto.getProjectId(),
                         productProjectRequestDto.getProductId(), BasicEnumStatus.ENABLED);
@@ -67,6 +76,7 @@ public class ProductProjectServiceImpl implements ProductProjectService {
     }
 
     private ProductInProjectResponseDtoImpl getProductInProjectResponseDto(ProductProjectEntity productProjectEntity) {
+
         ProductEntity productEntity = productRepository.findById(productProjectEntity.getProductId())
                 .orElseThrow(() -> new BadRequestException("¡Este producto no está asociado al proyecto espeficiado!"));
 
@@ -76,7 +86,7 @@ public class ProductProjectServiceImpl implements ProductProjectService {
         productInProjectResponseDto.setModel(productEntity.getModel());
         productInProjectResponseDto.setComments(productEntity.getComments());
         productInProjectResponseDto.setAmount(productProjectEntity.getAmount());
-        productInProjectResponseDto.setRentPrice(productProjectEntity.getRentPriceId());
+        productInProjectResponseDto.setRentPriceId(productProjectEntity.getRentPriceId());
 
         return productInProjectResponseDto;
     }
@@ -109,6 +119,14 @@ public class ProductProjectServiceImpl implements ProductProjectService {
 
         return productProjectRepository.findByProductIdAndProjectIdAndStatus(productId, projectId,
                 BasicEnumStatus.ENABLED);
+    }
+
+    @Override
+    public List<ProjectSimpleReponseDto> getNextProjectsForProduct(Long productId) {
+
+        List<ProjectEntity> projectEntities = productProjectRepository.findNextProjectsByProductId(productId);
+
+        return projectMapper.toDtoList(projectEntities);
     }
 
 }

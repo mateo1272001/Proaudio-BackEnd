@@ -7,7 +7,10 @@ import com.ProyectoIntegradorBE.proaudioBE.dtos.Expense.ExpenseRequestDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Expense.ExpenseResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.GeneralParmeters.GeneralParameterResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.ItemResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.ItemRowDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.ItemSectionResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.ItemProject.ItemProjectResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.ItemProject.NextProjectInfoDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Notifications.NotificationRequestDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.PageableDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.PriceReponseDto;
@@ -42,10 +45,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 import static com.ProyectoIntegradorBE.proaudioBE.Utils.AppConstants.*;
 
@@ -446,6 +446,32 @@ public class ProjectServiceImpl implements ProjectService {
         return new RunningStatusResponseDto(Arrays.stream(ProjectRunningStatusEnum.values()).toList());
     }
 
+    private static ProjectRunningStatusEnum getRunningStatus(ProjectEntity project) {
+
+        LocalDateTime startDate = project.getStartDate();
+        LocalDateTime endDate = project.getEndDate();
+        LocalDateTime now = LocalDateTime.now();
+
+        if (project.getStatus().equals(ProjectStatusEnum.DISCARDED)) {
+            return ProjectRunningStatusEnum.DISCARDED;
+        }
+
+        if (now.isAfter(startDate) && now.isBefore(endDate)) {
+            return ProjectRunningStatusEnum.RUNNING;
+        }
+
+        if (now.isAfter(endDate)) {
+            return ProjectRunningStatusEnum.FINISHED;
+        }
+
+        if (now.isBefore(startDate) && now.isAfter(startDate.minusWeeks(1))) {
+            return ProjectRunningStatusEnum.PREPARING;
+        }
+
+        return ProjectRunningStatusEnum.NONE;
+
+    }
+
     private List<ProjectRowResponseDto> createRows(List<ProjectEntity> content) {
 
         List<ProjectRowResponseDto> responseDtos = new ArrayList<>();
@@ -458,10 +484,7 @@ public class ProjectServiceImpl implements ProjectService {
             projectRowResponseDto.setPaymentStatus(project.getPaymentStatus());
             projectRowResponseDto.setStartDate(project.getStartDate());
             projectRowResponseDto.setEndDate(project.getEndDate());
-            projectRowResponseDto.setRunningStatus(
-                    project.getStartDate().isAfter(LocalDateTime.now()) ? ProjectRunningStatusEnum.RUNNING :
-                            project.getStartDate().isAfter(LocalDateTime.now().minusWeeks(1L)) ?
-                                    ProjectRunningStatusEnum.PREPARING : ProjectRunningStatusEnum.NONE);
+            projectRowResponseDto.setRunningStatus(getRunningStatus(project));
             responseDtos.add(projectRowResponseDto);
         }
 
@@ -645,6 +668,7 @@ public class ProjectServiceImpl implements ProjectService {
         ProjectDetailsResponseDto projectDetailsResponseDto = new ProjectDetailsResponseDto();
         projectDetailsResponseDto.setProjectId(projectSimpleReponseDto.getProjectId());
         projectDetailsResponseDto.setName(projectSimpleReponseDto.getName());
+        projectDetailsResponseDto.setDescription(projectSimpleReponseDto.getDescription());
         projectDetailsResponseDto.setStartDate(projectSimpleReponseDto.getStartDate());
         projectDetailsResponseDto.setEndDate(projectSimpleReponseDto.getEndDate());
         projectDetailsResponseDto.setEvent(eventService.GetEvent(projectSimpleReponseDto.getEventId()));
@@ -796,6 +820,10 @@ public class ProjectServiceImpl implements ProjectService {
                                                            ProjectSimpleReponseDto projectSimpleReponseDto,
                                                            ItemProjectResponseDto itemProjectResponseDto) {
 
+        if (!ITEM_AVAILABLE_STATUS.contains(itemResponseDto.getStatus())) {
+            throw new BadRequestException("¡Este artículo está fuera de servicio!");
+        }
+
         itemService.updateLocation(LocationEnum.USING, itemResponseDto);
 
         List<ProductProjectWithModelResponseDto> productProjectWithModelResponseDtos =
@@ -815,19 +843,26 @@ public class ProjectServiceImpl implements ProjectService {
                 ItemProjectStatus.ENABLED, itemProjectResponseDto);
     }
 
-    @Override
     @Transactional
-    public ItemProjectResponseDto singleItemReturn(Long idProject, Long idItem) {
+    @Override
+    public ItemProjectResponseDto singleItemReturnWithProjectId(Long idProject, Long idItem) {
 
         ItemProjectResponseDto itemProjectResponseDto =
                 itemProjectService.getItemProjectByProjectIdAndItemId(idProject, idItem);
+
+        return singleItemReturn(itemProjectResponseDto);
+    }
+
+    @Override
+    @Transactional
+    public ItemProjectResponseDto singleItemReturn(ItemProjectResponseDto itemProjectResponseDto) {
 
         if (Objects.isNull(itemProjectResponseDto) ||
                 itemProjectResponseDto.getStatus().equals(ItemProjectStatus.DISABLED)) {
             throw new BadRequestException("¡El artículo no está en el proyecto!");
         }
 
-        ItemResponseDto itemResponseDto = itemService.getItem(idItem);
+        ItemResponseDto itemResponseDto = itemService.getItem(itemProjectResponseDto.getItemId());
 
         if (itemResponseDto.getLocation().equals(LocationEnum.IN_DEPOSIT)) {
             throw new BadRequestException("¡El artículo ya está en el depósito!");
@@ -840,10 +875,11 @@ public class ProjectServiceImpl implements ProjectService {
         itemProjectResponseDto.setItemDescription(itemResponseDto.getDescription());
         itemProjectResponseDto.setItemStatus(itemResponseDto.getStatus());
         itemProjectResponseDto.setProductId(itemResponseDto.getProductId());
+        itemProjectResponseDto.setItemLocation(itemResponseDto.getLocation());
         ProductResponseDto productResponseDto = productService.GetProduct(itemResponseDto.getProductId());
         itemProjectResponseDto.setProductModel(productResponseDto.getModel());
 
-        solveReturnNotification(idProject);
+        solveReturnNotification(itemProjectResponseDto.getProjectId());
 
         return itemProjectResponseDto;
     }
@@ -981,6 +1017,44 @@ public class ProjectServiceImpl implements ProjectService {
             notificationService.update(notifications);
         }
 
+    }
+
+    @Override
+    public ItemSectionResponseDto getItemListFrom(Long productId, String status, String sortBy, String direction,
+                                                  Integer page, Integer size) {
+
+        ItemSectionResponseDto itemSectionResponseDto =
+                itemService.getItemList(productId, status, sortBy, direction, page, size);
+
+        return addProjectInfoToItemList(itemSectionResponseDto);
+
+    }
+
+    private ItemSectionResponseDto addProjectInfoToItemList(ItemSectionResponseDto itemSectionResponseDto) {
+
+        List<NextProjectInfoDto> nextProjectInfoDto =
+                itemProjectService.getNextProjectInfoFromItems(itemSectionResponseDto);
+
+        for (ItemRowDto item : itemSectionResponseDto.getItems()) {
+
+            Optional<NextProjectInfoDto> foundNextProject =
+                    nextProjectInfoDto.stream().filter(np -> np.getItemId().equals(item.getItemId())).findFirst();
+
+            if (foundNextProject.isPresent()) {
+
+                NextProjectInfoDto dto = foundNextProject.get();
+
+                System.out.println("DTO encontrado: itemId = " + dto.getItemId() + ", name = " + dto.getProjectName() +
+                        ", startDate = " + dto.getProjectStartDate());
+
+                item.setNextProjectName(foundNextProject.get().getProjectName());
+                item.setNextProject(foundNextProject.get().getProjectStartDate());
+                item.setNextProjectId(foundNextProject.get().getProjectId());
+            }
+
+        }
+
+        return itemSectionResponseDto;
     }
 
 }

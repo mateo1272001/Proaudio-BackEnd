@@ -21,24 +21,21 @@ public class ProductController {
     @PostMapping
     private ProductResponseDto CreateProductComplete(
             @RequestPart("productRequestDto") ProductRequestDto productRequestDto,
-            @RequestPart(value = "file", required = false) MultipartFile[] files)
-            throws BadRequestException {
+            @RequestPart(value = "file", required = false) MultipartFile[] files) {
 
-        //TODO (TAG) add mandatory brand tag validation
         return productService.createProduct(productRequestDto, files);
 
     }
 
     @PutMapping("{id}")
-    private ProductResponseDto UpdateProduct(@RequestBody ProductRequestDto productRequestDto,
-                                             @PathVariable Long id) throws BadRequestException {
+    private ProductResponseDto UpdateProduct(@RequestBody ProductRequestDto productRequestDto, @PathVariable Long id) {
 
         return productService.UpdateProduct(productRequestDto, id);
 
     }
 
     @DeleteMapping("{id}")
-    private ProductResponseDto DeleteProduct(@PathVariable Long id) throws BadRequestException {
+    private ProductResponseDto DeleteProduct(@PathVariable Long id) {
 
         return productService.DeleteProduct(id);
 
@@ -56,11 +53,10 @@ public class ProductController {
             @RequestParam(required = false) String direction,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-            @RequestParam(defaultValue = "1") Integer page,
-            @RequestParam(defaultValue = "10") Integer size
-    ) throws BadRequestException {
+            @RequestParam(defaultValue = "1") Integer page, @RequestParam(defaultValue = "10") Integer size,
+            @RequestParam(required = false) String title) throws BadRequestException {
 
-        return productService.getFilteredProducts(tags, sortBy, direction, startDate, endDate, page, size);
+        return productService.getFilteredProducts(tags, sortBy, direction, startDate, endDate, page, size, title);
 
     }
 

@@ -36,4 +36,6 @@ public interface ItemService {
     ItemResponseDto updateLocation(LocationEnum locationEnum, ItemResponseDto itemResponseDto);
 
     List<ItemEntity> getByItemProject(Long projectId);
+
+    ItemStatusResponseDto getPossibleItemStatuses(Long id);
 }

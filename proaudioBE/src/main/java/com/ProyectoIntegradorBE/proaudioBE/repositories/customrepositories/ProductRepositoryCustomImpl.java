@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Repository
@@ -20,17 +21,13 @@ public class ProductRepositoryCustomImpl implements ProductRepositoryCustom {
 
     private final JdbcTemplate jdbcTemplate;
 
-    public ProductListResponseDto findAllWithFilters(
-            List<Long> tagIds, ProductSortByEnum sortBy,
-            DirectionEnum direction,
-            LocalDate startDate,
-            LocalDate endDate,
-            Integer page,
-            Integer size
+    public ProductListResponseDto findAllWithFilters(List<Long> tagIds, ProductSortByEnum sortBy,
+                                                     DirectionEnum direction, LocalDate startDate, LocalDate endDate,
+                                                     Integer page, Integer size, String title, Long brandId
     ) {
         boolean hasTags = tagIds != null && !tagIds.isEmpty();
 
-        int pageNumber = (page != null ? page : 1) - 1;
+        int pageNumber = page != null ? page : 1;
         int pageSize = size != null ? size : 10;
         int offset = pageNumber * pageSize;
 
@@ -53,16 +50,16 @@ public class ProductRepositoryCustomImpl implements ProductRepositoryCustom {
             tagIdCsv = "";
         }
 
-        List<ProductRowDto> products = getProductRowDtos(hasTags, tagIdCsv, sortColumn, sortDir, tagCount, pageSize, offset);
+        List<ProductRowDto> products =
+                getProductRowDtos(hasTags, tagIdCsv, sortColumn, sortDir, tagCount, pageSize, offset, title, brandId);
 
-        int totalElements = getTotalElements(hasTags, tagIdCsv, tagCount);
+        int totalElements = getTotalElements(hasTags, tagIdCsv, tagCount, title, brandId);
 
         int totalPages = (int) Math.ceil((double) totalElements / pageSize);
         boolean hasNext = pageNumber + 1 < totalPages;
         boolean hasPrevious = pageNumber > 0;
 
-        PageableDto pageable = PageableDto.builder()
-                .pageNumber(pageNumber + 1)
+        PageableDto pageable = PageableDto.builder().pageNumber(pageNumber)
                 .pageSize(pageSize)
                 .totalPages(totalPages)
                 .totalElements(totalElements)
@@ -77,10 +74,16 @@ public class ProductRepositoryCustomImpl implements ProductRepositoryCustom {
     }
 
     private List<ProductRowDto> getProductRowDtos(boolean hasTags, String tagIdCsv, String sortColumn, String sortDir,
-                                                  int tagCount, int pageSize, int offset) {
+                                                  int tagCount, int pageSize, int offset, String title, Long brandId) {
         String sql;
 
         if(hasTags) {
+
+            String titleCondition = Objects.isNull(title) || title.isBlank() ? "" :
+                    " WHERE (UPPER(filtered.model) LIKE UPPER(CONCAT('%', '" + title + "', '%')) OR " +
+                            "UPPER(brands.name) LIKE UPPER(CONCAT('%', '" + title +
+                            "', '%')) OR UPPER(filtered.comments) LIKE UPPER(CONCAT('%', '" + title + "', '%'))) ";
+
             sql = String.format("""
                 WITH RECURSIVE tag_hierarchy AS (
                 	SELECT tag_id,tag_id as root FROM tag WHERE tag_id IN (%s)
@@ -104,16 +107,15 @@ public class ProductRepositoryCustomImpl implements ProductRepositoryCustom {
                 LEFT JOIN
                 	(SELECT t_brand.name,pt_brand.product_id
                 	FROM product_tag pt_brand
-                	INNER JOIN tag t_brand ON (pt_brand.tag_id = t_brand.tag_id AND t_brand.father_id = 1)
+                        	INNER JOIN tag t_brand ON (pt_brand.tag_id = t_brand.tag_id AND t_brand.father_id = %s AND pt_brand.type = 'DESCRIPTIVE')
                 	WHERE pt_brand.status = 'ENABLED')
-                AS brands ON brands.product_id = filtered.id
+                    AS brands ON brands.product_id = filtered.id %s
                 GROUP BY filtered.id,brands.name
                 HAVING COUNT(id) = ?
                 ORDER BY %s %s
                 LIMIT ?
                 OFFSET ?
-                
-                """, tagIdCsv, sortColumn, sortDir);
+                    """, tagIdCsv, brandId, titleCondition, sortColumn, sortDir);
 
             return jdbcTemplate.query(
                     sql,
@@ -126,6 +128,12 @@ public class ProductRepositoryCustomImpl implements ProductRepositoryCustom {
             );
 
         } else {
+
+            String titleCondition = Objects.isNull(title) || title.isBlank() ? "" :
+                    " AND p.status = 'ACTIVE' AND (UPPER(p.model) LIKE UPPER(CONCAT('%', '" + title + "', '%')) OR " +
+                            "UPPER(brands.name) LIKE UPPER(CONCAT('%', '" + title +
+                            "', '%')) OR UPPER(p.comments) LIKE UPPER(CONCAT('%', '" + title + "', '%'))) ";
+
             sql = String.format("""
                     SELECT p.product_id AS id, p.model AS model, p.comments AS comments, p.status AS status,
                         brands.name as brand
@@ -133,15 +141,15 @@ public class ProductRepositoryCustomImpl implements ProductRepositoryCustom {
                     LEFT JOIN
                     	(SELECT t_brand.name,pt_brand.product_id
                     	FROM product_tag pt_brand
-                    	INNER JOIN tag t_brand ON (pt_brand.tag_id = t_brand.tag_id AND t_brand.father_id = 1)
+                    	INNER JOIN tag t_brand ON (pt_brand.tag_id = t_brand.tag_id AND t_brand.father_id = %s AND pt_brand.type = 'DESCRIPTIVE')
                     	WHERE pt_brand.status = 'ENABLED') AS brands
                     ON brands.product_id = p.product_id
-                    WHERE p.status = "ACTIVE"
+                    WHERE p.status = "ACTIVE"%s
                     ORDER BY %s %s
                     LIMIT ?
                     OFFSET ?
                     
-                    """, sortColumn, sortDir);
+                    """, brandId, titleCondition, sortColumn, sortDir);
 
             return jdbcTemplate.query(
                     sql,
@@ -155,39 +163,50 @@ public class ProductRepositoryCustomImpl implements ProductRepositoryCustom {
 
     }
 
-    private int getTotalElements(boolean hasTags, String tagIdCsv, int tagCount) {
+    private int getTotalElements(boolean hasTags, String tagIdCsv, int tagCount, String title, Long brandId) {
 
         String countSql;
 
         if(hasTags) {
 
-            countSql = String.format("""
-            WITH RECURSIVE tag_hierarchy AS (
-                SELECT tag_id,tag_id as root FROM tag WHERE tag_id IN (%S)
-                UNION ALL
-                SELECT t.tag_id,th.root FROM tag t
-                INNER JOIN tag_hierarchy th ON t.father_id = th.tag_id
-            )
-            select COUNT(*)
-            FROM (
-                SELECT filtered.id
-                FROM (
-                    SELECT
-                        p.product_id AS id,
-                        p.model AS model,
-                        p.comments AS comments,
-                        p.status AS status
-                    FROM product p
-                    INNER JOIN product_tag pt ON (p.product_id = pt.product_id)
-                    INNER JOIN tag_hierarchy th ON (pt.tag_id = th.tag_id)
-                                                    WHERE p.status = "ACTIVE" AND pt.type = "DESCRIPTIVE" AND pt.status = "ENABLED"
-                    GROUP BY th.root, pt.product_id
-                ) AS filtered
-                GROUP BY filtered.id
-                HAVING COUNT(id) = ?
-            ) as a
-            """, tagIdCsv);
+            String titleCondition = Objects.isNull(title) || title.isBlank() ? "" :
+                    " WHERE (UPPER(filtered.model) LIKE UPPER(CONCAT('%', '" + title + "', '%')) OR " +
+                            "UPPER(brands.name) LIKE UPPER(CONCAT('%', '" + title +
+                            "', '%')) OR UPPER(filtered.comments) LIKE UPPER(CONCAT('%', '" + title + "', '%'))) ";
 
+            countSql = String.format("""
+                    WITH RECURSIVE tag_hierarchy AS (
+                        SELECT tag_id,tag_id as root FROM tag WHERE tag_id IN (%s)
+                        UNION ALL
+                        SELECT t.tag_id,th.root FROM tag t
+                        INNER JOIN tag_hierarchy th ON t.father_id = th.tag_id
+                    )
+                    select COUNT(*)
+                    FROM(
+                        SELECT filtered.*, brands.name as brand
+                        FROM (
+                            SELECT
+                                p.product_id AS id,
+                                p.model AS model,
+                                p.comments AS comments,
+                                p.status AS status
+                            FROM product p
+                            INNER JOIN product_tag pt ON (p.product_id = pt.product_id)
+                            INNER JOIN tag_hierarchy th ON (pt.tag_id = th.tag_id)
+                                        WHERE p.status = "ACTIVE" AND pt.type = "DESCRIPTIVE" AND pt.status = "ENABLED"
+                            GROUP BY th.root, pt.product_id
+                        ) AS filtered
+                        LEFT JOIN
+                            (SELECT t_brand.name,pt_brand.product_id
+                            FROM product_tag pt_brand
+                            INNER JOIN tag t_brand ON (pt_brand.tag_id = t_brand.tag_id AND t_brand.father_id = %s)
+                            WHERE pt_brand.status = 'ENABLED')
+                        AS brands ON brands.product_id = filtered.id
+                        %s
+                        GROUP BY filtered.id,brands.name
+                        HAVING COUNT(id) = ?
+                    ) as a;
+                    """, tagIdCsv, brandId, titleCondition);
 
             return jdbcTemplate.query(
                     countSql,
@@ -197,7 +216,22 @@ public class ProductRepositoryCustomImpl implements ProductRepositoryCustom {
 
         } else {
 
-            countSql = "SELECT COUNT(*) FROM product p WHERE p.status = \"ACTIVE\"";
+            String titleCondition = Objects.isNull(title) || title.isBlank() ? "" :
+                    " AND p.status = 'ACTIVE' AND (UPPER(p.model) LIKE UPPER(CONCAT('%', '" + title + "', '%')) OR " +
+                            "UPPER(brands.name) LIKE UPPER(CONCAT('%', '" + title +
+                            "', '%')) OR UPPER(p.comments) LIKE UPPER(CONCAT('%', '" + title + "', '%'))) ";
+
+            countSql = String.format("""
+                    SELECT COUNT(*)
+                    FROM product p
+                    LEFT JOIN
+                    	(SELECT t_brand.name,pt_brand.product_id
+                    	FROM product_tag pt_brand
+                    	INNER JOIN tag t_brand ON (pt_brand.tag_id = t_brand.tag_id AND t_brand.father_id = %s)
+                    	WHERE pt_brand.status = 'ENABLED') AS brands
+                    ON brands.product_id = p.product_id
+                    WHERE p.status = "ACTIVE" %s
+                    """, brandId, titleCondition);
 
             return jdbcTemplate.queryForObject(countSql, Integer.class);
 

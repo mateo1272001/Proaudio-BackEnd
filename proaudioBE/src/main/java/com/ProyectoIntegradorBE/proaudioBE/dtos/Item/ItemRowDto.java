@@ -4,10 +4,15 @@ import com.ProyectoIntegradorBE.proaudioBE.enums.ItemStatusEnum;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
+@AllArgsConstructor
+@NoArgsConstructor
 @Data
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class ItemRowDto {
@@ -22,10 +27,10 @@ public class ItemRowDto {
 
     private LocalDate boughtAt;
 
-    @NotNull
     private String nextProjectName;
 
-    @NotNull
-    private LocalDate nextProject;
+    private LocalDateTime nextProject;
+
+    private Long nextProjectId;
 
 }

@@ -64,4 +64,10 @@ public final class AppConstants {
     public static final List<ItemStatusEnum> ITEM_AVAILABLE_STATUS =
             List.of(ItemStatusEnum.CREATED, ItemStatusEnum.GOOD, ItemStatusEnum.WITH_DETAILS);
 
+
+    //products
+    public static final Long BRAND_TAG_FATHER = 1L;
+
+    public static final String BRAND_TAG_KEY = "Marca";
+
 }

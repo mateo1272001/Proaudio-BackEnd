@@ -24,8 +24,6 @@ public class ProductRequestDto {
     @NotNull
     private List<PriceRequestDto> prices;
 
-    //    private List<PhotoRequestDto> photos;
-
     @NotNull
     private List<ProductTagRequestDto> tags;
 

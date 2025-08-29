@@ -46,20 +46,31 @@ public class ClientServiceImpl implements ClientService {
 
     }
 
+    private static void clientValdations(ClientRequestDto clientRequestDto) {
+        if (Objects.isNull(clientRequestDto.getName())) {
+            throw new BadRequestException("¡El cliente debe tener un nombre!");
+        }
+        if (Objects.isNull(clientRequestDto.getPhoneNumber())) {
+            throw new BadRequestException("¡El cliente debe tener un número de teléfono!");
+        }
+        if (Objects.isNull(clientRequestDto.getEmail())) {
+            throw new BadRequestException("¡El cliente debe tener un email!");
+        }
+        if (Objects.isNull(clientRequestDto.getAddress())) {
+            throw new BadRequestException("¡El cliente debe tener una dirección!");
+        }
+    }
+
     @Override
     public ClientResponseDto createClient(ClientRequestDto clientRequestDto) {
 
-        if (Objects.isNull(clientRequestDto.getName())) {
-            throw new BadRequestException("¡El cliente debe tener, por lo menos, un nombre!");
-        }
+        clientValdations(clientRequestDto);
 
         ClientEntity clientEntity = new ClientEntity();
         clientEntity.setName(clientRequestDto.getName());
-        clientEntity.setPhoneNumber(
-                StringUtils.isBlank(clientRequestDto.getPhoneNumber()) ? null : clientRequestDto.getPhoneNumber());
-        clientEntity.setEmail(StringUtils.isBlank(clientRequestDto.getEmail()) ? null : clientRequestDto.getEmail());
-        clientEntity.setAddress(
-                StringUtils.isBlank(clientRequestDto.getAddress()) ? null : clientRequestDto.getAddress());
+        clientEntity.setPhoneNumber(clientRequestDto.getPhoneNumber());
+        clientEntity.setEmail(clientRequestDto.getEmail());
+        clientEntity.setAddress(clientRequestDto.getAddress());
         clientEntity.setDetails(
                 StringUtils.isBlank(clientRequestDto.getDetails()) ? null : clientRequestDto.getDetails());
         clientEntity.setStatus(BasicEnumStatus.ENABLED);
@@ -75,16 +86,12 @@ public class ClientServiceImpl implements ClientService {
         ClientEntity clientEntity = clientRepository.findByClientIdAndStatus(id, BasicEnumStatus.ENABLED)
                 .orElseThrow(() -> new BadRequestException("¡No se encontró un cliente activo con ese id!"));
 
-        if (Objects.isNull(clientRequestDto.getName())) {
-            throw new BadRequestException("¡El cliente debe tener, por lo menos, un nombre!");
-        }
+        clientValdations(clientRequestDto);
 
         clientEntity.setName(clientRequestDto.getName());
-        clientEntity.setPhoneNumber(
-                StringUtils.isBlank(clientRequestDto.getPhoneNumber()) ? null : clientRequestDto.getPhoneNumber());
-        clientEntity.setEmail(StringUtils.isBlank(clientRequestDto.getEmail()) ? null : clientRequestDto.getEmail());
-        clientEntity.setAddress(
-                StringUtils.isBlank(clientRequestDto.getAddress()) ? null : clientRequestDto.getAddress());
+        clientEntity.setPhoneNumber(clientRequestDto.getPhoneNumber());
+        clientEntity.setEmail(clientRequestDto.getEmail());
+        clientEntity.setAddress(clientRequestDto.getAddress());
         clientEntity.setDetails(
                 StringUtils.isBlank(clientRequestDto.getDetails()) ? null : clientRequestDto.getDetails());
         clientEntity.setStatus(BasicEnumStatus.ENABLED);

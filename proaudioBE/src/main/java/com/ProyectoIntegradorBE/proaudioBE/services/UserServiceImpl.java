@@ -140,8 +140,12 @@ public class UserServiceImpl implements UserService {
                 userRepository.findByEmail(loggedUserEmail).orElseThrow(() -> new InternalException(""));
         String currentPass = userEntity.getPassword();
 
-        if (passwordEncoder.matches(changePasswordDto.getNewPassword(), currentPass)) {
+        if (!passwordEncoder.matches(changePasswordDto.getCurrentPassword(), currentPass)) {
             throw new BadRequestException("¡La contraseña actual es incorrecta!");
+        }
+
+        if (passwordEncoder.matches(changePasswordDto.getNewPassword(), currentPass)) {
+            throw new BadRequestException("¡La nueva contraseña no puede ser igual a la anterior!");
         }
 
         if (!changePasswordDto.getNewPassword().equals(changePasswordDto.getNewPasswordRepeat())) {

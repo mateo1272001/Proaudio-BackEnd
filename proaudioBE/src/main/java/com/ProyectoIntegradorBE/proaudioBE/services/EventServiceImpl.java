@@ -34,15 +34,25 @@ public class EventServiceImpl implements EventService {
 
     private final UtilService utilService;
 
+    private static void nullValidations(EventRequestDto eventRequestDto) {
+        if (Objects.isNull(eventRequestDto.getName())) {
+            throw new BadRequestException("¡El evento debe tener nombre!");
+        }
+        if (Objects.isNull(eventRequestDto.getDistance())) {
+            throw new BadRequestException("¡El evento debe tener distancia!");
+        }
+        if (Objects.isNull(eventRequestDto.getAddress())) {
+            throw new BadRequestException("¡El evento debe tener por una dirección!");
+        }
+    }
+
     @Override
     public EventResponseDto CreateEvent(EventRequestDto eventRequestDto) {
 
         EventEntity eventEntity = new EventEntity();
-        if (Objects.isNull(eventRequestDto.getName()) || Objects.isNull(eventRequestDto.getDistance())) {
-            throw new BadRequestException("¡El evento debe tener por lo menos nombre y distancia!");
-        }
+        nullValidations(eventRequestDto);
         eventEntity.setName(eventRequestDto.getName());
-        eventEntity.setAddress(Objects.nonNull(eventRequestDto.getAddress()) ? eventRequestDto.getAddress() : null);
+        eventEntity.setAddress(eventRequestDto.getAddress());
         eventEntity.setDistance(eventRequestDto.getDistance());
         eventEntity.setDescription(
                 Objects.nonNull(eventRequestDto.getDescription()) ? eventRequestDto.getDescription() : null);
@@ -59,20 +69,14 @@ public class EventServiceImpl implements EventService {
         EventEntity eventEntity =
                 eventRepository.findById(id).orElseThrow(() -> new BadRequestException("¡Evento no encontrado!"));
 
-        if (Objects.nonNull(eventRequestDto.getName())) {
-            eventEntity.setName(eventRequestDto.getName());
-        }
-        if (Objects.nonNull(eventRequestDto.getDistance())) {
-            eventEntity.setDistance(eventRequestDto.getDistance());
-        }
-        if (Objects.nonNull(eventRequestDto.getAddress())) {
-            eventEntity.setAddress(eventRequestDto.getAddress());
-        }
+        nullValidations(eventRequestDto);
+
+        eventEntity.setName(eventRequestDto.getName());
+        eventEntity.setDistance(eventRequestDto.getDistance());
+        eventEntity.setAddress(eventRequestDto.getAddress());
+
         if (Objects.nonNull(eventRequestDto.getDescription())) {
             eventEntity.setDescription(eventRequestDto.getDescription());
-        }
-        if (Objects.nonNull(eventRequestDto.getStatus())) {
-            eventEntity.setStatus(BasicEnumStatus.valueOf(eventRequestDto.getStatus()));
         }
 
         eventEntity = eventRepository.save(eventEntity);
@@ -85,6 +89,10 @@ public class EventServiceImpl implements EventService {
 
         EventEntity eventEntity =
                 eventRepository.findById(id).orElseThrow(() -> new BadRequestException("¡Evento no encontrado!"));
+
+        if (eventEntity.getStatus().equals(BasicEnumStatus.DISABLED)) {
+            throw new BadRequestException("¡El evento ya fue eliminado!");
+        }
 
         eventEntity.setStatus(BasicEnumStatus.DISABLED);
 
@@ -103,8 +111,8 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public EventResponseListDto GetAllEvents(String sortBy, String direction, Integer page, Integer size,
-                                             String status) {
+    public EventResponseListDto GetAllEvents(String sortBy, String direction, Integer page, Integer size, String status,
+                                             String name) {
 
         DirectionEnum dir =
                 Objects.isNull(direction) ? DirectionEnum.DESC : DirectionEnum.valueOf(direction.toUpperCase());
@@ -123,7 +131,7 @@ public class EventServiceImpl implements EventService {
         Sort sort = Sort.by(Sort.Direction.fromString(dir.name()), sortColumn);
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        Specification<EventEntity> spec = EventSpecification.filterBy(statusEnum);
+        Specification<EventEntity> spec = EventSpecification.filterBy(statusEnum, name);
 
         Page<EventEntity> pages = eventRepository.findAll(spec, pageable);
 

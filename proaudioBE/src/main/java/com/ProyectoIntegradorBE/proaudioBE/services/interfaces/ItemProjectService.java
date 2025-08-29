@@ -1,8 +1,10 @@
 package com.ProyectoIntegradorBE.proaudioBE.services.interfaces;
 
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.ItemResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.ItemSectionResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.ItemProject.ItemProjectResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.ItemProject.ItemProjectResponseListDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.ItemProject.NextProjectInfoDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.ProductProject.ProductProjectWithModelResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Project.ProjectSimpleReponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.entities.ItemProjectEntity;
@@ -28,4 +30,9 @@ public interface ItemProjectService {
                                      List<ProductProjectWithModelResponseDto> productProjectWithModelResponseDtos,
                                      ItemProjectEntity itemProjectEntity);
 
+    ItemProjectResponseDto getLastItemProjectByItemId(Long idItem);
+
+    List<NextProjectInfoDto> getNextProjectInfoFromItems(ItemSectionResponseDto itemSectionResponseDto);
+
+    List<ProjectSimpleReponseDto> checkNextProjectForItem(Long itemId);
 }

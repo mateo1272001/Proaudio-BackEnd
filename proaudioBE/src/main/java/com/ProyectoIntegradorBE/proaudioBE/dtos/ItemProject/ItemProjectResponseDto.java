@@ -2,6 +2,7 @@ package com.ProyectoIntegradorBE.proaudioBE.dtos.ItemProject;
 
 import com.ProyectoIntegradorBE.proaudioBE.enums.ItemProjectStatus;
 import com.ProyectoIntegradorBE.proaudioBE.enums.ItemStatusEnum;
+import com.ProyectoIntegradorBE.proaudioBE.enums.LocationEnum;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.Data;
@@ -31,6 +32,8 @@ public class ItemProjectResponseDto {
     private String itemDescription;
 
     private ItemStatusEnum itemStatus;
+
+    private LocationEnum itemLocation;
 
     private String itemSerialNumber;
 

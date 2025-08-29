@@ -119,7 +119,7 @@ public class ProjectController {
     @PostMapping("/{idProject}/item/{idItem}/return")
     public ItemProjectResponseDto itemReturnToDeposit(@PathVariable Long idProject, @PathVariable Long idItem) {
 
-        return projectService.singleItemReturn(idProject, idItem);
+        return projectService.singleItemReturnWithProjectId(idProject, idItem);
     }
 
     @GetMapping("{id}/items")

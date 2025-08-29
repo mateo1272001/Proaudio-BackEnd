@@ -40,8 +40,11 @@ public class ProductProjectController {
 
         List<ItemResponseDto> items = itemService.getByProductId(productProjectRequestDto.getProductId());
 
-        return productProjectService.createProductProject(productProjectRequestDto, items);
+        ProductInProjectResponseDtoImpl productInProjectResponseDto =
+                productProjectService.createProductProject(productProjectRequestDto, items);
+        productInProjectResponseDto.setRentPriceValue(priceReponseDto.getValue());
 
+        return productInProjectResponseDto;
     }
 
     @DeleteMapping("{id}")

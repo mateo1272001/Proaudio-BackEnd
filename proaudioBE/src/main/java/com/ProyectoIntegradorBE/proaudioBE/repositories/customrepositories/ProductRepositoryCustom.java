@@ -15,9 +15,7 @@ public interface ProductRepositoryCustom {
             List<Long> tagIds, ProductSortByEnum sortBy,
             DirectionEnum direction,
             LocalDate startDate,
-            LocalDate endDate,
-            Integer page,
-            Integer size
+            LocalDate endDate, Integer page, Integer size, String title, Long brandId
     );
 
 }
