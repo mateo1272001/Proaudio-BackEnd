@@ -10,10 +10,12 @@ import java.util.List;
 @AllArgsConstructor
 @Data
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class AmountRentedResponseDto {
+public class BalanceAnalyticsResponseDto {
 
-    private RangeDto range;
+    private RequestedProductDto requestedProduct;
 
-    private List<RentedProductsAmountDto> products;
+    private List<ProductMovementsDto> movements;
+
+    private BalanceDto balance;
 
 }

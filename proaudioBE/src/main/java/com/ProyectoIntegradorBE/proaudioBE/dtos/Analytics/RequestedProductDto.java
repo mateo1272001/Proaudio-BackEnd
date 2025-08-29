@@ -1,19 +1,18 @@
 package com.ProyectoIntegradorBE.proaudioBE.dtos.Analytics;
 
+
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
-import java.util.List;
-
 @AllArgsConstructor
 @Data
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class AmountRentedResponseDto {
+public class RequestedProductDto {
 
-    private RangeDto range;
+    private Long productId;
 
-    private List<RentedProductsAmountDto> products;
+    private String model;
 
 }

@@ -1,12 +1,10 @@
 package com.ProyectoIntegradorBE.proaudioBE.controllers;
 
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Analytics.AmountRentedResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Analytics.BalanceAnalyticsResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.AnalyticsService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 
@@ -24,5 +22,9 @@ public class AnalyticsController {
         return analyticsService.getMostRentedProducts(start, end, limit);
     }
 
+    @GetMapping("/balance/{productId}")
+    BalanceAnalyticsResponseDto getMostRentedProducts(@PathVariable Long productId) {
+        return analyticsService.getProductBalance(productId);
+    }
 
 }

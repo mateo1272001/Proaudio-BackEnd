@@ -8,7 +8,7 @@ import lombok.Data;
 @AllArgsConstructor
 @Data
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class RentedProductsAmountResponseDto {
+public class RentedProductsAmountDto {
 
     private Long productId;
 

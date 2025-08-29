@@ -5,15 +5,20 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
-import java.util.List;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @AllArgsConstructor
 @Data
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class AmountRentedResponseDto {
+public class ProductMovementsDto {
 
-    private RangeDto range;
+    private Long itemId;
 
-    private List<RentedProductsAmountDto> products;
+    private BigDecimal amount;
+
+    private LocalDate date;
+
+    private String action;
 
 }

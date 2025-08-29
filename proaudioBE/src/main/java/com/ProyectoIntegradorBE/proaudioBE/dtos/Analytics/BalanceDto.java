@@ -2,18 +2,18 @@ package com.ProyectoIntegradorBE.proaudioBE.dtos.Analytics;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 
-import java.time.LocalDate;
+import java.math.BigDecimal;
 
-@AllArgsConstructor
 @Data
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class RangeResponseDto {
+public class BalanceDto {
 
-    private LocalDate start;
+    private BigDecimal expenses = BigDecimal.ZERO;
 
-    private LocalDate end;
+    private BigDecimal earnings = BigDecimal.ZERO;
+
+    private BigDecimal balance = BigDecimal.ZERO;
 
 }

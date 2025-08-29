@@ -5,15 +5,15 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
-import java.util.List;
+import java.time.LocalDate;
 
 @AllArgsConstructor
 @Data
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class AmountRentedResponseDto {
+public class RangeDto {
 
-    private RangeDto range;
+    private LocalDate start;
 
-    private List<RentedProductsAmountDto> products;
+    private LocalDate end;
 
 }
