@@ -2,6 +2,7 @@ package com.ProyectoIntegradorBE.proaudioBE.services;
 
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Analytics.*;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.ProductResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.exceptions.BadRequestException;
 import com.ProyectoIntegradorBE.proaudioBE.repositories.ProductRepository;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.AnalyticsService;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ProductService;
@@ -39,6 +40,10 @@ public class AnalyticsServiceImpl implements AnalyticsService {
 
     @Override
     public BalanceAnalyticsResponseDto getProductBalance(Long productId) {
+
+        if (Objects.isNull(productId)) {
+            throw new BadRequestException("Debes seleccionar un product para ver su balance");
+        }
 
         ProductResponseDto product = productService.GetProduct(productId);
 
