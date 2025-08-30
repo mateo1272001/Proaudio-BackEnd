@@ -22,9 +22,10 @@ public class AnalyticsController {
         return analyticsService.getMostRentedProducts(start, end, limit);
     }
 
-    @GetMapping("/balance/{productId}")
-    BalanceAnalyticsResponseDto getMostRentedProducts(@PathVariable Long productId) {
+    @GetMapping({"/balance", "/balance/{productId}"})
+    BalanceAnalyticsResponseDto getMostRentedProducts(@PathVariable(required = false) Long productId) {
         return analyticsService.getProductBalance(productId);
     }
+
 
 }
