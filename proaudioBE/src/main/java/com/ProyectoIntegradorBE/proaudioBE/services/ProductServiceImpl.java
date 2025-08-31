@@ -11,6 +11,7 @@ import com.ProyectoIntegradorBE.proaudioBE.entities.TagEntity;
 import com.ProyectoIntegradorBE.proaudioBE.enums.DirectionEnum;
 import com.ProyectoIntegradorBE.proaudioBE.enums.ProductSortByEnum;
 import com.ProyectoIntegradorBE.proaudioBE.enums.ProductStatus;
+import com.ProyectoIntegradorBE.proaudioBE.enums.TagTypeEnum;
 import com.ProyectoIntegradorBE.proaudioBE.exceptions.BadRequestException;
 import com.ProyectoIntegradorBE.proaudioBE.mappers.ProductMapper;
 import com.ProyectoIntegradorBE.proaudioBE.repositories.ProductRepository;
@@ -231,7 +232,7 @@ public class ProductServiceImpl implements ProductService {
                 .map(ProductTagResponseDto::getTagId)
                 .toList());
 
-        response.setBrand(setBrand(tags, response));
+        response.setBrand(obtainBrandOfProduct(productTagResponseDtos, tags, response));
 
         response.setDescriptionTags(new ArrayList<>());
         response.setDependencyTags(new ArrayList<>());
@@ -254,12 +255,18 @@ public class ProductServiceImpl implements ProductService {
         return response;
     }
 
-    private String setBrand(List<TagResponseDto> tags, ProductDetailResponseDto response) {
+    private String obtainBrandOfProduct(List<ProductTagResponseDto> productTagResponseDtos, List<TagResponseDto> tags,
+                                        ProductDetailResponseDto response) {
         try {
             TagEntity brandRoot = tagService.findBrandRoot();
 
-            Optional<TagResponseDto> brand =
-                    tags.stream().filter(t -> t.getFatherId().equals(brandRoot.getTagId())).findFirst();
+            List<Long> descriptiveTags =
+                    productTagResponseDtos.stream().filter(pt -> pt.getType().equals(TagTypeEnum.DESCRIPTIVE))
+                            .map(ProductTagResponseDto::getTagId).toList();
+
+            Optional<TagResponseDto> brand = tags.stream()
+                    .filter(t -> Objects.nonNull(t.getFatherId()) && t.getFatherId().equals(brandRoot.getTagId()) &&
+                            descriptiveTags.contains(t.getTagId())).findFirst();
 
             brand.ifPresent(tagResponseDto -> response.setBrand(tagResponseDto.getName()));
 

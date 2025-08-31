@@ -168,10 +168,7 @@ public class ProductTagServiceImpl implements ProductTagService {
 
     public List<ProductTagResponseDto> validateTagsInProductTags(List<ProductTagEntity> productTagEntities,
                                                                  List<TagResponseDto> tagResponseDtos) {
-        //        List<ProductTagEntity> productTagEntities =
-        //                productTagRepository.findByProductIdAndStatus(productId, BasicEnumStatus.ENABLED);
-        //        List<TagResponseDto> tagResponseDtos =
-        //                tagService.findByTagIdIn(productTagEntities.stream().map(ProductTagEntity::getTagId).toList());
+
         List<ProductTagResponseDto> response = new ArrayList<>();
 
         for(ProductTagEntity productTagEntity : productTagEntities) {
