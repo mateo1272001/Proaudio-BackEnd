@@ -4,6 +4,7 @@ import com.ProyectoIntegradorBE.proaudioBE.dtos.Analytics.*;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.ProductResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.exceptions.BadRequestException;
 import com.ProyectoIntegradorBE.proaudioBE.repositories.ProductRepository;
+import com.ProyectoIntegradorBE.proaudioBE.repositories.ProjectRepository;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.AnalyticsService;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ProductService;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,8 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     private final ProductService productService;
 
     private final ProductRepository productRepository;
+
+    private final ProjectRepository projectRepository;
 
     @Override
     public AmountRentedResponseDto getMostRentedProducts(LocalDate start, LocalDate end, Integer limit) {
@@ -75,5 +78,17 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         }
 
         return new BalanceAnalyticsResponseDto(requestedProductDto, movementsResponse, balance);
+    }
+
+    @Override
+    public RentedMonthlyAvgResponseDto getMonthlyProjectAverage(Integer years) {
+
+        if (Objects.isNull(years)) {
+            years = 1;
+        }
+
+        List<ProjectMonthlyAvg> monthlyProjects = projectRepository.getMonthlyProjectsAvg(years);
+
+        return new RentedMonthlyAvgResponseDto(monthlyProjects);
     }
 }

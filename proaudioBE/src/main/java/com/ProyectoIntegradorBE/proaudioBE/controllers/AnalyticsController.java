@@ -2,6 +2,7 @@ package com.ProyectoIntegradorBE.proaudioBE.controllers;
 
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Analytics.AmountRentedResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Analytics.BalanceAnalyticsResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Analytics.RentedMonthlyAvgResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.AnalyticsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +26,11 @@ public class AnalyticsController {
     @GetMapping({"/balance", "/balance/{productId}"})
     BalanceAnalyticsResponseDto getMostRentedProducts(@PathVariable(required = false) Long productId) {
         return analyticsService.getProductBalance(productId);
+    }
+
+    @GetMapping("monthly/projects")
+    RentedMonthlyAvgResponseDto getMonthlyProjectAverage(@RequestParam(required = false) Integer years) {
+        return analyticsService.getMonthlyProjectAverage(years);
     }
 
 
