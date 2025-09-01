@@ -133,6 +133,10 @@ public class TagServiceImpl implements TagService {
 
         TagEntity tag = tagRepository.findById(id).orElseThrow(() -> new ClientNotFoundException(id));
 
+        if (tag.getName().equalsIgnoreCase(BRAND_TAG_KEY)) {
+            throw new BadRequestException("¡No se puede borrar esta etiqueta!");
+        }
+
         ValidateDelete(tag);
 
         tag.setStatus(BasicEnumStatus.DISABLED);
