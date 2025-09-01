@@ -15,5 +15,6 @@ public interface EventService {
 
     EventResponseDto GetEvent(Long id);
 
-    EventResponseListDto GetAllEvents(String sortBy, String direction, Integer page, Integer size, String status);
+    EventResponseListDto GetAllEvents(String sortBy, String direction, Integer page, Integer size, String status,
+                                      String name);
 }

@@ -3,6 +3,7 @@ package com.ProyectoIntegradorBE.proaudioBE.repositories;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.ProductProject.ProductProjectWithModelResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Project.ProductInProjectResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.entities.ProductProjectEntity;
+import com.ProyectoIntegradorBE.proaudioBE.entities.ProjectEntity;
 import com.ProyectoIntegradorBE.proaudioBE.enums.BasicEnumStatus;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.data.jpa.repository.Query;
@@ -54,4 +55,11 @@ public interface ProductProjectRepository extends CrudRepository<ProductProjectE
     List<ProductProjectWithModelResponseDto> findByProductIdAndProjectIdAndStatus(Long productId, Long projectId,
                                                                                       BasicEnumStatus basicEnumStatus);
 
+    @Query(value = """
+            SELECT p.*
+            FROM product_project pp
+            INNER JOIN project p ON (pp.project_id = p.project_id AND p.status in ('ON_COURSE', 'PLANNED', 'CONFIRMED'))
+            WHERE pp.product_id = :productId AND pp.status = 'ENABLED'
+            """, nativeQuery = true)
+    List<ProjectEntity> findNextProjectsByProductId(Long productId);
 }

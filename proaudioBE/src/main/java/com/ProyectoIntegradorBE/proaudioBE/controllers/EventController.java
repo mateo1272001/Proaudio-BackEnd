@@ -47,8 +47,9 @@ public class EventController {
                                               @RequestParam(required = false) String direction,
                                               @RequestParam(defaultValue = "0") Integer page,
                                               @RequestParam(defaultValue = "10") Integer size,
-                                              @RequestParam(required = false) String status) {
-        return eventService.GetAllEvents(sortBy, direction, page, size, status);
+                                              @RequestParam(required = false) String status,
+                                              @RequestParam(required = false) String name) {
+        return eventService.GetAllEvents(sortBy, direction, page, size, status, name);
     }
     
 }

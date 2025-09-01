@@ -1,18 +1,22 @@
 package com.ProyectoIntegradorBE.proaudioBE.services;
 
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.ItemResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.ItemRowDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.ItemSectionResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.ItemProject.ItemProjectResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.ItemProject.ItemProjectResponseIntDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.ItemProject.ItemProjectResponseListDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.ItemProject.NextProjectInfoDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.ProductProject.ProductProjectWithModelResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Project.ProjectSimpleReponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.entities.ItemProjectEntity;
+import com.ProyectoIntegradorBE.proaudioBE.entities.ProjectEntity;
 import com.ProyectoIntegradorBE.proaudioBE.enums.ItemProjectStatus;
 import com.ProyectoIntegradorBE.proaudioBE.exceptions.BadRequestException;
 import com.ProyectoIntegradorBE.proaudioBE.mappers.ItemProjectMapper;
+import com.ProyectoIntegradorBE.proaudioBE.mappers.ProjectMapper;
 import com.ProyectoIntegradorBE.proaudioBE.repositories.ItemProjectRepository;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ItemProjectService;
-import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ProductProjectService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -27,11 +31,11 @@ import static com.ProyectoIntegradorBE.proaudioBE.services.ItemServiceImpl.PROJE
 @RequiredArgsConstructor
 public class ItemProjectServiceImpl implements ItemProjectService {
 
-    private final ProductProjectService productProjectService;
-
     private final ItemProjectRepository itemProjectRepository;
 
     private final ItemProjectMapper itemProjectMapper;
+
+    private final ProjectMapper projectMapper;
 
     private static ItemProjectEntity checkIfDeletionIsSuggested(ProjectSimpleReponseDto projectSimpleReponseDto,
                                                                 Optional<ItemProjectEntity> itemProjectOpt) {
@@ -91,6 +95,31 @@ public class ItemProjectServiceImpl implements ItemProjectService {
         if (itemProjectEntityList.size() >= amountOfProducts) {
             throw new BadRequestException("¡Ya se alcanzó la cantidad de artículos necesarios de este producto!");
         }
+    }
+
+    @Override
+    public ItemProjectResponseDto getLastItemProjectByItemId(Long idItem) {
+
+        ItemProjectEntity itemProjectEntity = itemProjectRepository.findLastProjectOfItem(idItem)
+                .orElseThrow(() -> new BadRequestException("¡El artículo no estuvo en ningún proyecto!"));
+
+        return itemProjectMapper.toDto(itemProjectEntity);
+    }
+
+    @Override
+    public List<NextProjectInfoDto> getNextProjectInfoFromItems(ItemSectionResponseDto itemSectionResponseDto) {
+
+        return itemProjectRepository.findNextProjectInfoFromItems(
+                itemSectionResponseDto.getItems().stream().map(ItemRowDto::getItemId).toList());
+
+    }
+
+    @Override
+    public List<ProjectSimpleReponseDto> checkNextProjectForItem(Long itemId) {
+
+        List<ProjectEntity> projectEntities = itemProjectRepository.findNextPlannedProjectsForItem(itemId);
+
+        return projectMapper.toDtoList(projectEntities);
     }
 
     @Override

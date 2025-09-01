@@ -12,11 +12,10 @@ import com.ProyectoIntegradorBE.proaudioBE.enums.DirectionEnum;
 import com.ProyectoIntegradorBE.proaudioBE.enums.ProductSortByEnum;
 import com.ProyectoIntegradorBE.proaudioBE.enums.ProductStatus;
 import com.ProyectoIntegradorBE.proaudioBE.exceptions.BadRequestException;
-import com.ProyectoIntegradorBE.proaudioBE.exceptions.ImagesNotFoundException;
-import com.ProyectoIntegradorBE.proaudioBE.exceptions.TagNotFoundException;
 import com.ProyectoIntegradorBE.proaudioBE.mappers.ProductMapper;
 import com.ProyectoIntegradorBE.proaudioBE.repositories.ProductRepository;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ItemService;
+import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ProductProjectService;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -42,11 +41,11 @@ public class ProductServiceImpl implements ProductService {
 
     private final ItemService itemService;
 
+    private final ProductProjectService productProjectService;
+
     private final ProductRepository productRepository;
 
     private final ProductMapper productMapper;
-
-    private static final Long BRAND_TAG_FATHER = 1L;
 
     @Override
     @Transactional
@@ -87,34 +86,51 @@ public class ProductServiceImpl implements ProductService {
 
     private List<ProductTagResponseDto> CreateProductTags(ProductRequestDto productRequestDto, ProductEntity product) {
 
-        List<Long> tagIds = productRequestDto.getTags().stream().map(ProductTagRequestDto::getTagId).toList();
+        List<Long> tagIds = new ArrayList<>();
+
+        Long brandTagId = tagService.findBrandRoot().getTagId();
+        boolean hasBrandSelected = false;
+
+        for (ProductTagRequestDto productTagRequestDto : productRequestDto.getTags()) {
+
+            Long productTagId = productTagRequestDto.getTagId();
+
+            tagIds.add(productTagId);
+
+            if (tagService.checkIfTagIsChildOfSelected(productTagId, brandTagId)) {
+                hasBrandSelected = true;
+            }
+        }
+
+        if (!hasBrandSelected) {
+            throw new BadRequestException("¡El producto debe tener una marca!");
+        }
+
 
         List<TagResponseDto> tagsFromRequest = tagService.findByTagIdIn(tagIds);
 
-        return productTagService.CreateProductTags(tagsFromRequest, productRequestDto.getTags(),
-                product.getProductId());
+        return productTagService.CreateProductTags(tagsFromRequest, productRequestDto.getTags(), product.getProductId(),
+                brandTagId);
     }
 
     @Override
     @Transactional
     public ProductResponseDto UpdateProduct(ProductRequestDto productRequestDto, Long productId)
-            throws BadRequestException, BadRequestException {
+            throws BadRequestException {
 
         ProductEntity productEntity = productRepository.findById(productId)
                 .orElseThrow(() -> new BadRequestException("Product ID no encontrado: " + productId));
 
-        ProductEntity product = new ProductEntity();
-        product.setProductId(productEntity.getProductId());
-        product.setModel(productRequestDto.getModel());
-        product.setComments(Objects.nonNull(productRequestDto.getComments()) ? productRequestDto.getComments() : null);
-        product.setReplacementValue(Objects.nonNull(productRequestDto.getReplacementValue())
+        productEntity.setModel(productRequestDto.getModel());
+        productEntity.setComments(
+                Objects.nonNull(productRequestDto.getComments()) ? productRequestDto.getComments() : null);
+        productEntity.setReplacementValue(Objects.nonNull(productRequestDto.getReplacementValue())
                 ? productRequestDto.getReplacementValue() : null);
-        product.setStatus(productRequestDto.getStatus());
-        product.setCreatedAt(productEntity.getCreatedAt());
-        product.setUpdatedAt(LocalDateTime.now());
-        product = productRepository.save(product);
+        productEntity.setUpdatedAt(LocalDateTime.now());
 
-        ProductResponseDto productResponseDto = productMapper.toDto(product);
+        productEntity = productRepository.save(productEntity);
+
+        ProductResponseDto productResponseDto = productMapper.toDto(productEntity);
         productResponseDto.setPrices(rentPriceService.findRentPriceByProductId(productId));
         productResponseDto.setTags(findTagsByProductId(productId));
 
@@ -140,6 +156,11 @@ public class ProductServiceImpl implements ProductService {
             throw new BadRequestException("No se puede borrar un producto con artículos asociados");
         }
 
+        if (!productProjectService.getNextProjectsForProduct(productEntity.getProductId()).isEmpty()) {
+            throw new BadRequestException(
+                    "¡No se puede borrar este producto porque está asignado a proyectos activos!");
+        }
+
         productEntity.setStatus(ProductStatus.ELIMINATED);
         productRepository.save(productEntity);
 
@@ -160,8 +181,8 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductListResponseDto getFilteredProducts(List<Long> tags, String sortBy, String direction,
-                                                      LocalDate startDate, LocalDate endDate,
-                                                      Integer page, Integer size) throws BadRequestException {
+                                                      LocalDate startDate, LocalDate endDate, Integer page,
+                                                      Integer size, String title) throws BadRequestException {
 
         ProductSortByEnum productSortByEnum;
         DirectionEnum directionEnum;
@@ -176,11 +197,10 @@ public class ProductServiceImpl implements ProductService {
             throw new BadRequestException("¡Valor de sort o direction incorrecto!");
         }
 
-        ProductListResponseDto productListResponseDto =
-                productRepository.findAllWithFilters(tags, productSortByEnum, directionEnum, startDate, endDate, page,
-                        size);
+        Long brandId = tagService.findBrandRoot().getTagId();
 
-        return productListResponseDto;
+        return productRepository.findAllWithFilters(tags, productSortByEnum, directionEnum, startDate, endDate, page,
+                size, title, brandId);
 
     }
 
@@ -196,25 +216,22 @@ public class ProductServiceImpl implements ProductService {
         response.setComments(product.getComments());
         response.setReplacementValue(product.getReplacementValue());
         response.setStatus(product.getStatus());
+
         try {
-            response.setBrand(tagService.findByProductIdAndFatherId(id, BRAND_TAG_FATHER).getName());
-        } catch (TagNotFoundException ex) {
-            response.setBrand("");
-        }
-        try{
             response.setPhotos(photoService.findPhotosByProductId(id));
-        } catch (ImagesNotFoundException ex) {
+        } catch (Exception ex) {
             response.setPhotos(new ArrayList<>());
         }
+
         response.setPrices(rentPriceService.findRentPriceByProductId(id));
-        //        response.setActivities();  //todo [ACTIVITIES] add activities when developing this functionalities
-        //        response.setProductBalance(); //todo [PROJECT] add balance when projects are added
         List<ProductTagResponseDto> productTagResponseDtos = findTagsByProductId(id);
 
         List<TagResponseDto> tags =  tagService.findByTagIdIn(productTagResponseDtos
                 .stream()
                 .map(ProductTagResponseDto::getTagId)
                 .toList());
+
+        response.setBrand(setBrand(tags, response));
 
         response.setDescriptionTags(new ArrayList<>());
         response.setDependencyTags(new ArrayList<>());
@@ -235,6 +252,26 @@ public class ProductServiceImpl implements ProductService {
         }
 
         return response;
+    }
+
+    private String setBrand(List<TagResponseDto> tags, ProductDetailResponseDto response) {
+        try {
+            TagEntity brandRoot = tagService.findBrandRoot();
+
+            Optional<TagResponseDto> brand =
+                    tags.stream().filter(t -> t.getFatherId().equals(brandRoot.getTagId())).findFirst();
+
+            brand.ifPresent(tagResponseDto -> response.setBrand(tagResponseDto.getName()));
+
+            if (brand.isPresent()) {
+                return brand.get().getName();
+            }
+
+        } catch (Exception ex) {
+            return null;
+        }
+
+        return null;
     }
 
     @Override
@@ -283,7 +320,9 @@ public class ProductServiceImpl implements ProductService {
             throw new BadRequestException("¡La etiqueta no existe!");
         }
 
-        return productTagService.createProductTag(productTagRequestDto, tagEntityOpt.get());
+        TagEntity brandTag = tagService.findBrandRoot();
+
+        return productTagService.createProductTag(productTagRequestDto, tagEntityOpt.get(), brandTag);
 
     }
 

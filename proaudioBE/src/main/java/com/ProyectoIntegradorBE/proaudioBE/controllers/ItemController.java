@@ -1,6 +1,7 @@
 package com.ProyectoIntegradorBE.proaudioBE.controllers;
 
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.*;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.ItemProject.ItemProjectResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.ProductDetailResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ItemProjectService;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ItemService;
@@ -57,6 +58,13 @@ public class ItemController {
 
     }
 
+    @GetMapping("/possible/status/{id}")
+    private ItemStatusResponseDto getItemStatuses(@PathVariable Long id) {
+
+        return itemService.getPossibleItemStatuses(id);
+
+    }
+
     @GetMapping("/product/{id}")
     private ItemSectionResponseDto GetItemList(@PathVariable Long id,
                                                @RequestParam(required = false, defaultValue = "id") String sortBy,
@@ -67,8 +75,7 @@ public class ItemController {
 
         productService.GetProduct(id);
 
-        return itemService.getItemList(id, status, sortBy, direction, page, size);
-
+        return projectService.getItemListFrom(id, status, sortBy, direction, page, size);
     }
 
     @GetMapping("{id}/detail")
@@ -88,5 +95,14 @@ public class ItemController {
         return itemService.regenerateItemQr(id);
 
     }
+
+    @PostMapping("/{idItem}/return")
+    public ItemProjectResponseDto itemReturnToDeposit(@PathVariable Long idItem) {
+
+        ItemProjectResponseDto itemProjectResponseDto = itemProjectService.getLastItemProjectByItemId(idItem);
+
+        return projectService.singleItemReturn(itemProjectResponseDto);
+    }
+
 
 }

@@ -7,13 +7,13 @@ import com.ProyectoIntegradorBE.proaudioBE.enums.BasicEnumStatus;
 import com.ProyectoIntegradorBE.proaudioBE.enums.TagTypeEnum;
 import com.ProyectoIntegradorBE.proaudioBE.exceptions.BadRequestException;
 import com.ProyectoIntegradorBE.proaudioBE.exceptions.ClientNotFoundException;
-import com.ProyectoIntegradorBE.proaudioBE.exceptions.TagNotFoundException;
 import com.ProyectoIntegradorBE.proaudioBE.mappers.TagMapper;
 import com.ProyectoIntegradorBE.proaudioBE.mappers.TagModuleMapper;
 import com.ProyectoIntegradorBE.proaudioBE.repositories.TagRepository;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.TagService;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.util.InternalException;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -21,17 +21,30 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import static com.ProyectoIntegradorBE.proaudioBE.Utils.AppConstants.BRAND_TAG_KEY;
+
 @Service
 @RequiredArgsConstructor
 public class TagServiceImpl implements TagService {
 
     private final TagRepository tagRepository;
+
     private final TagMapper tagMapper;
+
     private final TagModuleMapper tagModuleMapper;
+
     private final ProductTagServiceImpl productTagService;
 
     @Override
     public TagResponseDto createTag(TagRequestDto tagRequestDto) {
+
+        if (tagRequestDto.getName().equalsIgnoreCase(BRAND_TAG_KEY) &&
+                tagRepository.findByNameAndStatus(BRAND_TAG_KEY, BasicEnumStatus.ENABLED).isPresent()) {
+
+            throw new BadRequestException("¡No se puede agregar otra etiqueta de nombre 'Marca'");
+
+        }
+
 
         if(Objects.nonNull(tagRequestDto.getFatherId())){
             Long fatherId = tagRequestDto.getFatherId();
@@ -48,6 +61,10 @@ public class TagServiceImpl implements TagService {
     public TagResponseDto updateTag(Long id, TagRequestDto tagRequestDto) throws BadRequestException {
 
         TagEntity tag = tagRepository.findById(id).orElseThrow(() -> new ClientNotFoundException(id));
+
+        if (tag.getName().equalsIgnoreCase(BRAND_TAG_KEY)) {
+            throw new BadRequestException("¡No se puede editar esta etiqueta!");
+        }
 
         ValidateUpdate(tagRequestDto, tag);
         if(tag.getStatus().equals(BasicEnumStatus.ENABLED)
@@ -91,6 +108,23 @@ public class TagServiceImpl implements TagService {
             }
 
         }
+
+    }
+
+    public Boolean checkIfTagIsChildOfSelected(Long tagId, Long selectedId) {
+
+        TagEntity currentTag = tagRepository.findById(tagId).orElseThrow(() -> new InternalException(
+                "Error interno chequeando si %s es hijo de %s".formatted(tagId, selectedId)));
+
+        if (Objects.isNull(currentTag.getFatherId())) {
+            return false;
+        }
+
+        if (currentTag.getFatherId().equals(selectedId)) {
+            return true;
+        }
+
+        return checkIfTagIsChildOfSelected(currentTag.getFatherId(), selectedId);
 
     }
 
@@ -179,18 +213,26 @@ public class TagServiceImpl implements TagService {
         return tagRepository.findById(tagId);
 
     }
-
-    public TagResponseDto findByProductIdAndFatherId(Long productId, Long fatherId) {
-
-        TagEntity tagEntity = tagRepository.findByProductIdAndFatherId(productId, fatherId).stream().findFirst()
-                .orElseThrow(() -> new TagNotFoundException(productId));
-
-        return tagMapper.toDto(tagEntity);
-    }
+    //
+    //    @Override
+    //    public TagResponseDto findByProductIdAndFatherId(Long productId, Long fatherId) {
+    //
+    //        List<TagEntity> tagEntity = tagRepository.findByProductIdAndFatherId(productId, fatherId);
+    //
+    //        return tagMapper.toDto(tagEntity);
+    //    }
 
     public TagTypesResponseDto findTagTypes() {
 
         return new TagTypesResponseDto(Arrays.stream(TagTypeEnum.values()).toList());
+
+    }
+
+    @Override
+    public TagEntity findBrandRoot() {
+
+        return tagRepository.findByNameAndStatus(BRAND_TAG_KEY, BasicEnumStatus.ENABLED)
+                .orElseThrow(() -> new InternalException("¡No etiqueta base MARCA!"));
 
     }
 }

@@ -191,8 +191,7 @@ public class NotificationServiceImpl implements NotificationService {
 
         NotificationUserEntity notificationUserEntity =
                 notificationUserRepository.findByUserIdAndNotificationIdAndIsRead(user.getUserId(), notificationId,
-                        false).orElseThrow(
-                        () -> new BadRequestException("Este usuario no tiene una notificación sin leer acá"));
+                        false).orElseThrow(() -> new BadRequestException("¡La notificación ya está leída!"));
 
         notificationUserEntity.setIsRead(true);
 

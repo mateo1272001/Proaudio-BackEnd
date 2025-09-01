@@ -5,6 +5,7 @@ import com.ProyectoIntegradorBE.proaudioBE.dtos.ProductProject.ProductProjectReq
 import com.ProyectoIntegradorBE.proaudioBE.dtos.ProductProject.ProductProjectWithModelResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Project.ProductInProjectResponseDtoImpl;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Project.ProductsInProjectResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Project.ProjectSimpleReponseDto;
 
 import java.util.List;
 
@@ -18,4 +19,6 @@ public interface ProductProjectService {
     ProductsInProjectResponseDto getProductsInProject(Long id);
 
     List<ProductProjectWithModelResponseDto> getByProductAndProjectId(Long productId, Long projectId);
+
+    List<ProjectSimpleReponseDto> getNextProjectsForProduct(Long productId);
 }
