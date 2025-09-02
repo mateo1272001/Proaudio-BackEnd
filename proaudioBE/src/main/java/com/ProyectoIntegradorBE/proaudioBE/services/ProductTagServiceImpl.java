@@ -93,7 +93,6 @@ public class ProductTagServiceImpl implements ProductTagService {
                                                          List<ProductTagRequestDto> productTags, Long productId,
                                                          Long brandTagId) throws BadRequestException {
 
-        //TODO UNIFY CREATE PRODUCTTAGS AND VALIDATE SIBLING TAGS CREATION
         List<TagResponseDto> childsOfBrand = new ArrayList<>();
 
         List<ProductTagResponseDto> response = productTags.stream().map(tagRequest -> {
@@ -163,6 +162,11 @@ public class ProductTagServiceImpl implements ProductTagService {
 
     public List<ProductTagEntity> findTagsByProductId(Long productId) {
         return productTagRepository.findByProductIdAndStatus(productId, BasicEnumStatus.ENABLED);
+    }
+
+    @Override
+    public List<ProductTagEntity> findTagsByProductIds(List<Long> productIds) {
+        return productTagRepository.findByProductIdInAndStatus(productIds, BasicEnumStatus.ENABLED);
     }
 
 

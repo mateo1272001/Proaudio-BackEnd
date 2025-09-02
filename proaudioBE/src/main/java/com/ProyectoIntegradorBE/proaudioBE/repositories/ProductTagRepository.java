@@ -38,6 +38,8 @@ public interface ProductTagRepository extends CrudRepository<ProductTagEntity, L
 
     List<ProductTagEntity> findByProductIdAndStatus(Long productId, BasicEnumStatus basicEnumStatus);
 
+    List<ProductTagEntity> findByProductIdInAndStatus(List<Long> productId, BasicEnumStatus basicEnumStatus);
+
     List<ProductTagEntity> findByTagIdAndStatus(Long tagId, BasicEnumStatus status);
 
     Optional<ProductTagEntity> findByProductIdAndTagIdAndType(Long productId, Long tagId, TagTypeEnum type);

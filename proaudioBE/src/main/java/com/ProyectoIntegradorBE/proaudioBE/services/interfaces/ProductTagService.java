@@ -3,6 +3,7 @@ package com.ProyectoIntegradorBE.proaudioBE.services.interfaces;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.ProductTagRequestDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.ProductTagResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Tag.TagResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.entities.ProductTagEntity;
 import com.ProyectoIntegradorBE.proaudioBE.entities.TagEntity;
 import org.apache.coyote.BadRequestException;
 
@@ -18,4 +19,7 @@ public interface ProductTagService {
                                            TagEntity brandTag);
 
     ProductTagResponseDto deleteProductTag(Long tagId, Long productId, String type);
+
+    List<ProductTagEntity> findTagsByProductIds(List<Long> productIds);
+
 }

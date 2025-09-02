@@ -212,19 +212,12 @@ public class TagServiceImpl implements TagService {
 
     }
 
+    @Override
     public Optional<TagEntity> findByTagId(@NotNull Long tagId) {
 
         return tagRepository.findById(tagId);
 
     }
-    //
-    //    @Override
-    //    public TagResponseDto findByProductIdAndFatherId(Long productId, Long fatherId) {
-    //
-    //        List<TagEntity> tagEntity = tagRepository.findByProductIdAndFatherId(productId, fatherId);
-    //
-    //        return tagMapper.toDto(tagEntity);
-    //    }
 
     public TagTypesResponseDto findTagTypes() {
 
@@ -238,5 +231,38 @@ public class TagServiceImpl implements TagService {
         return tagRepository.findByNameAndStatus(BRAND_TAG_KEY, BasicEnumStatus.ENABLED)
                 .orElseThrow(() -> new InternalException("¡No etiqueta base MARCA!"));
 
+    }
+
+    @Override
+    public Boolean checkEqualTagsOrInChildTree(Long tagId, Long searchingTag) {
+
+        if (searchingTag.equals(tagId)) {
+            return true;
+        }
+
+        List<TagEntity> tagEntities = tagRepository.findByFatherIdAndStatus(tagId, BasicEnumStatus.ENABLED);
+
+
+        for (TagEntity tag : tagEntities) {
+
+            if (tag.getTagId().equals(searchingTag)) {
+                return true;
+            }
+
+            if (checkIfTagIsChildOfSelected(tag.getTagId(), searchingTag)) {
+                return true;
+
+            }
+
+        }
+
+        return false;
+        //        for (TagEntity tag : tagEntities) {
+        //
+        //            if (tag.getTagId().equals(searchingTag)) {
+        //                return true;
+        //            }
+        //
+        //        }
     }
 }

@@ -19,10 +19,7 @@ import com.ProyectoIntegradorBE.proaudioBE.dtos.ProductProject.ProductProjectReq
 import com.ProyectoIntegradorBE.proaudioBE.dtos.ProductProject.ProductProjectWithModelResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Project.*;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.User.UserResponseDto;
-import com.ProyectoIntegradorBE.proaudioBE.entities.ItemEntity;
-import com.ProyectoIntegradorBE.proaudioBE.entities.ItemProjectEntity;
-import com.ProyectoIntegradorBE.proaudioBE.entities.NotificationEntity;
-import com.ProyectoIntegradorBE.proaudioBE.entities.ProjectEntity;
+import com.ProyectoIntegradorBE.proaudioBE.entities.*;
 import com.ProyectoIntegradorBE.proaudioBE.enums.*;
 import com.ProyectoIntegradorBE.proaudioBE.exceptions.BadRequestException;
 import com.ProyectoIntegradorBE.proaudioBE.mappers.ItemProjectMapper;
@@ -60,6 +57,10 @@ public class ProjectServiceImpl implements ProjectService {
     private final ItemProjectService itemProjectService;
 
     private final ProductService productService;
+
+    private final ProductTagService productTagService;
+
+    private final TagService tagService;
 
     private final ExpenseService expenseService;
 
@@ -605,12 +606,8 @@ public class ProjectServiceImpl implements ProjectService {
         }
     }
 
-    private ProductProjectResponseForProjectDto makeProductResponse(ProjectProductRequestDto productRequest) {
-        ProductResponseDto product = productService.GetProduct(productRequest.getProductId());
-
-        if (!product.getStatus().equals(ProductStatus.ACTIVE)) {
-            throw new BadRequestException("¡Este producto no está disponible!");
-        }
+    private ProductProjectResponseForProjectDto makeProductResponse(ProjectProductRequestDto productRequest,
+                                                                    ProductResponseDto product) {
 
         ProductProjectResponseForProjectDto productProjectResponseForProjectDto =
                 new ProductProjectResponseForProjectDto();
@@ -721,18 +718,73 @@ public class ProjectServiceImpl implements ProjectService {
         List<Long> productIds = productRequests.stream().map(ProjectProductRequestDto::getProductId).toList();
         List<ItemResponseDto> items = itemService.getByProductIds(productIds);
 
+        List<ProductTagEntity> productTagsInProject = productTagService.findTagsByProductIds(productIds);
+
         for (ProjectProductRequestDto productRequest : productRequests) {
+
+            ProductResponseDto product = productService.GetProduct(productRequest.getProductId());
+
+            if (!product.getStatus().equals(ProductStatus.ACTIVE)) {
+                throw new BadRequestException("¡Este producto no está disponible!");
+            }
+
+            validateDependencies(product.getModel(), productRequest, productTagsInProject);
 
             List<ItemResponseDto> itemsOfProduct =
                     items.stream().filter(i -> i.getProductId().equals(productRequest.getProductId())).toList();
 
             createProductProject(productRequest, projectId, itemsOfProduct);
 
-            productsResponse.add(makeProductResponse(productRequest));
+            productsResponse.add(makeProductResponse(productRequest, product));
 
         }
 
         return productsResponse;
+    }
+
+    private void validateDependencies(String productName, ProjectProductRequestDto productRequest,
+                                      List<ProductTagEntity> productTagsInProject) {
+
+        List<ProductTagEntity> productDependencies = productTagsInProject.stream()
+                .filter(pt -> pt.getProductId().equals(productRequest.getProductId()) &&
+                        pt.getType().equals(TagTypeEnum.DEPENDENCY)).toList();
+
+        for (ProductTagEntity dependency : productDependencies) {
+
+            validateProductDependencies(productName, productRequest, productTagsInProject, dependency);
+
+        }
+
+    }
+
+    private void validateProductDependencies(String productName, ProjectProductRequestDto productRequest,
+                                             List<ProductTagEntity> productTagsInProject, ProductTagEntity dependency) {
+
+        boolean dependencyCompleted = false;
+
+        for (ProductTagEntity productTag : productTagsInProject) {
+
+            if (!productTag.getProductId().equals(productRequest.getProductId()) &&
+                    productTag.getType().equals(TagTypeEnum.DESCRIPTIVE)) {
+
+                if (tagService.checkEqualTagsOrInChildTree(productTag.getTagId(), dependency.getTagId())) {
+                    dependencyCompleted = true;
+                }
+
+            }
+        }
+
+        if (!dependencyCompleted) {
+
+            Optional<TagEntity> tagEntity = tagService.findByTagId(dependency.getTagId());
+
+            String tagNeeded = tagEntity.map(entity -> "\"%s\"".formatted(entity.getName())).orElse("asociada");
+
+            throw new BadRequestException(
+                    "¡El producto \"%s\" depende de otro con etiqueta: %s. Asegurate de incluir un producto con ella en el proyecto!".formatted(
+                            productName, tagNeeded));
+        }
+
     }
 
     @Override
