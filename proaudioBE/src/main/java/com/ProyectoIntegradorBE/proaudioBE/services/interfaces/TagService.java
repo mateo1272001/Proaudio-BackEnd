@@ -27,5 +27,6 @@ public interface TagService {
 
     TagEntity findBrandRoot();
 
-    Boolean checkEqualTagsOrInChildTree(@NotNull Long tagId, @NotNull Long searchingTag);
+    Boolean checkIfGivenTagIsParent(Long tagId, Long searchingTag);
+
 }

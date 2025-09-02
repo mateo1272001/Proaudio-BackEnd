@@ -98,7 +98,8 @@ public class ProductServiceImpl implements ProductService {
 
             tagIds.add(productTagId);
 
-            if (tagService.checkIfTagIsChildOfSelected(productTagId, brandTagId)) {
+            if (tagService.checkIfTagIsChildOfSelected(productTagId, brandTagId) &&
+                    productTagRequestDto.getType().equals(TagTypeEnum.DESCRIPTIVE)) {
                 hasBrandSelected = true;
             }
         }

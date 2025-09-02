@@ -234,35 +234,20 @@ public class TagServiceImpl implements TagService {
     }
 
     @Override
-    public Boolean checkEqualTagsOrInChildTree(Long tagId, Long searchingTag) {
+    public Boolean checkIfGivenTagIsParent(Long tagId, Long searchingTag) {
 
         if (searchingTag.equals(tagId)) {
             return true;
         }
 
-        List<TagEntity> tagEntities = tagRepository.findByFatherIdAndStatus(tagId, BasicEnumStatus.ENABLED);
+        TagEntity tag = findByTagId(tagId).orElseThrow(() -> new InternalException("Problema buscando etiquetas"));
 
-
-        for (TagEntity tag : tagEntities) {
-
-            if (tag.getTagId().equals(searchingTag)) {
-                return true;
-            }
-
-            if (checkIfTagIsChildOfSelected(tag.getTagId(), searchingTag)) {
-                return true;
-
-            }
-
+        if (Objects.isNull(tag.getFatherId())) {
+            return false;
         }
 
-        return false;
-        //        for (TagEntity tag : tagEntities) {
-        //
-        //            if (tag.getTagId().equals(searchingTag)) {
-        //                return true;
-        //            }
-        //
-        //        }
+        return checkIfGivenTagIsParent(tag.getFatherId(), searchingTag);
+
     }
+    
 }

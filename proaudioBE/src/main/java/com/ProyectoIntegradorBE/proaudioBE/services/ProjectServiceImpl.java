@@ -728,7 +728,7 @@ public class ProjectServiceImpl implements ProjectService {
                 throw new BadRequestException("¡Este producto no está disponible!");
             }
 
-            validateDependencies(product.getModel(), productRequest, productTagsInProject);
+            obtainProductDependenciesAndValidate(product.getModel(), productRequest, productTagsInProject, false);
 
             List<ItemResponseDto> itemsOfProduct =
                     items.stream().filter(i -> i.getProductId().equals(productRequest.getProductId())).toList();
@@ -742,8 +742,12 @@ public class ProjectServiceImpl implements ProjectService {
         return productsResponse;
     }
 
-    private void validateDependencies(String productName, ProjectProductRequestDto productRequest,
-                                      List<ProductTagEntity> productTagsInProject) {
+    @Override
+    public String obtainProductDependenciesAndValidate(String productName, ProjectProductRequestDto productRequest,
+                                                       List<ProductTagEntity> productTagsInProject, Boolean isUpdate) {
+
+        String temporaryUpdateMessage = "";
+        //TODO: improve add products to project to insert by batches
 
         List<ProductTagEntity> productDependencies = productTagsInProject.stream()
                 .filter(pt -> pt.getProductId().equals(productRequest.getProductId()) &&
@@ -751,15 +755,33 @@ public class ProjectServiceImpl implements ProjectService {
 
         for (ProductTagEntity dependency : productDependencies) {
 
-            validateProductDependencies(productName, productRequest, productTagsInProject, dependency);
+            String message = validateProductDependencies(productName, productRequest, productTagsInProject, dependency,
+                    isUpdate);
+            temporaryUpdateMessage =
+                    temporaryUpdateMessage.isBlank() ? message : "%s%n%s%n".formatted(temporaryUpdateMessage, message);
 
         }
 
+        return temporaryUpdateMessage;
     }
 
-    private void validateProductDependencies(String productName, ProjectProductRequestDto productRequest,
-                                             List<ProductTagEntity> productTagsInProject, ProductTagEntity dependency) {
+    @Override
+    public String validateDependenciesUpdate(String productName, ProductProjectRequestDto productProjectRequestDto,
+                                             List<ProductTagEntity> productTagsInProject) {
 
+        ProjectProductRequestDto productRequest = new ProjectProductRequestDto();
+        productRequest.setAmount(productProjectRequestDto.getAmount());
+        productRequest.setPriceId(productProjectRequestDto.getRentPriceId());
+        productRequest.setProductId(productProjectRequestDto.getProductId());
+
+        return obtainProductDependenciesAndValidate(productName, productRequest, productTagsInProject, true);
+    }
+
+    private String validateProductDependencies(String productName, ProjectProductRequestDto productRequest,
+                                               List<ProductTagEntity> productTagsInProject, ProductTagEntity dependency,
+                                               Boolean isUpdate) {
+
+        String returnValueForUpdate = "";
         boolean dependencyCompleted = false;
 
         for (ProductTagEntity productTag : productTagsInProject) {
@@ -767,7 +789,7 @@ public class ProjectServiceImpl implements ProjectService {
             if (!productTag.getProductId().equals(productRequest.getProductId()) &&
                     productTag.getType().equals(TagTypeEnum.DESCRIPTIVE)) {
 
-                if (tagService.checkEqualTagsOrInChildTree(productTag.getTagId(), dependency.getTagId())) {
+                if (tagService.checkIfGivenTagIsParent(productTag.getTagId(), dependency.getTagId())) {
                     dependencyCompleted = true;
                 }
 
@@ -776,15 +798,30 @@ public class ProjectServiceImpl implements ProjectService {
 
         if (!dependencyCompleted) {
 
-            Optional<TagEntity> tagEntity = tagService.findByTagId(dependency.getTagId());
+            returnValueForUpdate = actionsForIncompletedDependencies(productName, dependency, isUpdate);
+        }
 
-            String tagNeeded = tagEntity.map(entity -> "\"%s\"".formatted(entity.getName())).orElse("asociada");
+        return returnValueForUpdate;
+    }
 
+    private String actionsForIncompletedDependencies(String productName, ProductTagEntity dependency,
+                                                     Boolean isUpdate) {
+
+        String returnValueForUpdate;
+        Optional<TagEntity> tagEntity = tagService.findByTagId(dependency.getTagId());
+
+        String tagNeeded = tagEntity.map(entity -> "\"%s\"".formatted(entity.getName())).orElse("asociada");
+
+        if (isUpdate) {
+            returnValueForUpdate =
+                    "%s depende de otro producto con etiqueta %s. Asegurate de incluir un producto con ella posteriormente.".formatted(
+                            productName, tagNeeded);
+        } else {
             throw new BadRequestException(
                     "¡El producto \"%s\" depende de otro con etiqueta: %s. Asegurate de incluir un producto con ella en el proyecto!".formatted(
                             productName, tagNeeded));
         }
-
+        return returnValueForUpdate;
     }
 
     @Override

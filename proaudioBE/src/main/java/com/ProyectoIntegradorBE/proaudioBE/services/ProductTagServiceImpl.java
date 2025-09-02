@@ -96,6 +96,7 @@ public class ProductTagServiceImpl implements ProductTagService {
         List<TagResponseDto> childsOfBrand = new ArrayList<>();
 
         List<ProductTagResponseDto> response = productTags.stream().map(tagRequest -> {
+
             TagResponseDto tag = tags.stream().filter(t -> t.getTagId().equals(tagRequest.getTagId())).findFirst()
                     .orElseThrow(() -> new BadRequestException("Tag ID no válido: " + tagRequest.getTagId()));
 
@@ -104,7 +105,7 @@ public class ProductTagServiceImpl implements ProductTagService {
                         "¡No se puede asignar la etiqueta %s! ¡Elige otra!".formatted(tag.getName()));
             }
 
-            if (tag.getFatherId().equals(brandTagId)) {
+            if (tag.getFatherId().equals(brandTagId) && tagRequest.getType().equals(TagTypeEnum.DESCRIPTIVE)) {
                 childsOfBrand.add(tag);
                 if (childsOfBrand.size() > 1) {
                     throw new BadRequestException("¡Debe haber solo una marca asignada!");
@@ -116,6 +117,7 @@ public class ProductTagServiceImpl implements ProductTagService {
             dto.setType(tagRequest.getType());
             dto.setName(tag.getName());
             return dto;
+
         }).toList();
 
 
