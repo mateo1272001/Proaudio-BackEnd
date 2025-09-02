@@ -8,6 +8,7 @@ import com.ProyectoIntegradorBE.proaudioBE.repositories.ProjectRepository;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.AnalyticsService;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ProductService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -16,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AnalyticsServiceImpl implements AnalyticsService {
@@ -35,8 +37,10 @@ public class AnalyticsServiceImpl implements AnalyticsService {
 
         List<RentedProductsAmountDto>
                 rentedProducts = productRepository.findMostUsedProducts(start, end, limit);
+        log.info("rented products dto: %s".formatted(rentedProducts.toString()));
 
         RangeDto rangeDto = new RangeDto(start, end);
+        log.info("range dto: %s".formatted(rangeDto.toString()));
 
         return new AmountRentedResponseDto(rangeDto, rentedProducts);
     }
