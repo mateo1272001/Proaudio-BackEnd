@@ -3,7 +3,9 @@ package com.ProyectoIntegradorBE.proaudioBE.services.interfaces;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Client.ProjectParticipatedResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.ItemSectionResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.ItemProject.ItemProjectResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.ProductProject.ProductProjectRequestDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Project.*;
+import com.ProyectoIntegradorBE.proaudioBE.entities.ProductTagEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,6 +42,12 @@ public interface ProjectService {
 
     byte[] generateBudget(Long id);
 
+    String obtainProductDependenciesAndValidate(String productName, ProjectProductRequestDto productRequest,
+                                                List<ProductTagEntity> productTagsInProject, Boolean isUpdate);
+
+    String validateDependenciesUpdate(String productName, ProductProjectRequestDto productProjectRequestDto,
+                                      List<ProductTagEntity> productTagsInProject);
+
     ItemProjectResponseDto singleItemExit(Long idProject, Long idItem);
 
     @Transactional
@@ -52,5 +60,4 @@ public interface ProjectService {
     ItemSectionResponseDto getItemListFrom(Long productId, String status, String sortBy, String direction, Integer page,
                                            Integer size);
 
-    //    ItemProjectResponseDto itemProjectDelete(Long idProject, Long idItem);
 }

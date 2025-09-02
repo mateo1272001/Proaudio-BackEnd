@@ -133,6 +133,10 @@ public class TagServiceImpl implements TagService {
 
         TagEntity tag = tagRepository.findById(id).orElseThrow(() -> new ClientNotFoundException(id));
 
+        if (tag.getName().equalsIgnoreCase(BRAND_TAG_KEY)) {
+            throw new BadRequestException("¡No se puede borrar esta etiqueta!");
+        }
+
         ValidateDelete(tag);
 
         tag.setStatus(BasicEnumStatus.DISABLED);
@@ -208,19 +212,12 @@ public class TagServiceImpl implements TagService {
 
     }
 
+    @Override
     public Optional<TagEntity> findByTagId(@NotNull Long tagId) {
 
         return tagRepository.findById(tagId);
 
     }
-    //
-    //    @Override
-    //    public TagResponseDto findByProductIdAndFatherId(Long productId, Long fatherId) {
-    //
-    //        List<TagEntity> tagEntity = tagRepository.findByProductIdAndFatherId(productId, fatherId);
-    //
-    //        return tagMapper.toDto(tagEntity);
-    //    }
 
     public TagTypesResponseDto findTagTypes() {
 
@@ -235,4 +232,22 @@ public class TagServiceImpl implements TagService {
                 .orElseThrow(() -> new InternalException("¡No etiqueta base MARCA!"));
 
     }
+
+    @Override
+    public Boolean checkIfGivenTagIsParent(Long tagId, Long searchingTag) {
+
+        if (searchingTag.equals(tagId)) {
+            return true;
+        }
+
+        TagEntity tag = findByTagId(tagId).orElseThrow(() -> new InternalException("Problema buscando etiquetas"));
+
+        if (Objects.isNull(tag.getFatherId())) {
+            return false;
+        }
+
+        return checkIfGivenTagIsParent(tag.getFatherId(), searchingTag);
+
+    }
+    
 }
