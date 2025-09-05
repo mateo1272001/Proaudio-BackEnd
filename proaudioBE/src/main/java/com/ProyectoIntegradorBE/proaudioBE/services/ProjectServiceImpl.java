@@ -192,7 +192,7 @@ public class ProjectServiceImpl implements ProjectService {
         if (!request.getStartDate().equals(projectResponseDto.getStartDate())) {
             if (!statusIsUpdatable) {
                 throw new BadRequestException(
-                        "La fecha de inicio solo se puede modificar si el projecto aún no empieza!");
+                        "La fecha de inicio solo se puede modificar si el proyecto aún no empieza!");
             }
             entityResponse.setStartDate(request.getStartDate());
         }
@@ -200,7 +200,7 @@ public class ProjectServiceImpl implements ProjectService {
         if (!request.getEndDate().equals(projectResponseDto.getEndDate())) {
             if (!statusIsUpdatable) {
                 throw new BadRequestException(
-                        "La fecha de inicio solo se puede modificar si el projecto aún no empieza!");
+                        "La fecha de inicio solo se puede modificar si el proyecto aún no empieza!");
             }
             entityResponse.setEndDate(request.getEndDate());
         }
@@ -213,7 +213,7 @@ public class ProjectServiceImpl implements ProjectService {
         if (Objects.isNull(request.getEvent().getEventId())) {
 
             if (!statusIsUpdatable) {
-                throw new BadRequestException("¡El evento solo se puede modificar si el projecto aún no empieza!");
+                throw new BadRequestException("¡El evento solo se puede modificar si el proyecto aún no empieza!");
             }
 
             EventResponseDto eventResponseDto = eventService.CreateEvent(request.getEvent());
@@ -224,7 +224,7 @@ public class ProjectServiceImpl implements ProjectService {
 
             if (!requestEventId.equals(projectResponseDto.getEventId())) {
                 if (!statusIsUpdatable) {
-                    throw new BadRequestException("El evento solo se puede modificar si el projecto aún no empieza!");
+                    throw new BadRequestException("El evento solo se puede modificar si el proyecto aún no empieza!");
                 }
                 EventResponseDto eventResponseDto = eventService.GetEvent(requestEventId);
                 entityResponse.setEventId(eventResponseDto.getEventId());
@@ -239,7 +239,7 @@ public class ProjectServiceImpl implements ProjectService {
         if (Objects.isNull(request.getClient().getClientId())) {
 
             if (!statusIsUpdatable) {
-                throw new BadRequestException("El evento solo se puede modificar si el projecto aún no empieza!");
+                throw new BadRequestException("El evento solo se puede modificar si el proyecto aún no empieza!");
             }
 
             ClientResponseDto clientResponseDto = clientService.createClient(request.getClient());
@@ -250,7 +250,7 @@ public class ProjectServiceImpl implements ProjectService {
 
             if (!requestClientId.equals(projectResponseDto.getClientId())) {
                 if (!statusIsUpdatable) {
-                    throw new BadRequestException("El cliente solo se puede modificar si el projecto aún no empieza!");
+                    throw new BadRequestException("El cliente solo se puede modificar si el proyecto aún no empieza!");
                 }
                 ClientResponseDto clientResponseDto = clientService.getClientById(requestClientId);
                 if (clientResponseDto.getStatus().equals(BasicEnumStatus.DISABLED)) {
