@@ -93,10 +93,10 @@ public class ProductTagServiceImpl implements ProductTagService {
                                                          List<ProductTagRequestDto> productTags, Long productId,
                                                          Long brandTagId) throws BadRequestException {
 
-        //TODO UNIFY CREATE PRODUCTTAGS AND VALIDATE SIBLING TAGS CREATION
         List<TagResponseDto> childsOfBrand = new ArrayList<>();
 
         List<ProductTagResponseDto> response = productTags.stream().map(tagRequest -> {
+
             TagResponseDto tag = tags.stream().filter(t -> t.getTagId().equals(tagRequest.getTagId())).findFirst()
                     .orElseThrow(() -> new BadRequestException("Tag ID no válido: " + tagRequest.getTagId()));
 
@@ -105,7 +105,7 @@ public class ProductTagServiceImpl implements ProductTagService {
                         "¡No se puede asignar la etiqueta %s! ¡Elige otra!".formatted(tag.getName()));
             }
 
-            if (tag.getFatherId().equals(brandTagId)) {
+            if (tag.getFatherId().equals(brandTagId) && tagRequest.getType().equals(TagTypeEnum.DESCRIPTIVE)) {
                 childsOfBrand.add(tag);
                 if (childsOfBrand.size() > 1) {
                     throw new BadRequestException("¡Debe haber solo una marca asignada!");
@@ -117,6 +117,7 @@ public class ProductTagServiceImpl implements ProductTagService {
             dto.setType(tagRequest.getType());
             dto.setName(tag.getName());
             return dto;
+
         }).toList();
 
 
@@ -165,13 +166,15 @@ public class ProductTagServiceImpl implements ProductTagService {
         return productTagRepository.findByProductIdAndStatus(productId, BasicEnumStatus.ENABLED);
     }
 
+    @Override
+    public List<ProductTagEntity> findTagsByProductIds(List<Long> productIds) {
+        return productTagRepository.findByProductIdInAndStatus(productIds, BasicEnumStatus.ENABLED);
+    }
+
 
     public List<ProductTagResponseDto> validateTagsInProductTags(List<ProductTagEntity> productTagEntities,
                                                                  List<TagResponseDto> tagResponseDtos) {
-        //        List<ProductTagEntity> productTagEntities =
-        //                productTagRepository.findByProductIdAndStatus(productId, BasicEnumStatus.ENABLED);
-        //        List<TagResponseDto> tagResponseDtos =
-        //                tagService.findByTagIdIn(productTagEntities.stream().map(ProductTagEntity::getTagId).toList());
+
         List<ProductTagResponseDto> response = new ArrayList<>();
 
         for(ProductTagEntity productTagEntity : productTagEntities) {

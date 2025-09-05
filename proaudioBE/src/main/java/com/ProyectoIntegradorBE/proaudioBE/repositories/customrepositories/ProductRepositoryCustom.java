@@ -11,7 +11,7 @@ import java.util.List;
 @Repository
 public interface ProductRepositoryCustom {
 
-    public ProductListResponseDto findAllWithFilters(
+    ProductListResponseDto findAllWithFilters(
             List<Long> tagIds, ProductSortByEnum sortBy,
             DirectionEnum direction,
             LocalDate startDate,

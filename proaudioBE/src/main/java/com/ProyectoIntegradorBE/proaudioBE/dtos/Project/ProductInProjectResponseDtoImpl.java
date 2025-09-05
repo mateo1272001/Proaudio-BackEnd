@@ -2,6 +2,7 @@ package com.ProyectoIntegradorBE.proaudioBE.dtos.Project;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import jakarta.annotation.Nullable;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -23,5 +24,8 @@ public class ProductInProjectResponseDtoImpl {
     private Long rentPriceId;
 
     private BigDecimal rentPriceValue;
+
+    @Nullable
+    private String message;
 
 }
