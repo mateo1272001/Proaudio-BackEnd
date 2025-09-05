@@ -536,8 +536,11 @@ public class ProjectServiceImpl implements ProjectService {
     private ProjectStatusEnum calculateFromStatusConfirmed(ProjectEntity projectEntity) {
         if (LocalDateTime.now().isAfter(projectEntity.getStartDate())) {
 
+            boolean isSolved =
+                    productProjectService.getProductsInProject(projectEntity.getProjectId()).getProducts().isEmpty();
+
             sendProjectNotification(PROJECT_STARTED_TITLE, PROJECT_STARTED_BODY.formatted(projectEntity.getName()),
-                    false, null, NotificationTypeEnum.PROJECT, projectEntity.getProjectId(),
+                    isSolved, null, NotificationTypeEnum.PROJECT, projectEntity.getProjectId(),
                     SEND_ITEMS_NOTIFICATION_ACTION);
 
             return ProjectStatusEnum.ON_COURSE;
