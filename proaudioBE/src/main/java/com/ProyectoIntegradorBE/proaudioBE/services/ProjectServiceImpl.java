@@ -340,7 +340,7 @@ public class ProjectServiceImpl implements ProjectService {
                 case DISCARDED -> ProjectStatusEnum.DISCARDED;
                 case COMPLETED -> ProjectStatusEnum.COMPLETED;
             });
-            //todo [ITEM PROJECT] alter item project status when status ends
+
             projectRepository.save(projectEntity);
         }
     }
@@ -993,7 +993,8 @@ public class ProjectServiceImpl implements ProjectService {
         BigDecimal totalInProductsPerDay = BigDecimal.valueOf(0);
 
         for (ProductInProjectResponseDto product : productsInProject) {
-            totalInProductsPerDay = totalInProductsPerDay.add(product.getRentPrice());
+            totalInProductsPerDay =
+                    totalInProductsPerDay.add(product.getRentPrice()).multiply(BigDecimal.valueOf(product.getAmount()));
         }
 
         return totalInProductsPerDay.multiply(BigDecimal.valueOf(days));

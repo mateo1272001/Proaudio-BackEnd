@@ -27,6 +27,4 @@ public class ClientDetailsResponseDto {
 
     private List<ProjectParticipatedResponseDto> projectsParticipated;
 
-    //    private List<Activities> activities //todo [ACTIVITIES] add when activities are implemented
-
 }
