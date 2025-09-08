@@ -31,12 +31,11 @@ public interface ProductRepository extends CrudRepository<ProductEntity, Long>, 
             	GROUP BY pd.product_id, pd.model
             ) AS products
             LEFT JOIN product_tag pt ON (products.product_id = pt.product_id AND pt.type = 'DESCRIPTIVE' AND pt.status = 'ENABLED')
-            INNER JOIN tag t ON (t.tag_id = pt.tag_id)
-            WHERE t.father_id = 1
+            LEFT JOIN tag t ON (t.tag_id = pt.tag_id AND t.father_id = :brandTagId)
             ORDER BY products.amount
             LIMIT :limit
             """, nativeQuery = true)
-    List<RentedProductsAmountDto> findMostUsedProducts(LocalDate start, LocalDate end, Integer limit);
+    List<RentedProductsAmountDto> findMostUsedProducts(LocalDate start, LocalDate end, Integer limit, Long brandTagId);
 
     @Query(value = """
             SELECT

@@ -7,6 +7,7 @@ import com.ProyectoIntegradorBE.proaudioBE.repositories.ProductRepository;
 import com.ProyectoIntegradorBE.proaudioBE.repositories.ProjectRepository;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.AnalyticsService;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ProductService;
+import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.TagService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,8 @@ public class AnalyticsServiceImpl implements AnalyticsService {
 
     private final ProductService productService;
 
+    private final TagService tagService;
+
     private final ProductRepository productRepository;
 
     private final ProjectRepository projectRepository;
@@ -31,12 +34,14 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     @Override
     public AmountRentedResponseDto getMostRentedProducts(LocalDate start, LocalDate end, Integer limit) {
 
+        Long brandTagId = tagService.findBrandRoot().getTagId();
+
         if (Objects.isNull(limit) || limit <= 0) {
             limit = 20;
         }
 
-        List<RentedProductsAmountDto>
-                rentedProducts = productRepository.findMostUsedProducts(start, end, limit);
+        List<RentedProductsAmountDto> rentedProducts =
+                productRepository.findMostUsedProducts(start, end, limit, brandTagId);
         log.info("rented products dto: %s".formatted(rentedProducts.toString()));
 
         RangeDto rangeDto = new RangeDto(start, end);
