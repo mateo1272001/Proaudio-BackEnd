@@ -994,7 +994,7 @@ public class ProjectServiceImpl implements ProjectService {
 
         for (ProductInProjectResponseDto product : productsInProject) {
             totalInProductsPerDay =
-                    totalInProductsPerDay.add(product.getRentPrice()).multiply(BigDecimal.valueOf(product.getAmount()));
+                    totalInProductsPerDay.add(product.getRentPrice().multiply(BigDecimal.valueOf(product.getAmount())));
         }
 
         return totalInProductsPerDay.multiply(BigDecimal.valueOf(days));
