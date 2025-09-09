@@ -1,0 +1,108 @@
+package com.ProyectoIntegradorBE.proaudioBE.controllers;
+
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.*;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.ItemProject.ItemProjectResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.ProductDetailResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ItemProjectService;
+import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ItemService;
+import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ProductService;
+import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ProjectService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/item")
+public class ItemController {
+
+    private final ItemService itemService;
+
+    private final ProductService productService;
+
+    private final ItemProjectService itemProjectService;
+
+    private final ProjectService projectService;
+
+    @PostMapping
+    private ItemResponseListDto CreateItem(@RequestBody ItemRequestListDto items) throws Exception {
+
+        return productService.ValidateProductsAndCreateItem(items);
+
+    }
+
+    @PutMapping("{id}")
+    private ItemResponseDto UpdateItem(@RequestBody UpdateItemRequestDto itemRequestDto, @PathVariable Long id) {
+
+        return itemService.updateItem(itemRequestDto, id);
+
+    }
+
+    @DeleteMapping("{id}")
+    private ItemResponseDto DeleteItem(@PathVariable Long id) {
+
+        return itemService.deleteItem(id);
+
+    }
+
+    @GetMapping("{id}")
+    private ItemResponseDto GetItem(@PathVariable Long id) {
+
+        return itemService.getItem(id);
+
+    }
+
+    @GetMapping("/status")
+    private ItemStatusResponseDto getItemStatuses() {
+
+        return itemService.getItemStatuses();
+
+    }
+
+    @GetMapping("/possible/status/{id}")
+    private ItemStatusResponseDto getItemStatuses(@PathVariable Long id) {
+
+        return itemService.getPossibleItemStatuses(id);
+
+    }
+
+    @GetMapping("/product/{id}")
+    private ItemSectionResponseDto GetItemList(@PathVariable Long id,
+                                               @RequestParam(required = false, defaultValue = "id") String sortBy,
+                                               @RequestParam(required = false) String direction,
+                                               @RequestParam(defaultValue = "0") Integer page,
+                                               @RequestParam(defaultValue = "10") Integer size,
+                                               @RequestParam(required = false) String status) {
+
+        productService.GetProduct(id);
+
+        return projectService.getItemListFrom(id, status, sortBy, direction, page, size);
+    }
+
+    @GetMapping("{id}/detail")
+    private ItemDetailsResponseDto GetItemDetails(@PathVariable Long id) {
+
+        ItemResponseDto item = itemService.getItem(id);
+
+        ProductDetailResponseDto productDetailResponseDto = productService.GetProductDetails(item.getProductId());
+
+        return itemService.getItemDetails(item, productDetailResponseDto);
+
+    }
+
+    @PostMapping("{id}/regenerate/qr")
+    private ItemResponseDto regenerateItemQr(@PathVariable Long id) throws Exception {
+
+        return itemService.regenerateItemQr(id);
+
+    }
+
+    @PostMapping("/{idItem}/return")
+    public ItemProjectResponseDto itemReturnToDeposit(@PathVariable Long idItem) {
+
+        ItemProjectResponseDto itemProjectResponseDto = itemProjectService.getLastItemProjectByItemId(idItem);
+
+        return projectService.singleItemReturn(itemProjectResponseDto);
+    }
+
+
+}
