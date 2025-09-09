@@ -92,6 +92,10 @@ public class ItemProjectServiceImpl implements ItemProjectService {
             return;
         }
 
+        if (amountOfProducts == 0) {
+            throw new BadRequestException("¡El proyecto no tiene asignado este producto!");
+        }
+
         if (itemProjectEntityList.size() >= amountOfProducts) {
             throw new BadRequestException("¡Ya se alcanzó la cantidad de artículos necesarios de este producto!");
         }
