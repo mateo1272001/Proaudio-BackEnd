@@ -1,6 +1,6 @@
 spring:
   profiles:
-    active: test # Cambiar según el entorno
+    active: stage # Cambiar según el entorno
   servlet:
     multipart:
       max-file-size: 10MB
@@ -83,11 +83,11 @@ spring:
 spring:
   config:
     activate:
-      on-profile: prod
+      on-profile: stage
   datasource:
-    url: jdbc:mysql://db-servidor:3306/qrapp_prod
-    username: prod_user
-    password: prod_password
+    url: jdbc:mysql://localhost:3306/proaudio_stage?useSSL=false&serverTimezone=UTC
+    username: proaudio_stage
+    password: Stage_Passw0rd!
   jpa:
     hibernate:
       ddl-auto: none
@@ -106,7 +106,7 @@ spring:
           starttls:
             enable: true
   server:
-    port: 80
+    port: 8081
   cron:
     project-status: "0 0 8,20 * * *" #executing at 8am and 8pm everyday
     daily-notifications: "0 0 12 * * *"
