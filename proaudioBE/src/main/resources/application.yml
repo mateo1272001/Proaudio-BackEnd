@@ -111,3 +111,11 @@ spring:
     project-status: "0 0 8,20 * * *" #executing at 8am and 8pm everyday
     daily-notifications: "0 0 12 * * *"
   app-base-url: https://proaudiochannels.com.uy:8443
+  logging:
+    file:
+      name: /var/log/proaudio-stage/app.log  # ruta donde se guardarán los logs
+    level:
+      root: INFO
+      org.springframework.web: DEBUG
+      org.hibernate.SQL: INFO
+      org.hibernate.type.descriptor.sql: TRACE
