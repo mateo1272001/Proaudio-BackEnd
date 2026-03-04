@@ -1,10 +1,9 @@
 package com.ProyectoIntegradorBE.proaudioBE.dtos.Product;
 
-import com.ProyectoIntegradorBE.proaudioBE.enums.BasicEnumStatus;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.RelationGroup.RelationGroupResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.enums.ProductStatus;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -35,5 +34,5 @@ public class ProductResponseDto {
 
     private List<ProductTagResponseDto> tags;
 
-
+    private List<RelationGroupResponseDto> groupTags;
 }

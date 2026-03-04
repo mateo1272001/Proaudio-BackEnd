@@ -8,20 +8,16 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Deprecated
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "product_tag")
-public class ProductTagEntity {
+@Table(name = "relation_group")
+public class RelationGroupEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long productTagId;
-
-    @NotNull
-    private Long tagId;
+    private Long relationGroupId;
 
     @NotNull
     private Long productId;
@@ -33,5 +29,8 @@ public class ProductTagEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private BasicEnumStatus status;
+
+    @Column
+    private String name;
 
 }

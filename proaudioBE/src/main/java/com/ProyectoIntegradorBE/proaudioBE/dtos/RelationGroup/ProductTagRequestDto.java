@@ -1,4 +1,4 @@
-package com.ProyectoIntegradorBE.proaudioBE.dtos.Product;
+package com.ProyectoIntegradorBE.proaudioBE.dtos.RelationGroup;
 
 import com.ProyectoIntegradorBE.proaudioBE.enums.TagTypeEnum;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
@@ -19,4 +19,10 @@ public class ProductTagRequestDto {
 
     @Nullable
     private Long productId;
+
+    @Nullable
+    private Long relationGroupId;
+
+    @Nullable
+    private String name;
 }

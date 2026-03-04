@@ -1,7 +1,10 @@
 package com.ProyectoIntegradorBE.proaudioBE.controllers;
 
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.*;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.RelationGroup.ProductTagRequestDto;
 import com.ProyectoIntegradorBE.proaudioBE.services.ProductServiceImpl;
+import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ProductTagService;
+import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.TagService;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.BadRequestException;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -17,6 +20,10 @@ import java.util.List;
 public class ProductController {
 
     private final ProductServiceImpl productService;
+
+    private final ProductTagService productTagService;
+
+    private final TagService tagService;
 
     @PostMapping
     private ProductResponseDto CreateProductComplete(
@@ -74,15 +81,16 @@ public class ProductController {
 
     }
 
-
     //TAG
 
+    @Deprecated
     @PostMapping("/tag")
     ProductTagResponseDto createProductTag(@RequestBody ProductTagRequestDto productTagRequestDto)
             throws BadRequestException {
         return productService.createProductTag(productTagRequestDto);
     }
 
+    @Deprecated
     @DeleteMapping("{productId}/tag/{tagId}/type/{type}")
     ProductTagResponseDto DeleteProductTag(@PathVariable Long tagId, @PathVariable Long productId,
                                            @PathVariable String type) throws BadRequestException {

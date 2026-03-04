@@ -204,6 +204,7 @@ public class TagServiceImpl implements TagService {
         return tagResponseListDto;
     }
 
+    @Override
     public List<TagResponseDto> findByTagIdIn(List<Long> tagIds) {
 
         List<TagEntity> tagEntities = tagRepository.findByTagIdIn(tagIds);
@@ -229,7 +230,7 @@ public class TagServiceImpl implements TagService {
     public TagEntity findBrandRoot() {
 
         return tagRepository.findByNameAndStatus(BRAND_TAG_KEY, BasicEnumStatus.ENABLED)
-                .orElseThrow(() -> new InternalException("¡No etiqueta base MARCA!"));
+                .orElseThrow(() -> new InternalException("¡No hay etiqueta base MARCA!"));
 
     }
 
@@ -249,5 +250,9 @@ public class TagServiceImpl implements TagService {
         return checkIfGivenTagIsParent(tag.getFatherId(), searchingTag);
 
     }
-    
+
+    @Override
+    public TagResponseDto mapTag(TagEntity tag) {
+        return tagMapper.toDto(tag);
+    }
 }

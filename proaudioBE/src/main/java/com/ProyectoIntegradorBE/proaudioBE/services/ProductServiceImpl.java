@@ -4,6 +4,9 @@ import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.ItemRequestDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.ItemRequestListDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.ItemResponseListDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.*;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.RelationGroup.ProductTagRequestDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.RelationGroup.RelationGroupResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.RelationGroup.RelationGroupResponseDtoList;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Tag.TagResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.entities.ProductEntity;
 import com.ProyectoIntegradorBE.proaudioBE.entities.ProductTagEntity;
@@ -18,6 +21,7 @@ import com.ProyectoIntegradorBE.proaudioBE.repositories.ProductRepository;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ItemService;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ProductProjectService;
 import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.ProductService;
+import com.ProyectoIntegradorBE.proaudioBE.services.interfaces.RelationGroupService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +41,10 @@ public class ProductServiceImpl implements ProductService {
     private final PhotoServiceImpl photoService;
 
     private final ProductTagServiceImpl productTagService;
+
+    private final RelationGroupService relationGroupService;
+
+    private final RelationGroupServiceImpl relationGroupServiceImpl;
 
     private final TagServiceImpl tagService;
 
@@ -68,7 +76,8 @@ public class ProductServiceImpl implements ProductService {
         List<PriceReponseDto> prices =
                 rentPriceService.createPrices(productRequestDto.getPrices(), productResponseDto.getProductId());
 
-        List<ProductTagResponseDto> tags = CreateProductTags(productRequestDto, product);
+        //List<ProductTagResponseDto> tags = CreateProductTags(productRequestDto, product);
+        relationGroupServiceImpl.createMultipleRelationGroups(productRequestDto.getTags(), productResponseDto);
 
         if (files != null && files.length > 0) {
             List<MultipartFile> photoList = Stream.of(files).toList();
@@ -79,7 +88,7 @@ public class ProductServiceImpl implements ProductService {
         }
 
         productResponseDto.setPrices(prices);
-        productResponseDto.setTags(tags);
+        //        productResponseDto.setTags(relationGroupResponseDtos);
 
         return productResponseDto;
 
@@ -226,48 +235,55 @@ public class ProductServiceImpl implements ProductService {
         }
 
         response.setPrices(rentPriceService.findRentPriceByProductId(id));
-        List<ProductTagResponseDto> productTagResponseDtos = findTagsByProductId(id);
+        //        List<ProductTagResponseDto> productTagResponseDtos = findTagsByProductId(id);
+        RelationGroupResponseDtoList relationGroupResponseDto = relationGroupService.getRelationGroupsByProduct(id);
 
-        List<TagResponseDto> tags =  tagService.findByTagIdIn(productTagResponseDtos
-                .stream()
-                .map(ProductTagResponseDto::getTagId)
+        List<TagResponseDto> existingTags = tagService.findByTagIdIn(relationGroupResponseDto.getDescriptive().getTags()
+                .stream().map(TagResponseDto::getTagId)
                 .toList());
+        //
+        //        List<TagResponseDto> tags =  tagService.findByTagIdIn(productTagResponseDtos
+        //                .stream()
+        //                .map(ProductTagResponseDto::getTagId)
+        //                .toList());
 
-        response.setBrand(obtainBrandOfProduct(productTagResponseDtos, tags, response));
+        response.setBrand(obtainBrandOfProduct(relationGroupResponseDto.getDescriptive(), existingTags, response));
 
-        response.setDescriptionTags(new ArrayList<>());
-        response.setDependencyTags(new ArrayList<>());
-        response.setRelationTags(new ArrayList<>());
-
-        for (ProductTagResponseDto productTagResponseDto : productTagResponseDtos) {
-
-            TagResponseDto tagResponseDto =
-                    tags.stream().filter(t -> t.getTagId().equals(productTagResponseDto.getTagId())).findFirst()
-                            .orElseThrow(() -> new BadRequestException("Tag no encontrado entre los product tags"));
-
-            switch (productTagResponseDto.getType()) {
-                case DESCRIPTIVE -> response.getDescriptionTags().add(tagResponseDto);
-                case RELATION -> response.getRelationTags().add(tagResponseDto);
-                case DEPENDENCY -> response.getDependencyTags().add(tagResponseDto);
-            }
-
-        }
+        //        response.setDescriptionTags(new ArrayList<>());
+        //        response.setDependencyTags(new ArrayList<>());
+        //        response.setRelationTags(new ArrayList<>());
+        //
+        //        for (ProductTagResponseDto productTagResponseDto : productTagResponseDtos) {
+        //
+        //            TagResponseDto tagResponseDto =
+        //                    tags.stream().filter(t -> t.getTagId().equals(productTagResponseDto.getTagId())).findFirst()
+        //                            .orElseThrow(() -> new BadRequestException("Tag no encontrado entre los product tags"));
+        //
+        //            switch (productTagResponseDto.getType()) {
+        //                case DESCRIPTIVE -> response.getDescriptionTags().add(tagResponseDto);
+        //                case RELATION -> response.getRelationTags().add(tagResponseDto);
+        //                case DEPENDENCY -> response.getDependencyTags().add(tagResponseDto);
+        //            }
+        //
+        //        }
 
         return response;
     }
 
-    private String obtainBrandOfProduct(List<ProductTagResponseDto> productTagResponseDtos, List<TagResponseDto> tags,
+    private String obtainBrandOfProduct(RelationGroupResponseDto descriptiveTags, List<TagResponseDto> existingTags,
                                         ProductDetailResponseDto response) {
         try {
             TagEntity brandRoot = tagService.findBrandRoot();
 
-            List<Long> descriptiveTags =
-                    productTagResponseDtos.stream().filter(pt -> pt.getType().equals(TagTypeEnum.DESCRIPTIVE))
-                            .map(ProductTagResponseDto::getTagId).toList();
+            //            List<Long> descriptiveTags =
+            //                    productTagResponseDtos.stream().filter(pt -> pt.getType().equals(TagTypeEnum.DESCRIPTIVE))
+            //                            .map(ProductTagResponseDto::getTagId).toList();
 
-            Optional<TagResponseDto> brand = tags.stream()
+            List<Long> descriptiveTagsIds = descriptiveTags.getTags().stream().map(TagResponseDto::getTagId).toList();
+
+            Optional<TagResponseDto> brand = existingTags.stream()
                     .filter(t -> Objects.nonNull(t.getFatherId()) && t.getFatherId().equals(brandRoot.getTagId()) &&
-                            descriptiveTags.contains(t.getTagId())).findFirst();
+                            descriptiveTagsIds.contains(t.getTagId())).findFirst();
 
             brand.ifPresent(tagResponseDto -> response.setBrand(tagResponseDto.getName()));
 
@@ -313,6 +329,7 @@ public class ProductServiceImpl implements ProductService {
 
     //TAGS
 
+    @Deprecated
     public ProductTagResponseDto createProductTag (ProductTagRequestDto productTagRequestDto)
             throws BadRequestException {
 
@@ -334,6 +351,7 @@ public class ProductServiceImpl implements ProductService {
 
     }
 
+    @Deprecated
     public ProductTagResponseDto DeleteProductTag(Long tagId, Long productId, String type) {
         return productTagService.deleteProductTag(tagId, productId, type);
     }

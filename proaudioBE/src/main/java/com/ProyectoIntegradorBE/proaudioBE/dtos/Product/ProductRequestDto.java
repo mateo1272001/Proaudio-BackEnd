@@ -1,5 +1,6 @@
 package com.ProyectoIntegradorBE.proaudioBE.dtos.Product;
 
+import com.ProyectoIntegradorBE.proaudioBE.dtos.RelationGroup.ProductTagRequestDto;
 import com.ProyectoIntegradorBE.proaudioBE.enums.ProductStatus;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
