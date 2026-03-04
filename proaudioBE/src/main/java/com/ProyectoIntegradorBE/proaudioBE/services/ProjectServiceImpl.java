@@ -731,7 +731,8 @@ public class ProjectServiceImpl implements ProjectService {
                 throw new BadRequestException("¡Este producto no está disponible!");
             }
 
-            obtainProductDependenciesAndValidate(product.getModel(), productRequest, productTagsInProject, false);
+            //TODO ADD CALL TO VALIDATOR
+            //            obtainProductDependenciesAndValidate(product.getModel(), productRequest, productTagsInProject, false);
 
             List<ItemResponseDto> itemsOfProduct =
                     items.stream().filter(i -> i.getProductId().equals(productRequest.getProductId())).toList();
@@ -745,6 +746,7 @@ public class ProjectServiceImpl implements ProjectService {
         return productsResponse;
     }
 
+    //TODO UPDATE TO NEW VALIDATOR
     @Override
     public String obtainProductDependenciesAndValidate(String productName, ProjectProductRequestDto productRequest,
                                                        List<ProductTagEntity> productTagsInProject, Boolean isUpdate) {
