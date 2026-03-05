@@ -1,6 +1,6 @@
 spring:
   profiles:
-    active: stage # Cambiar según el entorno
+    active: test # Cambiar según el entorno
   servlet:
     multipart:
       max-file-size: 10MB
@@ -44,7 +44,7 @@ spring:
   app-base-url: http://localhost:5173
 
 ---
-
+#is prod for the time being
 spring:
   config:
     activate:
