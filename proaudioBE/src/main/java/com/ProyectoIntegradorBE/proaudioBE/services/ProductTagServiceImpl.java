@@ -1,7 +1,7 @@
 package com.ProyectoIntegradorBE.proaudioBE.services;
 
-import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.ProductTagRequestDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.ProductTagResponseDto;
+import com.ProyectoIntegradorBE.proaudioBE.dtos.RelationGroup.ProductTagRequestDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Tag.TagResponseDto;
 import com.ProyectoIntegradorBE.proaudioBE.entities.ProductTagEntity;
 import com.ProyectoIntegradorBE.proaudioBE.entities.TagEntity;
@@ -20,6 +20,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Deprecated
 @Service
 @RequiredArgsConstructor
 public class ProductTagServiceImpl implements ProductTagService {
@@ -28,6 +29,7 @@ public class ProductTagServiceImpl implements ProductTagService {
 
     private final ProductTagMapper productTagMapper;
 
+    @Deprecated
     public ProductTagResponseDto createProductTag(ProductTagRequestDto productTagRequestDto, TagEntity tagEntity,
                                                   TagEntity brandTag) {
 
@@ -72,6 +74,7 @@ public class ProductTagServiceImpl implements ProductTagService {
     private void brandTagsValidations(ProductTagRequestDto productTagRequestDto, TagEntity tagEntity,
                                       TagEntity brandTag) {
 
+        //todo simplify parameters: delete productTagRequestDto
         if (productTagRequestDto.getTagId().equals(brandTag.getTagId())) {
             throw new BadRequestException(
                     "¡No se puede asignar la etiqueta %s! ¡Elige otra!".formatted(brandTag.getName()));

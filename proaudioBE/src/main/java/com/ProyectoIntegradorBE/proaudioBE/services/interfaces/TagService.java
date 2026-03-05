@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.apache.coyote.BadRequestException;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface TagService {
@@ -23,10 +24,13 @@ public interface TagService {
 
     TagResponseListDto findAllSimple();
 
+    List<TagResponseDto> findByTagIdIn(List<Long> tagIds);
+
     Optional<TagEntity> findByTagId(@NotNull Long tagId);
 
     TagEntity findBrandRoot();
 
     Boolean checkIfGivenTagIsParent(Long tagId, Long searchingTag);
 
+    TagResponseDto mapTag(TagEntity tag);
 }

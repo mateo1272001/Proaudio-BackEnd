@@ -50,8 +50,10 @@ public class ProductProjectController {
         productTagsInProject.addAll(productTagEntities);
 
 
-        String message = projectService.validateDependenciesUpdate(product.getModel(), productProjectRequestDto,
-                productTagsInProject);
+        //        String message = projectService.validateDependenciesUpdate(product.getModel(), productProjectRequestDto,
+        //                productTagsInProject);
+        String message = "";
+        //TODO CREATE NEW VALIDATOR
 
 
         PriceReponseDto priceReponseDto = rentPriceService.getPrice(productProjectRequestDto.getRentPriceId());
