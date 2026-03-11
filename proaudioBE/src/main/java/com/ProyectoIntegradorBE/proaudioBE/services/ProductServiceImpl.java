@@ -94,6 +94,7 @@ public class ProductServiceImpl implements ProductService {
 
     }
 
+    @Deprecated
     private List<ProductTagResponseDto> CreateProductTags(ProductRequestDto productRequestDto, ProductEntity product) {
 
         List<Long> tagIds = new ArrayList<>();
@@ -235,37 +236,20 @@ public class ProductServiceImpl implements ProductService {
         }
 
         response.setPrices(rentPriceService.findRentPriceByProductId(id));
-        //        List<ProductTagResponseDto> productTagResponseDtos = findTagsByProductId(id);
         RelationGroupResponseDtoList relationGroupResponseDto = relationGroupService.getRelationGroupsByProduct(id);
 
-        List<TagResponseDto> existingTags = tagService.findByTagIdIn(relationGroupResponseDto.getDescriptive().getTags()
-                .stream().map(TagResponseDto::getTagId)
-                .toList());
-        //
-        //        List<TagResponseDto> tags =  tagService.findByTagIdIn(productTagResponseDtos
-        //                .stream()
-        //                .map(ProductTagResponseDto::getTagId)
-        //                .toList());
+        if (Objects.nonNull(relationGroupResponseDto.getDescriptive().getTags())) {
 
-        response.setBrand(obtainBrandOfProduct(relationGroupResponseDto.getDescriptive(), existingTags, response));
+            List<TagResponseDto> existingTags = tagService.findByTagIdIn(
+                    relationGroupResponseDto.getDescriptive().getTags().stream().map(TagResponseDto::getTagId)
+                            .toList());
 
-        //        response.setDescriptionTags(new ArrayList<>());
-        //        response.setDependencyTags(new ArrayList<>());
-        //        response.setRelationTags(new ArrayList<>());
-        //
-        //        for (ProductTagResponseDto productTagResponseDto : productTagResponseDtos) {
-        //
-        //            TagResponseDto tagResponseDto =
-        //                    tags.stream().filter(t -> t.getTagId().equals(productTagResponseDto.getTagId())).findFirst()
-        //                            .orElseThrow(() -> new BadRequestException("Tag no encontrado entre los product tags"));
-        //
-        //            switch (productTagResponseDto.getType()) {
-        //                case DESCRIPTIVE -> response.getDescriptionTags().add(tagResponseDto);
-        //                case RELATION -> response.getRelationTags().add(tagResponseDto);
-        //                case DEPENDENCY -> response.getDependencyTags().add(tagResponseDto);
-        //            }
-        //
-        //        }
+            if (!existingTags.isEmpty()) {
+                response.setBrand(
+                        obtainBrandOfProduct(relationGroupResponseDto.getDescriptive(), existingTags, response));
+            }
+        }
+
 
         return response;
     }
@@ -274,10 +258,6 @@ public class ProductServiceImpl implements ProductService {
                                         ProductDetailResponseDto response) {
         try {
             TagEntity brandRoot = tagService.findBrandRoot();
-
-            //            List<Long> descriptiveTags =
-            //                    productTagResponseDtos.stream().filter(pt -> pt.getType().equals(TagTypeEnum.DESCRIPTIVE))
-            //                            .map(ProductTagResponseDto::getTagId).toList();
 
             List<Long> descriptiveTagsIds = descriptiveTags.getTags().stream().map(TagResponseDto::getTagId).toList();
 
