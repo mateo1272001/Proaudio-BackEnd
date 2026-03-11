@@ -1,6 +1,6 @@
 spring:
   profiles:
-    active: test # Cambiar según el entorno
+    active: dev # Cambiar según el entorno
   servlet:
     multipart:
       max-file-size: 10MB
