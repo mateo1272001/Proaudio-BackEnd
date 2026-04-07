@@ -304,7 +304,7 @@ public class ProductServiceImpl implements ProductService {
 
         });
 
-        return itemService.createItem(items);
+        return itemService.createItemsAndGenerateQr(items);
     }
 
     //TAGS

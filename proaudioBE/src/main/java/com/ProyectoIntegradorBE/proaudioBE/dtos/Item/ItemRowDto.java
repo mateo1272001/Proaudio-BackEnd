@@ -33,4 +33,8 @@ public class ItemRowDto {
 
     private Long nextProjectId;
 
+    private String serialNumber;
+
+    private String assignedId;
+
 }

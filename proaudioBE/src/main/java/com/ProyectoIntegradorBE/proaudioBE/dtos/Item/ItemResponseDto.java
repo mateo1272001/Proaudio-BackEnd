@@ -36,4 +36,5 @@ public class ItemResponseDto {
 
     private String serialNumber;
 
+    private String assignedId;
 }

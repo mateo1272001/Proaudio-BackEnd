@@ -42,7 +42,8 @@ public interface ItemProjectRepository extends CrudRepository<ItemProjectEntity,
             	i.item_range,
             	i.location AS item_location,
             	p.product_id,
-            	p.model AS product_model
+            	p.model AS product_model,
+            	i.assigned_id
             FROM item_project ip
             INNER JOIN item i ON (ip.item_id = i.item_id)
             INNER JOIN product p ON (p.product_id = i.product_id)
