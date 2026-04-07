@@ -43,4 +43,6 @@ public class ItemEntity {
     private String serialNumber;
 
     private String itemRange;
+
+    private String assignedId;
 }

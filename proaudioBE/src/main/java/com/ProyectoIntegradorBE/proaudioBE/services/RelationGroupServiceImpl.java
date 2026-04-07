@@ -257,6 +257,7 @@ public class RelationGroupServiceImpl implements RelationGroupService {
                 relationGroupRepository.findByProductIdAndStatus(productId, BasicEnumStatus.ENABLED);
 
         RelationGroupResponseDtoList relationGroupResponseDtoList = new RelationGroupResponseDtoList();
+        relationGroupResponseDtoList.setDescriptive(new RelationGroupResponseDto());
         relationGroupResponseDtoList.setRelation(new ArrayList<>());
         relationGroupResponseDtoList.setDependency(new ArrayList<>());
 

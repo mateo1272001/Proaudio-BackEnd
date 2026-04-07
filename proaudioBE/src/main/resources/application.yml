@@ -44,7 +44,7 @@ spring:
   app-base-url: http://localhost:5173
 
 ---
-
+#is prod for the time being
 spring:
   config:
     activate:

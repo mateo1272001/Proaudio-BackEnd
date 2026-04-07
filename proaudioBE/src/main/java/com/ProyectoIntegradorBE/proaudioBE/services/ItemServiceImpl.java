@@ -1,6 +1,7 @@
 package com.ProyectoIntegradorBE.proaudioBE.services;
 
 import com.ProyectoIntegradorBE.proaudioBE.Utils.CollectionUtils;
+import com.ProyectoIntegradorBE.proaudioBE.Utils.StringUtils;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Item.*;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.PageableDto;
 import com.ProyectoIntegradorBE.proaudioBE.dtos.Product.ProductDetailResponseDto;
@@ -52,24 +53,39 @@ public class ItemServiceImpl implements ItemService {
             List.of(ProjectStatusEnum.ON_COURSE, ProjectStatusEnum.EXPIRED, ProjectStatusEnum.COMPLETED);
 
 
-    @Override
-    @Transactional
-    public ItemResponseListDto createItem(ItemRequestListDto items) throws Exception {
+    private static ItemDetailsResponseDto fillItemDetails(ItemResponseDto item,
+                                                          ItemProductResponseDto itemProductResponseDto) {
+        ItemDetailsResponseDto itemDetailsResponseDto = new ItemDetailsResponseDto();
+        itemDetailsResponseDto.setProduct(itemProductResponseDto);
+        itemDetailsResponseDto.setDescription(Objects.nonNull(item.getDescription()) ? item.getDescription() : null);
+        itemDetailsResponseDto.setStatus(item.getStatus());
+        itemDetailsResponseDto.setLocation(item.getLocation());
+        itemDetailsResponseDto.setPriceBought(Objects.nonNull(item.getPriceBought()) ? item.getPriceBought() : null);
+        itemDetailsResponseDto.setBoughtAt(item.getBoughtAt());
+        itemDetailsResponseDto.setRange(item.getItemRange());
+        itemDetailsResponseDto.setSerialNumber(item.getSerialNumber());
+        itemDetailsResponseDto.setAssignedId(item.getAssignedId());
 
-        List<ItemEntity> entityList = new ArrayList<>();
+        return itemDetailsResponseDto;
+    }
 
-        for (ItemRequestDto item : items.getItems()) {
+    private static void batchCodesValidations(ItemRequestDto itemBatch, List<String> serialNumbersRequested,
+                                              List<String> assignedIdsRequested) {
+        for (SerialMapDto codes : itemBatch.getSerialMap()) {
 
-            List<ItemEntity> itemEntities = createItemBlock(item);
-            entityList.addAll(itemEntities);
+            if (Objects.nonNull(codes.getSerialNumber())) {
+
+                if (serialNumbersRequested.contains(codes.getSerialNumber().trim())) {
+                    throw new BadRequestException("¡Hay números de serie repetidos en los lotes!");
+                }
+                serialNumbersRequested.add(codes.getSerialNumber().trim());
+                if (assignedIdsRequested.contains(codes.getAssignedId().trim())) {
+                    throw new BadRequestException("¡Hay IDs repetidos en los lotes!");
+                }
+                assignedIdsRequested.add(codes.getAssignedId().trim());
+            }
 
         }
-
-        entityList = CollectionUtils.toList(itemRepository.saveAll(entityList));
-
-        List<ItemResponseDto> itemResponseList = GenerateQrAndResponse(entityList);
-
-        return new ItemResponseListDto(itemResponseList);
     }
 
     private List<ItemResponseDto> GenerateQrAndResponse(List<ItemEntity> entityList) throws Exception {
@@ -85,14 +101,40 @@ public class ItemServiceImpl implements ItemService {
         return itemResponseList;
     }
 
-    private List<ItemEntity> createItemBlock(ItemRequestDto item) {
+    @Override
+    @Transactional
+    public ItemResponseListDto createItemsAndGenerateQr(ItemRequestListDto items) throws Exception {
+
+        List<ItemEntity> entityList = createItems(items);
+
+        List<ItemResponseDto> itemResponseList = GenerateQrAndResponse(entityList);
+
+        return new ItemResponseListDto(itemResponseList);
+    }
+
+    private List<ItemEntity> createItems(ItemRequestListDto items) {
+        List<ItemEntity> entityList = new ArrayList<>();
+
+        List<String> serialNumbersRequested = new ArrayList<>();
+        List<String> assignedIdsRequested = new ArrayList<>();
+
+        for (ItemRequestDto batch : items.getItems()) {
+
+            batchCodesValidations(batch, serialNumbersRequested, assignedIdsRequested);
+
+            List<ItemEntity> itemEntities = createItemBatch(batch);
+            entityList.addAll(itemEntities);
+
+        }
+
+        entityList = CollectionUtils.toList(itemRepository.saveAll(entityList));
+        return entityList;
+    }
+
+    private List<ItemEntity> createItemBatch(ItemRequestDto item) {
 
         if (Objects.isNull(item.getAmountBought()) || item.getAmountBought() <= 0) {
             throw new BadRequestException("Se debe comprar por lo menos un artículo");
-        }
-
-        if (item.getAmountBought() != item.getSerialNumbers().size()) {
-            throw new BadRequestException("La cantidad de numeros de serie debe ser igual a los productos comprados");
         }
 
         if (Objects.isNull(item.getPriceBought()) || item.getPriceBought().compareTo(BigDecimal.ZERO) < 0) {
@@ -103,21 +145,25 @@ public class ItemServiceImpl implements ItemService {
             throw new BadRequestException("Debe tener una fecha de compra no futura");
         }
 
+        if (item.getAmountBought() < item.getSerialMap().size()) {
+            throw new BadRequestException("¡Hay más códigos que artículos creados!");
+        }
+
+        if (!itemRepository.findRepeatedAssignedIds(item.getProductId(),
+                List.of(ItemStatusEnum.CREATED.name(), ItemStatusEnum.GOOD.name(), ItemStatusEnum.WITH_DETAILS.name()),
+                item.getSerialMap().stream().map(sm -> sm.getAssignedId().trim()).toList()).isEmpty()) {
+            throw new BadRequestException("¡Ya existen artículos pertenecientes a este producto con estos códigos!");
+        }
+
         if (!itemRepository.findRepeatedSerialNumbers(item.getProductId(),
-                List.of(ItemStatusEnum.CREATED, ItemStatusEnum.GOOD, ItemStatusEnum.WITH_DETAILS),
-                item.getSerialNumbers()).isEmpty()) {
-            throw new BadRequestException("Hay números de serie ya reguistrados");
+                List.of(ItemStatusEnum.CREATED.name(), ItemStatusEnum.GOOD.name(), ItemStatusEnum.WITH_DETAILS.name()),
+                item.getSerialMap().stream().map(sm -> sm.getSerialNumber().trim()).toList()).isEmpty()) {
+            throw new BadRequestException("¡Ya existen artículos pertenecientes a este producto con estos códigos!");
         }
 
         List<ItemEntity> itemEntities = new ArrayList<>();
 
         for (int i = 0; i < item.getAmountBought(); i++) {
-
-            int itemPosition = i;
-            if (itemEntities.stream()
-                    .anyMatch(ie -> ie.getSerialNumber().equals(item.getSerialNumbers().get(itemPosition)))) {
-                throw new BadRequestException("¡Hay números de serie repetidos en la petición!");
-            }
 
             ItemEntity itemEntity = new ItemEntity();
             itemEntity.setProductId(item.getProductId());
@@ -129,8 +175,33 @@ public class ItemServiceImpl implements ItemService {
             itemEntity.setUpdatedAt(LocalDateTime.now());
             itemEntity.setItemRange(item.getItemRange());
 
-            itemEntity.setSerialNumber(item.getSerialNumbers().get(i));
+            int itemPosition = i;
 
+            if ((item.getSerialMap().size() - 1) >= i) {
+
+                if (Objects.nonNull(item.getSerialMap().get(i).getSerialNumber()) &&
+                        !item.getSerialMap().get(i).getSerialNumber().isEmpty()) {
+
+                    if (itemEntities.stream().anyMatch(ie -> Objects.nonNull(ie.getSerialNumber()) &&
+                            ie.getSerialNumber().equals(item.getSerialMap().get(itemPosition).getSerialNumber()))) {
+                        throw new BadRequestException("¡Hay números de serie repetidos en la petición!");
+                    }
+
+                    itemEntity.setSerialNumber(item.getSerialMap().get(i).getSerialNumber().trim());
+                }
+
+                if (Objects.nonNull(item.getSerialMap().get(i).getAssignedId()) &&
+                        !item.getSerialMap().get(i).getAssignedId().isEmpty()) {
+
+                    if (itemEntities.stream().anyMatch(ie -> Objects.nonNull(ie.getAssignedId()) &&
+                            ie.getAssignedId().equals(item.getSerialMap().get(itemPosition).getAssignedId()))) {
+                        throw new BadRequestException("¡Hay números de serie repetidos en la petición!");
+                    }
+
+                    itemEntity.setAssignedId(item.getSerialMap().get(i).getAssignedId().trim());
+                }
+
+            }
             itemEntities.add(itemEntity);
         }
 
@@ -148,27 +219,36 @@ public class ItemServiceImpl implements ItemService {
         itemEntity.setDescription(
                 Objects.nonNull(item.getDescription()) ? item.getDescription() : itemEntity.getDescription());
         itemEntity.setItemRange(Objects.nonNull(item.getItemRange()) ? item.getItemRange() : itemEntity.getItemRange());
+
+        if (StringUtils.isNotEmpty(item.getSerialNumber()) &&
+                !item.getSerialNumber().trim().equals(itemEntity.getSerialNumber().trim())) {
+
+            if (!itemRepository.findRepeatedSerialNumbers(item.getProductId(),
+                    List.of(ItemStatusEnum.CREATED.name(), ItemStatusEnum.GOOD.name(),
+                            ItemStatusEnum.WITH_DETAILS.name()), List.of(item.getSerialNumber())).isEmpty()) {
+                throw new BadRequestException(
+                        "¡Ya existen artículos pertenecientes a este producto con este número de serie!");
+            }
+        }
+        itemEntity.setSerialNumber(item.getSerialNumber().trim());
+
+        if (StringUtils.isNotEmpty(item.getAssignedId()) &&
+                !item.getAssignedId().trim().equals(itemEntity.getAssignedId().trim())) {
+
+            if (!itemRepository.findRepeatedAssignedIds(item.getProductId(),
+                    List.of(ItemStatusEnum.CREATED.name(), ItemStatusEnum.GOOD.name(),
+                            ItemStatusEnum.WITH_DETAILS.name()), List.of(item.getAssignedId())).isEmpty()) {
+                throw new BadRequestException("¡Ya existen artículos pertenecientes a este producto con este ID!");
+            }
+        }
+        itemEntity.setAssignedId(item.getAssignedId().trim());
+
         itemEntity.setUpdatedAt(LocalDateTime.now());
 
         itemEntity = itemRepository.save(itemEntity);
 
         return itemMapper.toDto(itemEntity);
 
-    }
-
-    private static ItemDetailsResponseDto FillItemDetails(ItemResponseDto item,
-                                                          ItemProductResponseDto itemProductResponseDto) {
-        ItemDetailsResponseDto itemDetailsResponseDto = new ItemDetailsResponseDto();
-        itemDetailsResponseDto.setProduct(itemProductResponseDto);
-        itemDetailsResponseDto.setDescription(Objects.nonNull(item.getDescription()) ? item.getDescription() : null);
-        itemDetailsResponseDto.setStatus(item.getStatus());
-        itemDetailsResponseDto.setLocation(item.getLocation());
-        itemDetailsResponseDto.setPriceBought(Objects.nonNull(item.getPriceBought()) ? item.getPriceBought() : null);
-        itemDetailsResponseDto.setBoughtAt(item.getBoughtAt());
-        itemDetailsResponseDto.setRange(item.getItemRange());
-        itemDetailsResponseDto.setSerialNumber(item.getSerialNumber());
-
-        return itemDetailsResponseDto;
     }
 
     @Override
@@ -247,7 +327,7 @@ public class ItemServiceImpl implements ItemService {
         itemProductResponseDto.setBrand(productDetail.getBrand());
         itemProductResponseDto.setModel(productDetail.getModel());
 
-        return FillItemDetails(item, itemProductResponseDto);
+        return fillItemDetails(item, itemProductResponseDto);
     }
 
     @Override

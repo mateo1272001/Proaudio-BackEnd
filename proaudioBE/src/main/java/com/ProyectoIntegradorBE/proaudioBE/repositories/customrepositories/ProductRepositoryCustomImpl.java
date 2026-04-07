@@ -99,16 +99,18 @@ public class ProductRepositoryCustomImpl implements ProductRepositoryCustom {
                 		p.comments AS comments,
                 		p.status AS status
                 	FROM product p
-                	INNER JOIN product_tag pt ON (p.product_id = pt.product_id)
-                	INNER JOIN tag_hierarchy th ON (pt.tag_id = th.tag_id)
-                                    	WHERE p.status = "ACTIVE" AND pt.type = "DESCRIPTIVE" AND pt.status = "ENABLED"
-                	GROUP BY th.root, pt.product_id
+                                                            INNER JOIN relation_group rg ON (p.product_id = rg.product_id)
+                                                            INNER JOIN tag_relation_group trg ON (rg.relation_group_id = trg.relation_group_id)
+                                                            INNER JOIN tag_hierarchy th ON (trg.tag_id = th.tag_id)
+                                                                WHERE p.status = "ACTIVE" AND rg.type = "DESCRIPTIVE" AND rg.status = "ENABLED" AND trg.status = 'ENABLED'
+                                                            GROUP BY th.root, rg.product_id
                 ) AS filtered
                 LEFT JOIN
-                	(SELECT t_brand.name,pt_brand.product_id
-                	FROM product_tag pt_brand
-                        	INNER JOIN tag t_brand ON (pt_brand.tag_id = t_brand.tag_id AND t_brand.father_id = %s AND pt_brand.type = 'DESCRIPTIVE')
-                	WHERE pt_brand.status = 'ENABLED')
+                                                        (SELECT t_brand.name,rg_brand.product_id
+                                                        FROM relation_group rg_brand
+                                                        INNER JOIN tag_relation_group trg_brand ON (rg_brand.relation_group_id = trg_brand.relation_group_id)
+                                                        INNER JOIN tag t_brand ON (trg_brand.tag_id = t_brand.tag_id AND t_brand.father_id = %s AND rg_brand.type = 'DESCRIPTIVE')
+                                                        WHERE rg_brand.status = 'ENABLED' AND trg_brand.status = 'ENABLED')
                     AS brands ON brands.product_id = filtered.id %s
                 GROUP BY filtered.id,brands.name
                 HAVING COUNT(id) = ?
@@ -139,10 +141,11 @@ public class ProductRepositoryCustomImpl implements ProductRepositoryCustom {
                         brands.name as brand
                     FROM product p
                     LEFT JOIN
-                    	(SELECT t_brand.name,pt_brand.product_id
-                    	FROM product_tag pt_brand
-                    	INNER JOIN tag t_brand ON (pt_brand.tag_id = t_brand.tag_id AND t_brand.father_id = %s AND pt_brand.type = 'DESCRIPTIVE')
-                    	WHERE pt_brand.status = 'ENABLED') AS brands
+                    	(SELECT t_brand.name,rg_brand.product_id
+                        FROM relation_group rg_brand
+                        INNER JOIN tag_relation_group trg_brand ON (rg_brand.relation_group_id = trg_brand.relation_group_id)
+                        INNER JOIN tag t_brand ON (trg_brand.tag_id = t_brand.tag_id AND t_brand.father_id = %s AND rg_brand.type = 'DESCRIPTIVE')
+                        WHERE rg_brand.status = 'ENABLED') AS brands
                     ON brands.product_id = p.product_id
                     WHERE p.status = "ACTIVE"%s
                     ORDER BY %s %s
@@ -190,17 +193,19 @@ public class ProductRepositoryCustomImpl implements ProductRepositoryCustom {
                                 p.model AS model,
                                 p.comments AS comments,
                                 p.status AS status
-                            FROM product p
-                            INNER JOIN product_tag pt ON (p.product_id = pt.product_id)
-                            INNER JOIN tag_hierarchy th ON (pt.tag_id = th.tag_id)
-                                        WHERE p.status = "ACTIVE" AND pt.type = "DESCRIPTIVE" AND pt.status = "ENABLED"
-                            GROUP BY th.root, pt.product_id
+                                FROM product p
+                                    INNER JOIN relation_group rg ON (p.product_id = rg.product_id)
+                                    INNER JOIN tag_relation_group trg ON (rg.relation_group_id = trg.relation_group_id)
+                                    INNER JOIN tag_hierarchy th ON (trg.tag_id = th.tag_id)
+                                        WHERE p.status = "ACTIVE" AND rg.type = "DESCRIPTIVE" AND rg.status = "ENABLED" AND trg.status = 'ENABLED'
+                                GROUP BY th.root, rg.product_id
                         ) AS filtered
                         LEFT JOIN
-                            (SELECT t_brand.name,pt_brand.product_id
-                            FROM product_tag pt_brand
-                            INNER JOIN tag t_brand ON (pt_brand.tag_id = t_brand.tag_id AND t_brand.father_id = %s)
-                            WHERE pt_brand.status = 'ENABLED')
+                            (SELECT t_brand.name,rg_brand.product_id
+                            FROM relation_group rg_brand
+                            INNER JOIN tag_relation_group trg_brand ON (rg_brand.relation_group_id = trg_brand.relation_group_id)
+                            INNER JOIN tag t_brand ON (trg_brand.tag_id = t_brand.tag_id AND t_brand.father_id = %s AND rg_brand.type = 'DESCRIPTIVE')
+                            WHERE rg_brand.status = 'ENABLED' AND trg_brand.status = 'ENABLED')
                         AS brands ON brands.product_id = filtered.id
                         %s
                         GROUP BY filtered.id,brands.name
@@ -225,10 +230,11 @@ public class ProductRepositoryCustomImpl implements ProductRepositoryCustom {
                     SELECT COUNT(*)
                     FROM product p
                     LEFT JOIN
-                    	(SELECT t_brand.name,pt_brand.product_id
-                    	FROM product_tag pt_brand
-                    	INNER JOIN tag t_brand ON (pt_brand.tag_id = t_brand.tag_id AND t_brand.father_id = %s)
-                    	WHERE pt_brand.status = 'ENABLED') AS brands
+                        (SELECT t_brand.name,rg_brand.product_id
+                        FROM relation_group rg_brand
+                        INNER JOIN tag_relation_group trg_brand ON (rg_brand.relation_group_id = trg_brand.relation_group_id)
+                        INNER JOIN tag t_brand ON (trg_brand.tag_id = t_brand.tag_id AND t_brand.father_id = %s AND rg_brand.type = 'DESCRIPTIVE')
+                        WHERE rg_brand.status = 'ENABLED' AND trg_brand.status = 'ENABLED') AS brands
                     ON brands.product_id = p.product_id
                     WHERE p.status = "ACTIVE" %s
                     """, brandId, titleCondition);
