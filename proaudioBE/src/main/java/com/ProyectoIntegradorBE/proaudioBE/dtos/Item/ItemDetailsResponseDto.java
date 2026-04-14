@@ -29,6 +29,8 @@ public class ItemDetailsResponseDto {
 
     private String serialNumber;
 
+    private String assignedId;
+
 
     //    private Object activities;
 

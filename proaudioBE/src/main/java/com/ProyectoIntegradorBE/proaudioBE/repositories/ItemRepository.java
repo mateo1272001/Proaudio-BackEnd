@@ -35,6 +35,13 @@ public interface ItemRepository extends CrudRepository<ItemEntity, Long>, JpaRep
             FROM item i
             WHERE i.product_id = :productId AND i.status in (:statuses) AND i.serial_number in (:serialNumbers)
             """, nativeQuery = true)
-    List<ItemEntity> findRepeatedSerialNumbers(@NotNull Long productId, List<ItemStatusEnum> statuses,
+    List<ItemEntity> findRepeatedSerialNumbers(@NotNull Long productId, List<String> statuses,
                                                List<String> serialNumbers);
+
+    @Query(value = """
+            SELECT *
+            FROM item i
+            WHERE i.product_id = :productId AND i.status in (:statuses) AND i.assigned_id in (:assignedIds)
+            """, nativeQuery = true)
+    List<ItemEntity> findRepeatedAssignedIds(@NotNull Long productId, List<String> statuses, List<String> assignedIds);
 }

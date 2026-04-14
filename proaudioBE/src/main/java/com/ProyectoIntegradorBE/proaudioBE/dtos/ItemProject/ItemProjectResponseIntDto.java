@@ -40,4 +40,6 @@ public interface ItemProjectResponseIntDto {
 
     String getProductModel();
 
+    String getAssignedId();
+
 }

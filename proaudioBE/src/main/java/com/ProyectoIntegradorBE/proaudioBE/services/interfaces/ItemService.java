@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface ItemService {
 
-    ItemResponseListDto createItem(ItemRequestListDto items) throws Exception;
+    ItemResponseListDto createItemsAndGenerateQr(ItemRequestListDto items) throws Exception;
 
     ItemResponseDto updateItem(UpdateItemRequestDto item, Long id);
 

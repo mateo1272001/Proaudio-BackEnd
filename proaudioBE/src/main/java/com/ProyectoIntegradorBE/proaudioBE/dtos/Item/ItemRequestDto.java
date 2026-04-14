@@ -26,6 +26,6 @@ public class ItemRequestDto {
 
     private String itemRange;
 
-    private List<String> serialNumbers;
+    private List<SerialMapDto> serialMap;
 
 }
