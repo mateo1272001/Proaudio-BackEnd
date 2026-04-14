@@ -209,6 +209,12 @@ public class ItemServiceImpl implements ItemService {
 
     }
 
+    private static boolean valuesAreEqual(String requestedValue, String currentValue) {
+        return requestedValue.trim() //
+                .equals(Objects.nonNull(currentValue) ? //
+                        currentValue.trim() : null); //
+    }
+
     @Override
     public ItemResponseDto updateItem(UpdateItemRequestDto item, Long id) {
 
@@ -220,28 +226,11 @@ public class ItemServiceImpl implements ItemService {
                 Objects.nonNull(item.getDescription()) ? item.getDescription() : itemEntity.getDescription());
         itemEntity.setItemRange(Objects.nonNull(item.getItemRange()) ? item.getItemRange() : itemEntity.getItemRange());
 
-        if (StringUtils.isNotEmpty(item.getSerialNumber()) &&
-                !item.getSerialNumber().trim().equals(itemEntity.getSerialNumber().trim())) {
+        String serialNumber = assignSerialNumber(item, itemEntity);
+        itemEntity.setSerialNumber(serialNumber);
 
-            if (!itemRepository.findRepeatedSerialNumbers(item.getProductId(),
-                    List.of(ItemStatusEnum.CREATED.name(), ItemStatusEnum.GOOD.name(),
-                            ItemStatusEnum.WITH_DETAILS.name()), List.of(item.getSerialNumber())).isEmpty()) {
-                throw new BadRequestException(
-                        "¡Ya existen artículos pertenecientes a este producto con este número de serie!");
-            }
-        }
-        itemEntity.setSerialNumber(item.getSerialNumber().trim());
-
-        if (StringUtils.isNotEmpty(item.getAssignedId()) &&
-                !item.getAssignedId().trim().equals(itemEntity.getAssignedId().trim())) {
-
-            if (!itemRepository.findRepeatedAssignedIds(item.getProductId(),
-                    List.of(ItemStatusEnum.CREATED.name(), ItemStatusEnum.GOOD.name(),
-                            ItemStatusEnum.WITH_DETAILS.name()), List.of(item.getAssignedId())).isEmpty()) {
-                throw new BadRequestException("¡Ya existen artículos pertenecientes a este producto con este ID!");
-            }
-        }
-        itemEntity.setAssignedId(item.getAssignedId().trim());
+        String assignedId = assignAssignedId(item, itemEntity);
+        itemEntity.setAssignedId(assignedId);
 
         itemEntity.setUpdatedAt(LocalDateTime.now());
 
@@ -249,6 +238,39 @@ public class ItemServiceImpl implements ItemService {
 
         return itemMapper.toDto(itemEntity);
 
+    }
+
+    private String assignAssignedId(UpdateItemRequestDto item, ItemEntity itemEntity) {
+
+        if (StringUtils.isEmpty(item.getAssignedId())) {
+            return null;
+        }
+        if (valuesAreEqual(item.getAssignedId(), itemEntity.getAssignedId())) {
+            return itemEntity.getAssignedId();
+        }
+        if (!itemRepository.findRepeatedAssignedIds(item.getProductId(),
+                List.of(ItemStatusEnum.CREATED.name(), ItemStatusEnum.GOOD.name(), ItemStatusEnum.WITH_DETAILS.name()),
+                List.of(item.getAssignedId())).isEmpty()) {
+            throw new BadRequestException("¡Ya existen artículos pertenecientes a este producto con este ID!");
+        }
+        return item.getAssignedId().trim();
+    }
+
+    private String assignSerialNumber(UpdateItemRequestDto item, ItemEntity itemEntity) {
+
+        if (StringUtils.isEmpty(item.getSerialNumber())) {
+            return null;
+        }
+        if (valuesAreEqual(item.getSerialNumber(), itemEntity.getSerialNumber())) {
+            return itemEntity.getSerialNumber();
+        }
+        if (!itemRepository.findRepeatedSerialNumbers(item.getProductId(),
+                List.of(ItemStatusEnum.CREATED.name(), ItemStatusEnum.GOOD.name(), ItemStatusEnum.WITH_DETAILS.name()),
+                List.of(item.getSerialNumber())).isEmpty()) {
+            throw new BadRequestException(
+                    "¡Ya existen artículos pertenecientes a este producto con este número de serie!");
+        }
+        return item.getSerialNumber().trim();
     }
 
     @Override
